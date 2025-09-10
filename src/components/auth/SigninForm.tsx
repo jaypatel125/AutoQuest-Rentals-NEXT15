@@ -8,7 +8,6 @@ import { z } from "zod";
 import { signInSchema } from "@/lib/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import {
   Form,
@@ -18,6 +17,8 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import Image from "next/image";
+import { authClient } from "../../../auth-client";
 
 export default function SigninForm() {
   const router = useRouter();
@@ -48,7 +49,6 @@ export default function SigninForm() {
         return;
       }
 
-      // redirect if success
       router.push("/");
       router.refresh();
     } catch (error) {
@@ -63,7 +63,6 @@ export default function SigninForm() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Email */}
           <FormField
             control={form.control}
             name="email"
@@ -82,7 +81,6 @@ export default function SigninForm() {
             )}
           />
 
-          {/* Password */}
           <FormField
             control={form.control}
             name="password"
@@ -109,6 +107,46 @@ export default function SigninForm() {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
           </Button>
+
+          <div className="flex items-center">
+            <div className="h-px flex-1 bg-gray-300" />
+            <span className="px-2 text-sm text-gray-500">Or</span>
+            <div className="h-px flex-1 bg-gray-300" />
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              className="w-full justify-center gap-2"
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await authClient.signIn.social({
+                    provider: "google",
+                    callbackURL: "/",
+                  });
+
+                  if (res.error) {
+                    console.error("Google sign-in failed:", res.error);
+                    return;
+                  }
+
+                  router.push("/");
+                  router.refresh();
+                } catch (err) {
+                  console.error("Google login error:", err);
+                }
+              }}
+            >
+              <Image
+                src="https://www.svgrepo.com/show/475656/google-color.svg"
+                alt="Google"
+                width={18}
+                height={18}
+              />
+              Sign up with Google
+            </Button>
+          </div>
         </form>
       </Form>
 

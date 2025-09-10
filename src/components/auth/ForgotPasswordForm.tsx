@@ -24,15 +24,14 @@ export default function ForgotPasswordForm() {
         body: JSON.stringify({ email }),
       });
 
-      const data = await res.json();
-      if (!res.ok) {
-        console.error(data.error);
+      if (res.ok) {
+        setEmailSent(true);
+      } else {
+        const data = await res.json();
+        console.error("Request reset error:", data.error);
       }
-
-      // Always show success message for security
-      setEmailSent(true);
-    } catch (err) {
-      console.error("Error:", err);
+    } catch (error) {
+      console.error("Request reset error:", error);
     } finally {
       setLoading(false);
     }
@@ -41,22 +40,15 @@ export default function ForgotPasswordForm() {
   return (
     <div>
       <h2 className="mb-6 text-2xl font-bold">Forgot Password</h2>
-
       {emailSent ? (
         <p className="text-sm text-green-600">
-          ✅ If an account exists for that email, a reset link has been sent.
+          If an account exists for that email, a reset link has been sent.
         </p>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="email">Email address</Label>
-            <Input
-              id="email"
-              type="email"
-              name="email"
-              placeholder="you@example.com"
-              required
-            />
+            <Input id="email" name="email" type="email" required />
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? (
@@ -67,13 +59,6 @@ export default function ForgotPasswordForm() {
           </Button>
         </form>
       )}
-
-      <p className="mt-6 text-center text-sm text-gray-500">
-        Remembered your password?{" "}
-        <a href="/signin" className="font-medium text-blue-600 hover:underline">
-          Sign In
-        </a>
-      </p>
     </div>
   );
 }
