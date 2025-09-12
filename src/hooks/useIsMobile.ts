@@ -12,13 +12,10 @@ export function useIsMobile(breakpoint = 768) {
       setIsMobile(mediaQuery.matches);
     };
 
-    // Initial check
     handleResize();
 
-    // Add listener for changes
     mediaQuery.addEventListener("change", handleResize);
 
-    // Cleanup listener on unmount
     return () => mediaQuery.removeEventListener("change", handleResize);
   }, [breakpoint]);
 

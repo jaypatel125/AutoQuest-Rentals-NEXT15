@@ -35,24 +35,20 @@ export default function SigninForm() {
   const onSubmit = async (values: z.infer<typeof signInSchema>) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/sign-in", {
+      const res = await fetch("/api/auth/sign-in/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
+        credentials: "include",
       });
 
       const data = await res.json();
-
-      if (!res.ok) {
-        console.error(data.error);
-        setLoading(false);
-        return;
-      }
+      if (!res.ok) throw new Error(data.error || "Sign-in failed");
 
       router.push("/");
       router.refresh();
     } catch (error) {
-      console.error("Something went wrong:", error);
+      console.error("Sign-in error:", error);
     }
     setLoading(false);
   };

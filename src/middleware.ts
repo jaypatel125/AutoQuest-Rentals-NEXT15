@@ -25,7 +25,6 @@ export default async function authMiddleware(request: NextRequest) {
     {
       baseURL: process.env.NEXT_PUBLIC_APP_URL,
       headers: {
-        // Include the cookie in the request
         cookie: request.headers.get("cookie") || "",
       },
     }
@@ -52,10 +51,8 @@ export default async function authMiddleware(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Force Node.js runtime
 export const runtime = "nodejs";
 
-// Configure the middleware to apply to all routes except the ones excluded
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
 };

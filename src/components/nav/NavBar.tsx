@@ -61,7 +61,6 @@ const Navbar = ({
                     <Link
                       className="hover:text-muted-foreground"
                       href="/search"
-                      // scroll={false}
                       data-testid="nav-search-link"
                     >
                       Search
