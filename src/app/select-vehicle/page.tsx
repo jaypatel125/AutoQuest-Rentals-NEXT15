@@ -1,0 +1,196 @@
+import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Star, Users, Fuel, Car } from "lucide-react";
+import Image from "next/image";
+
+import pool from "@/lib/db";
+import type { Car as CarType } from "../../lib/database/table-types";
+import { SearchBar } from "@/components/select-vehicle/search-bar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+
+export const revalidate = 0;
+const filters = [
+  {
+    title: "Vehicle Brand",
+    options: ["Audi", "Tesla"],
+  },
+  {
+    title: "Vehicle Type",
+    options: ["Hatchbacks", "SUVs", "Trucks", "Vans", "Sedans"],
+  },
+  {
+    title: "Number of Passengers",
+    options: ["2+", "4+", "6+"],
+  },
+  {
+    title: "Fuel Type",
+    options: ["Gasoline", "Diesel", "Electric"],
+  },
+];
+
+async function getAvailableCars(
+  city?: string,
+  startDate?: string,
+  endDate?: string
+): Promise<CarType[]> {
+  let query = `
+    SELECT c.* FROM car c
+    WHERE c.available = true
+  `;
+
+  const params = [];
+
+  if (city) {
+    query += ` AND c."branchId" IN (SELECT id FROM branch WHERE city = $${
+      params.length + 1
+    })`;
+    params.push(city);
+  }
+
+  if (startDate && endDate) {
+    query += `
+      AND c.id NOT IN (
+        SELECT "carId" FROM booking 
+        WHERE (
+          ("startDate" <= $${params.length + 1} AND "endDate" >= $${
+      params.length + 2
+    })
+          OR ("startDate" <= $${params.length + 2} AND "endDate" >= $${
+      params.length + 1
+    })
+          OR ("startDate" >= $${params.length + 1} AND "endDate" <= $${
+      params.length + 2
+    })
+        )
+        AND status != 'cancelled'
+      )
+    `;
+    params.push(new Date(startDate), new Date(endDate));
+  }
+
+  query += " LIMIT 12";
+
+  const result = await pool.query(query, params);
+  return result.rows;
+}
+
+export default async function SelectVehiclePage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const city =
+    typeof searchParams.city === "string" ? searchParams.city : undefined;
+  const startDate =
+    typeof searchParams.startDate === "string"
+      ? searchParams.startDate
+      : undefined;
+  const endDate =
+    typeof searchParams.endDate === "string" ? searchParams.endDate : undefined;
+
+  const cars = await getAvailableCars(city, startDate, endDate);
+
+  return (
+    <MaxWidthWrapper>
+      {/* Search Bar */}
+      <SearchBar
+        initialCity={city}
+        initialStartDate={startDate ? new Date(startDate) : undefined}
+        initialEndDate={endDate ? new Date(endDate) : undefined}
+      />
+      <div className="grid md:grid-cols-5 gap-6">
+        <aside className="md:col-span-1 space-y-6">
+          {/* Display search criteria if any */}
+          {(city || startDate || endDate) && (
+            <div className="mb-6 p-4 bg-muted rounded-lg">
+              <h3 className="font-semibold mb-2">Search Results For:</h3>
+              <div className="flex flex-wrap gap-2">
+                {city && (
+                  <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm">
+                    Location: {city}
+                  </span>
+                )}
+                {startDate && (
+                  <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm">
+                    Pickup: {new Date(startDate).toLocaleDateString()}
+                  </span>
+                )}
+                {endDate && (
+                  <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm">
+                    Return: {new Date(endDate).toLocaleDateString()}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+          {filters.map((filter, idx) => (
+            <Card key={idx}>
+              <CardHeader className="font-semibold text-sm">
+                {filter.title}
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {filter.options.map((opt, i) => (
+                  <div key={i} className="flex items-center space-x-2">
+                    <Checkbox id={`${filter.title}-${i}`} />
+                    <Label htmlFor={`${filter.title}-${i}`}>{opt}</Label>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          ))}
+        </aside>
+
+        {/* Vehicles */}
+
+        {cars.length > 0 ? (
+          cars.map((car) => (
+            <Card key={car.id} className="hover:shadow-md h-fit">
+              <CardContent className="p-4">
+                <Image
+                  src={car.images || "/car-placeholder.png"}
+                  alt={`${car.brand} ${car.model}`}
+                  width={400}
+                  height={200}
+                  className="rounded-md mb-3"
+                />
+                <h3 className="font-semibold mb-2">
+                  {car.brand} {car.model}
+                </h3>
+                <div className="flex items-center text-sm text-muted-foreground mb-2">
+                  <Star className="h-4 w-4 text-yellow-500 mr-1" />
+                  4.8 (2,436 reviews) {/* Placeholder rating for now */}
+                </div>
+                <ul className="text-xs text-muted-foreground space-y-1 mb-3">
+                  <li>
+                    <Users className="inline h-4 w-4 mr-1" />{" "}
+                    {car.passengerCapacity} Passengers
+                  </li>
+                  <li>
+                    <Car className="inline h-4 w-4 mr-1" /> {car.transmission}
+                  </li>
+                  <li>
+                    <Fuel className="inline h-4 w-4 mr-1" /> {car.fuelType}
+                  </li>
+                  <li>🚪 4 Doors</li>
+                </ul>
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold">${car.pricePerDay}/day</span>
+                  <Button size="sm">Rent Now →</Button>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        ) : (
+          <div className="col-span-3 text-center py-12">
+            <h3 className="text-xl font-semibold mb-2">No vehicles found</h3>
+            <p className="text-muted-foreground">
+              Try adjusting your search criteria to find more options.
+            </p>
+          </div>
+        )}
+      </div>
+    </MaxWidthWrapper>
+  );
+}
