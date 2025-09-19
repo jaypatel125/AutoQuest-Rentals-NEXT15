@@ -1,20 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Star, Users, Fuel, Car, CarFront } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
-import type { Car as CarType } from "../../lib/database/table-types";
 import { SearchBar } from "@/components/select-vehicle/search-bar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useSearchStore } from "@/lib/store/searchStore";
-import { useCars } from "@/hooks/useCars";
-import { is } from "date-fns/locale";
+import { Car as CarType } from "@/lib/database/table-types";
+import { useQuery } from "@tanstack/react-query";
 
 const filters = [
   {
@@ -35,9 +32,61 @@ const filters = [
   },
 ];
 
+// Function to fetch cities
+async function fetchCars(
+  city?: string,
+  startDate?: Date,
+  endDate?: Date
+): Promise<CarType[]> {
+  const payload = {
+    city,
+    startDate: startDate?.toISOString(),
+    endDate: endDate?.toISOString(),
+  };
+
+  const res = await fetch("/api/cars", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch cars");
+  }
+
+  return res.json();
+}
+
+function safeToDate(date: any): Date | undefined {
+  if (!date) return undefined;
+  if (date instanceof Date) return date;
+  try {
+    return new Date(date);
+  } catch {
+    return undefined;
+  }
+}
+
 export default function SelectVehiclePage() {
   const { city, startDate, endDate } = useSearchStore();
-  const { data: cars, isLoading, error } = useCars();
+
+  const startDateObj = safeToDate(startDate);
+  const endDateObj = safeToDate(endDate);
+
+  const startDateKey = startDateObj?.toISOString() || null;
+  const endDateKey = endDateObj?.toISOString() || null;
+
+  const {
+    data: cars = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["cars", city, startDateKey, endDateKey],
+    queryFn: () => fetchCars(city, startDateObj, endDateObj),
+    enabled: !!city && !!startDateObj && !!endDateObj,
+  });
 
   if (error) {
     return <div>Error loading cars: {error.message}</div>;

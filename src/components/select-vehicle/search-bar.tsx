@@ -1,68 +1,150 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { SetStateAction, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover as CommandPopover,
+  PopoverContent as CommandPopoverContent,
+  PopoverTrigger as CommandPopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, ChevronsUpDown, Check } from "lucide-react";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/lib/store/searchStore";
+import { Label } from "@/components/ui/label";
+import { Input } from "../ui/input";
+
+// Function to fetch cities
+async function fetchCities(): Promise<string[]> {
+  const response = await fetch("/api/cities");
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch cities");
+  }
+
+  return response.json();
+}
 
 export function SearchBar() {
   const router = useRouter();
   const {
     city: storeCity,
-    startDate,
-    endDate,
-    distance,
+    startDate: storeStartDate,
+    endDate: storeEndDate,
+    distance: storeDistance,
     setCity,
     setDates,
     setDistance,
   } = useSearchStore();
 
+  const [open, setOpen] = useState(false);
   const [localCity, setLocalCity] = useState(storeCity || "");
+  const [localStartDate, setLocalStartDate] = useState<Date | null>(
+    storeStartDate || null
+  );
+  const [localEndDate, setLocalEndDate] = useState<Date | null>(
+    storeEndDate || null
+  );
+  const [localDistance, setLocalDistance] = useState(storeDistance || "");
+
+  const {
+    data: cities = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["cities"],
+    queryFn: fetchCities,
+    staleTime: 5 * 60 * 1000,
+  });
 
   const handleSearch = () => {
-    // Only update the store city on search
     setCity(localCity);
-
-    const params = new URLSearchParams();
-    if (localCity) params.set("city", localCity);
-
-    if (startDate) {
-      const start = new Date(startDate);
-      params.set("startDate", start.toISOString());
-    }
-
-    if (endDate) {
-      const end = new Date(endDate);
-      params.set("endDate", end.toISOString());
-    }
-
-    if (distance) params.set("distance", distance);
+    setDates(localStartDate || undefined, localEndDate || undefined);
+    setDistance(localDistance);
 
     router.push(`/select-vehicle`);
   };
 
+  const handleStartDateSelect = (date: Date | undefined) => {
+    setLocalStartDate(date || null);
+    if (date && localEndDate && localEndDate < date) {
+      setLocalEndDate(null);
+    }
+  };
+
+  const handleEndDateSelect = (date: Date | undefined) => {
+    setLocalEndDate(date || null);
+  };
+
   return (
     <section className="bg-muted rounded-xl p-6 my-6 shadow-sm grid md:grid-cols-5 gap-4 items-end">
-      {/* Location */}
       <div className="space-y-2">
         <Label>Location</Label>
-        <Input
-          placeholder="Hamilton, Ontario"
-          value={localCity}
-          onChange={(e) => setLocalCity(e.target.value)}
-          className="bg-white"
-        />
+        <CommandPopover open={open} onOpenChange={setOpen}>
+          <CommandPopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-full justify-between bg-white"
+            >
+              {localCity || "Select a city..."}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </CommandPopoverTrigger>
+          <CommandPopoverContent className="w-full p-0">
+            <Command>
+              <CommandInput placeholder="Search city..." />
+              <CommandList>
+                {isLoading && (
+                  <CommandItem disabled>Loading cities...</CommandItem>
+                )}
+                {error && (
+                  <CommandItem disabled>Failed to load cities</CommandItem>
+                )}
+                <CommandEmpty>No city found.</CommandEmpty>
+                <CommandGroup>
+                  {cities.map((city) => (
+                    <CommandItem
+                      key={city}
+                      value={city}
+                      onSelect={(currentValue: SetStateAction<string>) => {
+                        setLocalCity(
+                          currentValue === localCity ? "" : currentValue
+                        );
+                        setOpen(false);
+                      }}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          localCity === city ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {city}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </CommandPopoverContent>
+        </CommandPopover>
       </div>
 
       {/* Pickup Date */}
@@ -74,18 +156,22 @@ export function SearchBar() {
               variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
-                !startDate && "text-muted-foreground"
+                !localStartDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+              {localStartDate ? (
+                format(localStartDate, "PPP")
+              ) : (
+                <span>Pick a date</span>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={startDate}
-              onSelect={(date) => setDates(date, endDate)}
+              selected={localStartDate || undefined}
+              onSelect={handleStartDateSelect}
               disabled={(date) =>
                 date < new Date(new Date().setHours(0, 0, 0, 0))
               }
@@ -103,21 +189,25 @@ export function SearchBar() {
               variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
-                !endDate && "text-muted-foreground"
+                !localEndDate && "text-muted-foreground"
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
-              {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+              {localEndDate ? (
+                format(localEndDate, "PPP")
+              ) : (
+                <span>Pick a date</span>
+              )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
-              selected={endDate}
-              onSelect={(date) => setDates(startDate, date)}
+              selected={localEndDate || undefined}
+              onSelect={handleEndDateSelect}
               disabled={(date) =>
                 date < new Date(new Date().setHours(0, 0, 0, 0)) ||
-                (startDate ? date < startDate : false)
+                (localStartDate ? date < localStartDate : false)
               }
             />
           </PopoverContent>
@@ -129,8 +219,8 @@ export function SearchBar() {
         <Label>Approx travel distance</Label>
         <Input
           placeholder="50 kms"
-          value={distance}
-          onChange={(e) => setDistance(e.target.value)}
+          value={localDistance}
+          onChange={(e) => setLocalDistance(e.target.value)}
           className="bg-white"
         />
       </div>
@@ -139,7 +229,7 @@ export function SearchBar() {
       <Button
         className="w-full"
         onClick={handleSearch}
-        disabled={!startDate || !endDate}
+        disabled={!localStartDate || !localEndDate || !localCity}
       >
         Find
       </Button>
