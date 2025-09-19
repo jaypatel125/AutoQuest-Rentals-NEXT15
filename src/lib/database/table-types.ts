@@ -266,6 +266,7 @@ const reset_tokens = {
 
 // Table review
 export interface Review {
+  userName: ReactNode;
   id: string;
   userId: string;
   carId: string;

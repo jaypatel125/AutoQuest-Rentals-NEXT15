@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { RiArrowDropDownLine } from "react-icons/ri";
 
-import useUserStore from "@/context/useUserStore";
+import useUserStore from "@/lib/store/useUserStore";
 import { useRouter } from "next/navigation";
 import { authClient } from "../../../auth-client";
 

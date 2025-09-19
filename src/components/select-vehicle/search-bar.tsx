@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar } from "@/components/ui/calendar";
@@ -12,32 +13,43 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSearchStore } from "@/lib/store/searchStore";
 
-export function SearchBar({
-  initialCity,
-  initialStartDate,
-  initialEndDate,
-}: {
-  initialCity?: string;
-  initialStartDate?: Date;
-  initialEndDate?: Date;
-}) {
+export function SearchBar() {
   const router = useRouter();
-  const [city, setCity] = useState(initialCity || "");
-  const [startDate, setStartDate] = useState<Date | undefined>(
-    initialStartDate
-  );
-  const [endDate, setEndDate] = useState<Date | undefined>(initialEndDate);
+  const {
+    city: storeCity,
+    startDate,
+    endDate,
+    distance,
+    setCity,
+    setDates,
+    setDistance,
+  } = useSearchStore();
+
+  const [localCity, setLocalCity] = useState(storeCity || "");
 
   const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (city) params.set("city", city);
-    if (startDate) params.set("startDate", startDate.toISOString());
-    if (endDate) params.set("endDate", endDate.toISOString());
+    // Only update the store city on search
+    setCity(localCity);
 
-    router.push(`/select-vehicle?${params.toString()}`);
+    const params = new URLSearchParams();
+    if (localCity) params.set("city", localCity);
+
+    if (startDate) {
+      const start = new Date(startDate);
+      params.set("startDate", start.toISOString());
+    }
+
+    if (endDate) {
+      const end = new Date(endDate);
+      params.set("endDate", end.toISOString());
+    }
+
+    if (distance) params.set("distance", distance);
+
+    router.push(`/select-vehicle`);
   };
 
   return (
@@ -47,8 +59,8 @@ export function SearchBar({
         <Label>Location</Label>
         <Input
           placeholder="Hamilton, Ontario"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
+          value={localCity}
+          onChange={(e) => setLocalCity(e.target.value)}
           className="bg-white"
         />
       </div>
@@ -59,7 +71,7 @@ export function SearchBar({
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              variant={"outline"}
+              variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
                 !startDate && "text-muted-foreground"
@@ -73,10 +85,9 @@ export function SearchBar({
             <Calendar
               mode="single"
               selected={startDate}
-              onSelect={setStartDate}
-              required
-              disabled={
-                (date) => date < new Date(new Date().setHours(0, 0, 0, 0)) // disable past
+              onSelect={(date) => setDates(date, endDate)}
+              disabled={(date) =>
+                date < new Date(new Date().setHours(0, 0, 0, 0))
               }
             />
           </PopoverContent>
@@ -89,7 +100,7 @@ export function SearchBar({
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              variant={"outline"}
+              variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
                 !endDate && "text-muted-foreground"
@@ -103,8 +114,7 @@ export function SearchBar({
             <Calendar
               mode="single"
               selected={endDate}
-              onSelect={setEndDate}
-              required
+              onSelect={(date) => setDates(startDate, date)}
               disabled={(date) =>
                 date < new Date(new Date().setHours(0, 0, 0, 0)) ||
                 (startDate ? date < startDate : false)
@@ -117,14 +127,19 @@ export function SearchBar({
       {/* Travel Distance */}
       <div className="space-y-2">
         <Label>Approx travel distance</Label>
-        <Input placeholder="50 kms" className="bg-white" />
+        <Input
+          placeholder="50 kms"
+          value={distance}
+          onChange={(e) => setDistance(e.target.value)}
+          className="bg-white"
+        />
       </div>
 
       {/* Search Button */}
       <Button
         className="w-full"
         onClick={handleSearch}
-        disabled={!startDate || !endDate} // disable if dates not selected
+        disabled={!startDate || !endDate}
       >
         Find
       </Button>

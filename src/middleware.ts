@@ -30,7 +30,7 @@ export default async function authMiddleware(request: NextRequest) {
     }
   );
 
-  console.log(session);
+  // console.log(session);
 
   if ((isAuthRoute || isPasswordRoute) && !session) {
     return NextResponse.next();

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import AccountInfo from "../AccountInfo";
 import { authClient, IUser } from "../../../../auth-client";
-import useUserStore from "@/context/useUserStore";
+import useUserStore from "@/lib/store/useUserStore";
 import { z } from "zod";
 import { getNameSchema } from "@/lib/zod";
 import { useRouter } from "next/navigation";

@@ -5,7 +5,7 @@ import { Dispatch, SetStateAction } from "react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useRouter } from "next/navigation";
 import { authClient, IUser } from "../../../auth-client";
-import useUserStore from "@/context/useUserStore";
+import useUserStore from "@/lib/store/useUserStore";
 import { Switch } from "../ui/switch";
 import { Sheet, SheetClose, SheetContent, SheetTrigger } from "../ui/sheet";
 import { IoMenu } from "react-icons/io5";

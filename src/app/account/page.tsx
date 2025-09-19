@@ -2,7 +2,7 @@
 import { Separator } from "@/components/ui/separator";
 import ProfileName from "../../components/account/profile-name";
 import ProfileEmail from "../../components/account/profile-email";
-import useUserStore from "@/context/useUserStore";
+import useUserStore from "@/lib/store/useUserStore";
 import ProfilePassword from "../../components/account/profile-password";
 import { Button } from "@/components/ui/button";
 import { authClient } from "./../../../auth-client";

@@ -6,7 +6,7 @@ import { ISession, IUser } from "../../../auth-client";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import useUserStore from "@/context/useUserStore";
+import useUserStore from "@/lib/store/useUserStore";
 import { Button } from "../ui/button";
 import { Dropdown } from "./Dropdown";
 
@@ -28,8 +28,8 @@ const Navbar = ({
     }
   }, [session, user, setCurrentUser, setSession]);
 
-  console.log("user in nav", user);
-  console.log("session in nav", session);
+  // console.log("user in nav", user);
+  // console.log("session in nav", session);
 
   const router = useRouter();
 

@@ -1,4 +1,4 @@
-import { ISession, IUser } from "../../auth-client";
+import { ISession, IUser } from "../../../auth-client";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
