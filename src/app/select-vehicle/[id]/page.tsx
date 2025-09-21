@@ -1,58 +1,69 @@
+"use client";
+
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Star, Users, Fuel, Car, CarFront, StarIcon } from "lucide-react";
+import { Star, Users, Fuel, CarFront, StarIcon } from "lucide-react";
 import Image from "next/image";
-import pool from "@/lib/db";
-import type {
-  Car as CarType,
-  Review as ReviewType,
-} from "@/lib/database/table-types";
 import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
-import Link from "next/link";
+import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog";
+import { Car as CarType, Review } from "@/lib/database/table-types";
+import { useParams, useRouter } from "next/navigation";
 
-// Fetch single car by ID
-async function getCarById(id: string): Promise<CarType | null> {
-  const result = await pool.query(`SELECT * FROM car WHERE id = $1`, [id]);
-  console.log(result.rows);
-  return result.rows[0] || null;
+// query function to fetch vehicle details
+async function fetchVehicle(id: string) {
+  const res = await fetch(`/api/vehicles/${id}`);
+  if (!res.ok) {
+    throw new Error("Failed to fetch vehicle details");
+  }
+  return res.json();
 }
 
-// fetch review by car id
-async function getReviewsByCarId(carId: string): Promise<ReviewType[]> {
-  const result = await pool.query(`SELECT * FROM review WHERE "carId" = $1`, [
-    carId,
-  ]);
-  return result.rows as ReviewType[];
+// query function to fetch vehicle reviews
+async function fetchVehicleReviews(id: string) {
+  const res = await fetch(`/api/vehicles/${id}/reviews`);
+  if (!res.ok) {
+    throw new Error("Failed to fetch vehicle reviews");
+  }
+  return res.json();
 }
 
-// fetch user by id
-async function getUserById(userId: string): Promise<{ name: string } | null> {
-  const result = await pool.query(`SELECT name FROM "user" WHERE id = $1`, [
-    userId,
-  ]);
-  return result.rows[0] || null;
-}
+type ReviewWithUserName = Review & { userName: string };
 
-export default async function VehicleDetailPage({
-  params,
-}: {
-  params: { id: string };
-}) {
-  const car = await getCarById(params.id);
-  const reviews = await getReviewsByCarId(params.id);
-  const reviewsWithUserNames = await Promise.all(
-    reviews.map(async (review) => {
-      const user = await getUserById(review.userId);
-      return {
-        ...review,
-        userName: user ? user.name : "Unknown User",
-      };
-    })
-  );
+export default function VehicleDetailPage() {
+  const params = useParams();
+  const router = useRouter();
+  const vehicleId = params.id as string;
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  console.log(reviewsWithUserNames);
+  // Queries
+  const {
+    data: Car,
+    isLoading: carLoading,
+    error: carError,
+  } = useQuery<CarType>({
+    queryKey: ["vehicle", vehicleId],
+    queryFn: () => fetchVehicle(vehicleId),
+    enabled: !!vehicleId,
+  });
 
-  if (!car) {
+  const {
+    data: reviewsWithUserNames,
+    isLoading: reviewsLoading,
+    error: reviewsError,
+  } = useQuery<ReviewWithUserName[]>({
+    queryKey: ["vehicleReviews", vehicleId],
+    queryFn: () => fetchVehicleReviews(vehicleId),
+    enabled: !!vehicleId,
+  });
+
+  if (carLoading || reviewsLoading) {
+    return <p className="text-center py-20">Loading vehicle details...</p>;
+  }
+
+  if (carError || !Car || reviewsError) {
     return (
       <div className="text-center py-20">
         <h2 className="text-2xl font-bold">Vehicle not found</h2>
@@ -66,95 +77,93 @@ export default async function VehicleDetailPage({
   return (
     <MaxWidthWrapper>
       <div className="space-y-8">
-        {/* Back link */}
-        <Button variant="ghost" asChild>
-          <Link href="/select-vehicle">← Back</Link>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            router.back();
+          }}
+        >
+          ← Back
         </Button>
 
         <div className="grid md:grid-cols-2 gap-10 items-start">
-          {/* Car Image */}
           <Image
-            src={car.images || "/car-placeholder.png"}
-            alt={`${car.brand} ${car.model}`}
+            src={Car.images || "/car-placeholder.png"}
+            alt={`${Car.brand} ${Car.model}`}
             width={700}
             height={400}
             className="rounded-lg shadow-md"
           />
 
-          {/* Car Information */}
           <div className="space-y-6">
             <h1 className="text-3xl font-bold">
-              {car.brand} {car.model}
+              {Car.brand} {Car.model}
             </h1>
 
-            {/* Rating */}
             <div className="flex items-center text-sm text-muted-foreground">
               <StarIcon fill="orange" className="h-5 w-5 mr-1" />
-              4.8 (2,436 reviews) {/* Placeholder rating */}
+              4.8 (2,436 reviews)
             </div>
 
-            {/* Vehicle Information */}
             <Card>
-              <CardContent className=" text-sm text-muted-foreground">
+              <CardContent className="text-sm text-muted-foreground">
                 <div className="grid grid-cols-2 gap-4">
-                  {/* Left column */}
                   <div className="space-y-2">
                     <p>
                       <CarFront className="inline h-4 w-4 mr-2" />
-                      {car.bodyType}
+                      {Car.bodyType}
                     </p>
                     <p>
                       <CarFront className="inline h-4 w-4 mr-2" />
-                      {car.carbonEmissions} g/km CO2
+                      {Car.carbonEmissions} g/km CO2
                     </p>
                     <p>
                       <Users className="inline h-4 w-4 mr-2" />
-                      {car.passengerCapacity} Passengers
+                      {Car.passengerCapacity} Passengers
                     </p>
                   </div>
 
-                  {/* Right column */}
                   <div className="space-y-2">
                     <p>
-                      <Car className="inline h-4 w-4 mr-2" />
-                      {car.transmission}
+                      <CarFront className="inline h-4 w-4 mr-2" />
+                      {Car.transmission}
                     </p>
                     <p>
                       <Fuel className="inline h-4 w-4 mr-2" />
-                      {car.fuelType}
+                      {Car.fuelType}
                     </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Price + Rent Button */}
             <div className="flex items-center justify-between">
               <span className="text-xl font-semibold">
-                ${car.pricePerDay} / day
+                ${Car.pricePerDay} / day
               </span>
-              <Button size="lg">Rent Now →</Button>
+              <Button size="lg" onClick={() => setDialogOpen(true)}>
+                Rent Now →
+              </Button>
             </div>
           </div>
         </div>
 
-        {/* Reviews */}
         <div>
           <h2 className="text-2xl font-semibold mb-4">Reviews</h2>
 
-          {reviewsWithUserNames.length > 0 ? (
+          {reviewsWithUserNames && reviewsWithUserNames.length > 0 ? (
             <div className="space-y-2">
-              {reviewsWithUserNames.map((reviewsWithUserNames) => (
-                <Card key={reviewsWithUserNames.id}>
+              {reviewsWithUserNames.map((reviewsWithUserName) => (
+                <Card key={reviewsWithUserName.id}>
                   <CardContent className="px-4">
                     <p className="font-semibold">
-                      {reviewsWithUserNames.userName}
+                      {reviewsWithUserName.userName}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {reviewsWithUserNames.comment}
+                      {reviewsWithUserName.comment}
                     </p>
                     <div className="flex mt-1">
-                      {[...Array(Math.round(reviewsWithUserNames.rating))].map(
+                      {[...Array(Math.round(reviewsWithUserName.rating))].map(
                         (_, i) => (
                           <Star
                             key={i}
@@ -173,6 +182,20 @@ export default async function VehicleDetailPage({
           )}
         </div>
       </div>
+
+      <EVPromotionDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onCheckoutEV={() => {
+          setDialogOpen(false);
+          router.push(`/select-vehicle?fuelTypes=Electric`, { scroll: false });
+        }}
+        onContinue={() => {
+          setDialogOpen(false);
+        }}
+        carbonSaved={4.7}
+        rewards={47}
+      />
     </MaxWidthWrapper>
   );
 }

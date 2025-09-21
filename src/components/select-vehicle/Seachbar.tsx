@@ -1,6 +1,6 @@
 "use client";
 
-import { SetStateAction, useState } from "react";
+import { SetStateAction, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar } from "@/components/ui/calendar";
@@ -30,7 +30,6 @@ import { useSearchStore } from "@/lib/store/searchStore";
 import { Label } from "@/components/ui/label";
 import { Input } from "../ui/input";
 
-// Function to fetch cities
 async function fetchCities(): Promise<string[]> {
   const response = await fetch("/api/cities");
 
@@ -62,6 +61,22 @@ export function SearchBar() {
     storeEndDate || null
   );
   const [localDistance, setLocalDistance] = useState(storeDistance || "");
+
+  useEffect(() => {
+    setLocalCity(storeCity || "");
+  }, [storeCity]);
+
+  useEffect(() => {
+    setLocalStartDate(storeStartDate || null);
+  }, [storeStartDate]);
+
+  useEffect(() => {
+    setLocalEndDate(storeEndDate || null);
+  }, [storeEndDate]);
+
+  useEffect(() => {
+    setLocalDistance(storeDistance || "");
+  }, [storeDistance]);
 
   const {
     data: cities = [],
@@ -229,7 +244,9 @@ export function SearchBar() {
       <Button
         className="w-full"
         onClick={handleSearch}
-        disabled={!localStartDate || !localEndDate || !localCity}
+        disabled={
+          !localStartDate || !localEndDate || !localCity || !localDistance
+        }
       >
         Find
       </Button>

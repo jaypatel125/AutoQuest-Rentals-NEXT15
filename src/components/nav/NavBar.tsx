@@ -28,9 +28,6 @@ const Navbar = ({
     }
   }, [session, user, setCurrentUser, setSession]);
 
-  // console.log("user in nav", user);
-  // console.log("session in nav", session);
-
   const router = useRouter();
 
   const isMobile = useIsMobile();

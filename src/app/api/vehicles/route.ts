@@ -45,8 +45,6 @@ async function getAvailableCars(
 
   const result = await pool.query(query, params);
 
-  console.log(result.rows);
-
   return result.rows;
 }
 
