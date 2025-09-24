@@ -4,10 +4,12 @@ export async function sendEmail({
   to,
   subject,
   text,
+  html,
 }: {
   to: string;
   subject: string;
-  text: string;
+  text?: string;
+  html?: string;
 }) {
   const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -24,5 +26,6 @@ export async function sendEmail({
     to,
     subject,
     text,
+    html,
   });
 }

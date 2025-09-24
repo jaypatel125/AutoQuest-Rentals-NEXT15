@@ -53,7 +53,7 @@ export default function SignupForm() {
         return;
       }
 
-      router.push("/");
+      router.push("/verification");
       router.refresh();
     } catch (error) {
       console.error("Something went wrong:", error);
