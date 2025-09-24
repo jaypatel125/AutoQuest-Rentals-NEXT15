@@ -53,14 +53,13 @@ export function Dropdown() {
           <DropdownMenuItem onClick={() => router.push("/account")}>
             Profile
           </DropdownMenuItem>
-          <DropdownMenuItem>Billing</DropdownMenuItem>
+          <DropdownMenuItem>Bookings</DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>Team</DropdownMenuItem>
           <DropdownMenuSub>
-            <DropdownMenuSubTrigger>Invite users</DropdownMenuSubTrigger>
+            <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
             <DropdownMenuPortal>
               <DropdownMenuSubContent>
                 <DropdownMenuItem>Email</DropdownMenuItem>
@@ -70,7 +69,6 @@ export function Dropdown() {
               </DropdownMenuSubContent>
             </DropdownMenuPortal>
           </DropdownMenuSub>
-          <DropdownMenuItem>New Team</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleSignOut}>Log out</DropdownMenuItem>

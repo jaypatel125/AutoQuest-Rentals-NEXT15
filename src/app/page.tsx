@@ -21,10 +21,10 @@ export default function Home() {
         </div>
         <div className="flex justify-center">
           <Image
-            src="/car-hero.png"
+            src="/car.png"
             alt="EV Car"
-            width={400}
-            height={300}
+            width={500}
+            height={400}
             className="rounded-lg"
           />
         </div>

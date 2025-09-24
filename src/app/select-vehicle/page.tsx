@@ -270,8 +270,9 @@ export default function SelectVehiclePage() {
     <MaxWidthWrapper>
       <SearchBar />
 
-      <div className="grid md:grid-cols-5 gap-6">
-        <aside className="md:col-span-1 space-y-6">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Filters Sidebar */}
+        <aside className="md:w-1/5 space-y-6">
           {(city || startDate || endDate || hasActiveFilters) && (
             <div className="px-6 py-4 space-y-2 bg-muted rounded-lg">
               <h3 className="font-semibold my-2">Search Results For:</h3>
@@ -322,9 +323,9 @@ export default function SelectVehiclePage() {
           )}
 
           {availableFilters && (
-            <>
+            <div className="space-y-6">
               {Object.entries(availableFilters).map(([key, values]) => (
-                <Card key={key}>
+                <Card key={key} className="h-fit">
                   <CardHeader className="font-semibold text-sm">
                     {key
                       .replace(/([A-Z])/g, " $1")
@@ -354,77 +355,83 @@ export default function SelectVehiclePage() {
                   </CardContent>
                 </Card>
               ))}
-            </>
+            </div>
           )}
         </aside>
 
-        <div className="grid md:grid-cols-4 gap-6 col-span-4">
+        {/* Cars Grid */}
+        <div className="md:w-4/5">
           {isLoading ? (
-            <div className="col-span-4 text-center py-12">Loading cars...</div>
+            <div className="text-center py-12">Loading cars...</div>
           ) : filteredCars.length > 0 ? (
-            filteredCars.map((car) => (
-              <Link
-                key={car.id}
-                href={`/select-vehicle/${car.id}`}
-                className="block"
-              >
-                <Card className="hover:shadow-md h-fit cursor-pointer transition">
-                  <CardContent className="p-4">
-                    <Image
-                      src={car.images || "/car-placeholder.png"}
-                      alt={`${car.brand} ${car.model}`}
-                      width={400}
-                      height={200}
-                      className="rounded-md mb-3"
-                    />
-                    <h3 className="font-semibold mb-2">
-                      {car.brand} {car.model}
-                    </h3>
-                    <div className="flex items-center text-sm text-muted-foreground mb-2">
-                      <Star
-                        fill="orange"
-                        className="h-4 w-4 text-yellow-500 mr-1"
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredCars.map((car) => (
+                <Link
+                  key={car.id}
+                  href={`/select-vehicle/${car.id}`}
+                  className="block"
+                >
+                  <Card className="hover:shadow-md h-fit cursor-pointer transition">
+                    <CardContent className="p-4">
+                      <Image
+                        src={car.images || "/car-placeholder.png"}
+                        alt={`${car.brand} ${car.model}`}
+                        width={400}
+                        height={200}
+                        className="rounded-md mb-3"
                       />
-                      4.8 (2,436 reviews)
-                    </div>
-                    <ul className="text-xs text-muted-foreground space-y-1 mb-3">
-                      <li>
-                        <Users className="inline h-4 w-4 mr-1" />{" "}
-                        {car.passengerCapacity} Passengers
-                      </li>
-                      <li>
-                        <Car className="inline h-4 w-4 mr-1" />{" "}
-                        {car.transmission}
-                      </li>
-                      <li>
-                        <Fuel className="inline h-4 w-4 mr-1" /> {car.fuelType}
-                      </li>
-                      <li>
-                        <CarFront className="inline h-4 w-4 mr-2" />
-                        {car.bodyType}
-                      </li>
-                    </ul>
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">
-                        ${car.pricePerDay}/day
-                      </span>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setDialogOpen(true);
-                        }}
-                      >
-                        Rent Now →
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))
+                      <h3 className="font-semibold mb-2">
+                        {car.brand} {car.model}
+                      </h3>
+                      <div className="flex items-center text-sm text-muted-foreground mb-2">
+                        <Star
+                          fill="orange"
+                          className="h-4 w-4 text-yellow-500 mr-1"
+                        />
+                        4.8 (2,436 reviews)
+                      </div>
+                      <ul className="text-sm text-muted-foreground space-y-1 mb-3">
+                        <li>
+                          <Users className="inline h-4 w-4 mr-1" />{" "}
+                          {car.passengerCapacity} Passengers
+                        </li>
+                        <li>
+                          <Car className="inline h-4 w-4 mr-1" />{" "}
+                          {car.transmission}
+                        </li>
+                        <li>
+                          <Fuel className="inline h-4 w-4 mr-1" />{" "}
+                          {car.fuelType}
+                        </li>
+                        <li>
+                          <CarFront className="inline h-4 w-4 mr-2" />
+                          {car.bodyType}
+                        </li>
+                      </ul>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold text-lg">
+                          ${car.pricePerDay}
+                          <span className="text-sm font-normal">/day</span>
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="whitespace-nowrap"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setDialogOpen(true);
+                          }}
+                        >
+                          Rent Now →
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
           ) : (
-            <div className="col-span-4 text-center py-12">
+            <div className="text-center py-12">
               <h3 className="text-xl font-semibold mb-2">No vehicles found</h3>
               <p className="text-muted-foreground mb-4">
                 {hasActiveFilters
