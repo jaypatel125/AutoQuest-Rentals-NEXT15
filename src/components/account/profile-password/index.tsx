@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import AccountInfo from "../AccountInfo";
 import { authClient } from "../../../../auth-client";
 import { z } from "zod";
+import { useToast } from "@/hooks/use-toast";
 
 const profileFormSchema = z.object({
   password: z
@@ -18,6 +19,7 @@ const ProfilePassword = () => {
   const [loading, setLoading] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const { toast } = useToast();
 
   const validatePassword = (newPassword: string) => {
     try {
@@ -41,9 +43,19 @@ const ProfilePassword = () => {
         revokeOtherSessions: true,
       });
       setSuccessState(true);
+      toast({
+        title: "Success",
+        description: "Password updated successfully.",
+      });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error updating password:", error);
+      toast({
+        title: "Error",
+        description:
+          error.message ||
+          "An unexpected error occurred while updating password.",
+      });
       setErrorState(error.toString());
     } finally {
       setLoading(false);

@@ -7,6 +7,7 @@ import useUserStore from "@/lib/store/useUserStore";
 import { z } from "zod";
 import { getEmailSchema } from "@/lib/zod";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 const profileFormSchema = z.object({
   email: getEmailSchema().optional(),
@@ -16,8 +17,9 @@ const ProfileEmail = ({ currentUser }: { currentUser: IUser }) => {
   const [successState, setSuccessState] = useState(false);
   const [errorState, setErrorState] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const [email, setEmail] = useState("");
+  const router = useRouter();
+  const { toast } = useToast();
 
   const setCurrentUser = useUserStore((state) => state.setCurrentUser);
 
@@ -32,11 +34,18 @@ const ProfileEmail = ({ currentUser }: { currentUser: IUser }) => {
   const validateEmail = (email: string) => {
     try {
       profileFormSchema.parse({ email });
+
       return null;
     } catch (error) {
       if (error instanceof z.ZodError) {
         return error.message;
       }
+      toast({
+        title: "Error",
+        description:
+          (error as Error).message ||
+          "An unexpected error occurred during validation.",
+      });
       return "An unexpected error occurred.";
     }
   };
@@ -58,9 +67,20 @@ const ProfileEmail = ({ currentUser }: { currentUser: IUser }) => {
 
       setCurrentUser({ ...currentUser, email });
       setSuccessState(true);
+      toast({
+        title: "Success",
+        description: "Email updated successfully.",
+      });
       router.refresh();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error updating email:", error);
+      toast({
+        title: "Error",
+        description:
+          error.message || "An unexpected error occurred while updating email.",
+      });
+
       setErrorState(error.toString());
     } finally {
       setLoading(false);

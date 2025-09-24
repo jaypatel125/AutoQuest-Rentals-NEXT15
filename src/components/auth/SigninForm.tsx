@@ -19,9 +19,11 @@ import {
 } from "@/components/ui/form";
 import Image from "next/image";
 import { authClient } from "../../../auth-client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SigninForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
   const form = useForm<z.infer<typeof signInSchema>>({
@@ -47,8 +49,12 @@ export default function SigninForm() {
 
       router.push("/");
       router.refresh();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Sign-in error:", error);
+      toast({
+        title: "Something went wrong",
+        description: error.message ?? "Something went wrong.",
+      });
     }
     setLoading(false);
   };

@@ -7,6 +7,7 @@ import useUserStore from "@/lib/store/useUserStore";
 import { z } from "zod";
 import { getNameSchema } from "@/lib/zod";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 const profileFormSchema = z.object({
   username: getNameSchema().optional(),
@@ -18,6 +19,7 @@ const ProfileName = ({ currentUser }: { currentUser: IUser }) => {
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
   const router = useRouter();
+  const { toast } = useToast();
 
   const setCurrentUser = useUserStore((state) => state.setCurrentUser);
 
@@ -37,6 +39,12 @@ const ProfileName = ({ currentUser }: { currentUser: IUser }) => {
       if (error instanceof z.ZodError) {
         return error.message;
       }
+      toast({
+        title: "Error",
+        description:
+          (error as Error).message ||
+          "An unexpected error occurred during validation.",
+      });
       return "An unexpected error occurred.";
     }
   };
@@ -54,11 +62,20 @@ const ProfileName = ({ currentUser }: { currentUser: IUser }) => {
       await authClient.updateUser({ name });
       setCurrentUser({ ...currentUser, name });
       setSuccessState(true);
+      toast({
+        title: "Success",
+        description: "Name updated successfully.",
+      });
       router.refresh();
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Error updating name:", error);
+      toast({
+        title: "Error",
+        description:
+          error.message || "An unexpected error occurred while updating name.",
+      });
       setErrorState(error.toString());
     } finally {
       setLoading(false);

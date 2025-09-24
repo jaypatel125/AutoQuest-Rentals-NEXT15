@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import Link from "next/link";
 
 export default function ForgotPasswordForm() {
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -26,12 +29,25 @@ export default function ForgotPasswordForm() {
 
       if (res.ok) {
         setEmailSent(true);
+        toast({
+          title: "Success",
+          description:
+            "If an account exists, a reset link has been sent to the email provided.",
+        });
       } else {
         const data = await res.json();
         console.error("Request reset error:", data.error);
+        toast({
+          title: "Error",
+          description: data.error || "Failed to send reset link.",
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Request reset error:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send reset link.",
+      });
     } finally {
       setLoading(false);
     }
@@ -41,9 +57,14 @@ export default function ForgotPasswordForm() {
     <div>
       <h2 className="mb-6 text-2xl font-bold">Forgot Password</h2>
       {emailSent ? (
-        <p className="text-sm text-green-600">
-          If an account exists for that email, a reset link has been sent.
-        </p>
+        <div className="space-y-4">
+          <p>
+            If an account exists for that email, a reset link has been sent.
+          </p>
+          <Link href="/signin">
+            <Button>Go to Sign In</Button>
+          </Link>
+        </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">

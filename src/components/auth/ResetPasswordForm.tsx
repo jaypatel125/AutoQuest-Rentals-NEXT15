@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const { toast } = useToast();
 
   const [loading, setLoading] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
@@ -36,6 +38,10 @@ export default function ResetPasswordForm() {
     if (!token) {
       setError("Invalid or missing reset token.");
       setLoading(false);
+      toast({
+        title: "Error",
+        description: "Invalid or missing reset token.",
+      });
       return;
     }
 
@@ -50,6 +56,10 @@ export default function ResetPasswordForm() {
 
       if (!res.ok) {
         setError(data.error || "Something went wrong.");
+        toast({
+          title: "Error",
+          description: data.error || "Something went wrong.",
+        });
       } else {
         setSuccess(true);
         setTimeout(() => router.push("/signin"), 2000);
@@ -57,6 +67,10 @@ export default function ResetPasswordForm() {
     } catch (err) {
       console.error("Reset password error:", err);
       setError("Something went wrong.");
+      toast({
+        title: "Error",
+        description: "Something went wrong.",
+      });
     }
 
     setLoading(false);
