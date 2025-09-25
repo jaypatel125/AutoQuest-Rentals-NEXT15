@@ -49,6 +49,7 @@ export default function SigninForm() {
 
       router.push("/");
       router.refresh();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Sign-in error:", error);
       toast({

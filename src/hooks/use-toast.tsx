@@ -155,6 +155,7 @@ function toast({ ...props }: Toast) {
       ...props,
       id,
       open: true,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onOpenChange: (open: any) => {
         if (!open) dismiss();
       },

@@ -7,14 +7,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Star, Users, Fuel, CarFront, StarIcon } from "lucide-react";
 import Image from "next/image";
-import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
 import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog";
 import { Car as CarType, Review } from "@/lib/database/table-types";
 import { useParams, useRouter } from "next/navigation";
 
 // query function to fetch vehicle details
 async function fetchVehicle(id: string) {
-  const res = await fetch(`/api/vehicles/${id}`);
+  const res = await fetch(`/api/get-vehicle`, {
+    headers: { "x-car-id": id },
+  });
   if (!res.ok) {
     throw new Error("Failed to fetch vehicle details");
   }
@@ -23,7 +24,9 @@ async function fetchVehicle(id: string) {
 
 // query function to fetch vehicle reviews
 async function fetchVehicleReviews(id: string) {
-  const res = await fetch(`/api/vehicles/${id}/reviews`);
+  const res = await fetch(`/api/get-vehicle/reviews`, {
+    headers: { "x-car-id": id },
+  });
   if (!res.ok) {
     throw new Error("Failed to fetch vehicle reviews");
   }
@@ -75,7 +78,7 @@ export default function VehicleDetailPage() {
   }
 
   return (
-    <MaxWidthWrapper>
+    <div>
       <div className="space-y-8">
         <Button
           variant="ghost"
@@ -196,6 +199,6 @@ export default function VehicleDetailPage() {
         carbonSaved={4.7}
         rewards={47}
       />
-    </MaxWidthWrapper>
+    </div>
   );
 }

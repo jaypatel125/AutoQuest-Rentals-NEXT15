@@ -5,6 +5,7 @@ import UserNavbarWrapper from "@/components/nav/UseNavbarWrapper";
 import { Providers } from "./providers";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/toaster";
+import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,18 +30,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="antialiased min-h-screen flex flex-col">
+      <body className="antialiased">
         <Providers>
-          {/* Navbar */}
           <UserNavbarWrapper />
 
-          {/* Main content grows to fill available space */}
-          <main className="flex-1 mt-6">
-            {children}
-            <Toaster />
+          <main className="min-h-screen flex flex-col">
+            <MaxWidthWrapper className="flex-1 mt-6">
+              {children}
+            </MaxWidthWrapper>
           </main>
 
-          {/* Footer stays at bottom */}
+          <Toaster />
           <Footer />
         </Providers>
       </body>

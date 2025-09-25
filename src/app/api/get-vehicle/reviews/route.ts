@@ -1,12 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import pool from "@/lib/db";
 
-export async function GET(
-  request: Request,
-  context: { params: { id: string } }
-) {
+export async function GET(request: NextRequest) {
   try {
-    const { id } =  context.params;
+    const id = request.headers.get("x-car-id");
+    if (!id) {
+      return NextResponse.json(
+        { error: "Vehicle ID is required" },
+        { status: 400 }
+      );
+    }
+
     const result = await pool.query(
       `
       SELECT r.*, u.name AS "userName"

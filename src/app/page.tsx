@@ -1,5 +1,5 @@
 "use client";
-import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
@@ -7,7 +7,7 @@ import { Car, CalendarIcon, MapPin } from "lucide-react";
 import { SearchBar } from "@/components/select-vehicle/Seachbar";
 export default function Home() {
   return (
-    <MaxWidthWrapper>
+    <div>
       <section className="grid md:grid-cols-2 gap-8 items-center py-12">
         <div>
           <h1 className="text-4xl font-bold leading-tight">
@@ -139,6 +139,6 @@ export default function Home() {
           </Card>
         </div>
       </section>
-    </MaxWidthWrapper>
+    </div>
   );
 }

@@ -44,8 +44,8 @@ const Navbar = ({
       <div
         className={`bg-background/80 dark:bg-dark-background/80 backdrop-blur-md transition-colors duration-200`}
       >
-        <header className="relative h-16 mx-auto border-b duration-200">
-          <MaxWidthWrapper>
+        <header className="relative h-16 mx-auto my-auto border-b w-full duration-200">
+          <MaxWidthWrapper className="h-16">
             <nav className="text-sm flex items-center justify-between w-full h-full">
               <div className="flex items-center gap-4">
                 <div className="flex items-center h-full">

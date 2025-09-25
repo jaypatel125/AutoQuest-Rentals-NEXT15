@@ -11,6 +11,7 @@ async function getAvailableCars(
     WHERE c.available = true
   `;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const params: any[] = [];
 
   if (city) {

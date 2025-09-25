@@ -1,3 +1,4 @@
+// components/utility/MaxWidthWrapper.tsx
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
 
@@ -11,7 +12,7 @@ const MaxWidthWrapper = ({
   return (
     <div
       className={cn(
-        " h-full lg:mx-24 md:mx-16 sm:mx-8 px-8 sm:px-2 lg:px-8",
+        "mx-auto w-full max-w-[1200px] px-4 sm:px-6 lg:px-8", // Use mx-auto for centering
         className
       )}
     >

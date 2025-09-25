@@ -6,7 +6,6 @@ import useUserStore from "@/lib/store/useUserStore";
 import ProfilePassword from "../../components/account/profile-password";
 import { Button } from "@/components/ui/button";
 import { authClient } from "./../../../auth-client";
-import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
 
 export default function SettingsProfilePage() {
   const { currentUser, logoutUser } = useUserStore();
@@ -30,7 +29,7 @@ export default function SettingsProfilePage() {
   }
 
   return (
-    <MaxWidthWrapper>
+    <div>
       <div className="space-y-6">
         <div>
           <h3 className="text-lg">Profile</h3>
@@ -58,6 +57,6 @@ export default function SettingsProfilePage() {
           </div>
         </div>
       </div>
-    </MaxWidthWrapper>
+    </div>
   );
 }

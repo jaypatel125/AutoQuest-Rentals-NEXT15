@@ -42,6 +42,7 @@ export default function ForgotPasswordForm() {
           description: data.error || "Failed to send reset link.",
         });
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error("Request reset error:", error);
       toast({
