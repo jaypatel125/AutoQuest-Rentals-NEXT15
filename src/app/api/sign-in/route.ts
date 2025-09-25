@@ -14,7 +14,20 @@ export async function POST(req: NextRequest) {
 
   const { email, password } = parsed.data;
 
-  return auth.api.signInEmail({
+  const data = await auth.api.signInEmail({
     body: { email, password },
   });
+
+  if (data.user) {
+    return new Response(
+      JSON.stringify({ message: "Signed in was successful" }),
+      {
+        status: 200,
+      }
+    );
+  } else {
+    return new Response(JSON.stringify({ error: "Sign-in failed" }), {
+      status: 400,
+    });
+  }
 }
