@@ -32,6 +32,7 @@ const useUserStore = create<UserStoreState>()(
           ? {
               id: state.currentUser.id,
               name: state.currentUser.name,
+              email: state.currentUser.email,
             }
           : null,
       }),

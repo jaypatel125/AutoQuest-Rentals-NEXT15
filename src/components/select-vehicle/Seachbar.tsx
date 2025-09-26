@@ -29,14 +29,13 @@ import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/lib/store/searchStore";
 import { Label } from "@/components/ui/label";
 import { Input } from "../ui/input";
+import { Branch } from "@/lib/database/table-types";
 
-async function fetchCities(): Promise<string[]> {
-  const response = await fetch("/api/cities");
-
+async function fetchBranches(): Promise<Branch[]> {
+  const response = await fetch("/api/branch");
   if (!response.ok) {
     throw new Error("Failed to fetch cities");
   }
-
   return response.json();
 }
 
@@ -44,10 +43,12 @@ export function SearchBar() {
   const router = useRouter();
   const {
     city: storeCity,
+    branch: branch,
     startDate: storeStartDate,
     endDate: storeEndDate,
     distance: storeDistance,
     setCity,
+    setBranch,
     setDates,
     setDistance,
   } = useSearchStore();
@@ -61,6 +62,7 @@ export function SearchBar() {
     storeEndDate || null
   );
   const [localDistance, setLocalDistance] = useState(storeDistance || "");
+  const [localBranch, setLocalBranch] = useState<Branch | null>(branch || null);
 
   useEffect(() => {
     setLocalCity(storeCity || "");
@@ -77,21 +79,26 @@ export function SearchBar() {
   useEffect(() => {
     setLocalDistance(storeDistance || "");
   }, [storeDistance]);
+  useEffect(() => {
+    setLocalBranch(branch || null);
+  }, [branch]);
 
   const {
-    data: cities = [],
+    data: branches = [],
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["cities"],
-    queryFn: fetchCities,
-    staleTime: 5 * 60 * 1000,
+    queryKey: ["branches"],
+    queryFn: fetchBranches,
   });
+
+  console.log("Branches fetched:", branches);
 
   const handleSearch = () => {
     setCity(localCity);
     setDates(localStartDate || undefined, localEndDate || undefined);
     setDistance(localDistance);
+    setBranch(localBranch!);
 
     router.push(`/select-vehicle`);
   };
@@ -135,10 +142,10 @@ export function SearchBar() {
                 )}
                 <CommandEmpty>No city found.</CommandEmpty>
                 <CommandGroup>
-                  {cities.map((city) => (
+                  {branches.map((branch) => (
                     <CommandItem
-                      key={city}
-                      value={city}
+                      key={branch.id}
+                      value={branch.city}
                       onSelect={(currentValue: SetStateAction<string>) => {
                         setLocalCity(
                           currentValue === localCity ? "" : currentValue
@@ -149,10 +156,12 @@ export function SearchBar() {
                       <Check
                         className={cn(
                           "mr-2 h-4 w-4",
-                          localCity === city ? "opacity-100" : "opacity-0"
+                          localCity === branch.city
+                            ? "opacity-100"
+                            : "opacity-0"
                         )}
                       />
-                      {city}
+                      {branch.city}
                     </CommandItem>
                   ))}
                 </CommandGroup>
