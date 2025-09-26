@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Star, Users, Fuel, Car, CarFront, FilterX } from "lucide-react";
+import { Users, Fuel, Car, CarFront, FilterX } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { SearchBar } from "@/components/select-vehicle/Seachbar";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useSearchStore } from "@/lib/store/searchStore";
 import { Car as CarType } from "@/lib/database/table-types";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -112,7 +112,6 @@ function filtersToQueryString(filters: FilterState): string {
 export default function ClientSelectVehiclePage() {
   const { city, startDate, endDate } = useSearchStore();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [showEVsOnly, setShowEVsOnly] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -150,8 +149,11 @@ export default function ClientSelectVehiclePage() {
   }, [selectedFilters, router, searchParams]);
 
   useEffect(() => {
-    clearAllFilters();
-  }, [city, startDate, endDate]);
+    if (!searchParams?.toString()) {
+      clearAllFilters();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [city, startDate, endDate, searchParams?.toString()]);
 
   const availableFilters = useMemo(() => {
     if (!cars.length) return null;
@@ -173,48 +175,39 @@ export default function ClientSelectVehiclePage() {
     if (!cars.length) return [];
 
     return cars.filter((car) => {
-      if (showEVsOnly && car.fuelType !== "Electric") {
-        return false;
-      }
-
       if (
         selectedFilters.brands.length > 0 &&
         !selectedFilters.brands.includes(car.brand)
-      ) {
+      )
         return false;
-      }
 
       if (
         selectedFilters.fuelTypes.length > 0 &&
         !selectedFilters.fuelTypes.includes(car.fuelType)
-      ) {
+      )
         return false;
-      }
 
       if (
         selectedFilters.transmissions.length > 0 &&
         !selectedFilters.transmissions.includes(car.transmission)
-      ) {
+      )
         return false;
-      }
 
       if (
         selectedFilters.bodyTypes.length > 0 &&
         !selectedFilters.bodyTypes.includes(car.bodyType)
-      ) {
+      )
         return false;
-      }
 
       if (
         selectedFilters.passengerCapacities.length > 0 &&
         !selectedFilters.passengerCapacities.includes(car.passengerCapacity)
-      ) {
+      )
         return false;
-      }
 
       return true;
     });
-  }, [cars, selectedFilters, showEVsOnly]);
+  }, [cars, selectedFilters]);
 
   const handleFilterChange = (
     category: keyof FilterState,
@@ -246,12 +239,11 @@ export default function ClientSelectVehiclePage() {
       bodyTypes: [],
       passengerCapacities: [],
     });
-    setShowEVsOnly(false);
   };
 
-  const hasActiveFilters =
-    Object.values(selectedFilters).some((filters) => filters.length > 0) ||
-    showEVsOnly;
+  const hasActiveFilters = Object.values(selectedFilters).some(
+    (filters) => filters.length > 0
+  );
 
   if (error) {
     return <div>Error loading cars: {error.message}</div>;
@@ -262,7 +254,6 @@ export default function ClientSelectVehiclePage() {
       ...selectedFilters,
       fuelTypes: ["Electric"],
     });
-    setShowEVsOnly(true);
     setDialogOpen(false);
   };
 
@@ -383,13 +374,7 @@ export default function ClientSelectVehiclePage() {
                       <h3 className="font-semibold mb-2">
                         {car.brand} {car.model}
                       </h3>
-                      <div className="flex items-center text-sm text-muted-foreground mb-2">
-                        <Star
-                          fill="orange"
-                          className="h-4 w-4 text-yellow-500 mr-1"
-                        />
-                        4.8 (2,436 reviews)
-                      </div>
+
                       <ul className="text-sm text-muted-foreground space-y-1 mb-3">
                         <li>
                           <Users className="inline h-4 w-4 mr-1" />{" "}
@@ -419,7 +404,11 @@ export default function ClientSelectVehiclePage() {
                           className="whitespace-nowrap"
                           onClick={(e) => {
                             e.preventDefault();
+                            if (car.fuelType === "Electric") {
+                              router.push(`/checkout`);
+                            }
                             setDialogOpen(true);
+                            useSearchStore.getState().setSelectedCar(car);
                           }}
                         >
                           Rent Now →
@@ -452,6 +441,7 @@ export default function ClientSelectVehiclePage() {
         onCheckoutEV={handleLocalCheckoutEV}
         onContinue={() => {
           setDialogOpen(false);
+          router.push("/checkout");
         }}
         carbonSaved={4.7}
         rewards={47}
