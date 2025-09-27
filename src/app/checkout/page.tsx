@@ -47,6 +47,29 @@ export default function CheckoutPage() {
   const tax = rentalCharge * 0.13;
   const amountDue =
     rentalCharge + serviceCharge + tax + Number(rewardsDiscount);
+  const handleCheckout = async () => {
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amountDue,
+          currentUser,
+          selectedCar,
+          startDate,
+          endDate,
+          branch,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url; // redirect to stripe
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <div className="space-y-8">
@@ -228,7 +251,9 @@ export default function CheckoutPage() {
             <Button variant="outline" className="flex-1">
               Cancel
             </Button>
-            <Button className="flex-1">Pay Now →</Button>
+            <Button className="flex-1" onClick={handleCheckout}>
+              Pay Now →
+            </Button>
           </div>
         </div>
       </div>
