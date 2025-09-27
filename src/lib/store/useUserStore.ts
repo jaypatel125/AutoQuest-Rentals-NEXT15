@@ -15,7 +15,6 @@ const useUserStore = create<UserStoreState>()(
     (set) => ({
       currentUser: null,
       session: null,
-
       setSession: (data) => set({ session: data }),
       setCurrentUser: (data) => set({ currentUser: data }),
       logoutUser: () => {

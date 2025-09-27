@@ -386,6 +386,7 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   role: string | null;
+  rewards: number | null;
   banned: boolean | null;
   banReason: string | null;
   banExpires: Date | null;
@@ -399,6 +400,7 @@ export interface UserInput {
   createdAt?: Date;
   updatedAt?: Date;
   role?: string | null;
+  rewards?: number | null;
   banned?: boolean | null;
   banReason?: string | null;
   banExpires?: Date | null;
@@ -414,6 +416,7 @@ const user = {
     "createdAt",
     "updatedAt",
     "role",
+    "rewards",
     "banned",
     "banReason",
     "banExpires",

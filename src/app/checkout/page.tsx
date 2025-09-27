@@ -75,26 +75,27 @@ export default function CheckoutPage() {
           {/* City + Dates */}
           <Card>
             <CardContent className="text-sm space-y-3">
-              <p className="text-muted-foreground">
-                <span className="font-medium text-foreground">
-                  Pick-up Location:
-                </span>{" "}
-                {branch?.address || "--"}
-              </p>
+              <div className="flex flex-col space-y-1">
+                <span>
+                  <span className="font-semibold">Pick-up Location:</span>{" "}
+                  {branch?.name || "--"}
+                </span>
+                <span className="text-muted-foreground">{branch?.address}</span>
+                <span className="text-muted-foreground">
+                  {branch?.city}, {branch?.province} {branch?.postalCode}
+                </span>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="block text-xs font-medium text-muted-foreground">
-                    Pick-up Date
-                  </span>
-                  <span className="text-sm font-medium">
+                  <span className="block font-medium">Pick-up Date</span>
+                  <span className="text-muted-foreground">
                     {start ? format(start, "dd/MM/yyyy") : "--"}
                   </span>
                 </div>
                 <div>
-                  <span className="block text-xs font-medium text-muted-foreground">
-                    Drop-off Date
-                  </span>
-                  <span className="text-sm font-medium">
+                  <span className="block font-medium">Drop-off Date</span>
+                  <span className="text-muted-foreground">
                     {end ? format(end, "dd/MM/yyyy") : "--"}
                   </span>
                 </div>
@@ -114,7 +115,7 @@ export default function CheckoutPage() {
                   <Input
                     type="text"
                     placeholder="John Doe"
-                    value={currentUser?.name || ""}
+                    defaultValue={currentUser?.name}
                   />
                 </div>
 
@@ -122,7 +123,7 @@ export default function CheckoutPage() {
                   <label className="block text-sm font-medium text-muted-foreground">
                     Email Address
                   </label>
-                  <Input type="email" value={currentUser?.email || ""} />
+                  <Input type="email" defaultValue={currentUser?.email} />
                 </div>
               </div>
             </CardContent>

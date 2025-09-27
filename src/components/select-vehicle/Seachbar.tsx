@@ -1,6 +1,6 @@
 "use client";
 
-import { SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Calendar } from "@/components/ui/calendar";
@@ -28,7 +28,6 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/lib/store/searchStore";
 import { Label } from "@/components/ui/label";
-import { Input } from "../ui/input";
 import { Branch } from "@/lib/database/table-types";
 
 async function fetchBranches(): Promise<Branch[]> {
@@ -42,31 +41,22 @@ async function fetchBranches(): Promise<Branch[]> {
 export function SearchBar() {
   const router = useRouter();
   const {
-    city: storeCity,
     branch: branch,
     startDate: storeStartDate,
     endDate: storeEndDate,
-    distance: storeDistance,
-    setCity,
     setBranch,
     setDates,
-    setDistance,
   } = useSearchStore();
 
   const [open, setOpen] = useState(false);
-  const [localCity, setLocalCity] = useState(storeCity || "");
+  const [localCity, setLocalCity] = useState(branch?.city || "");
   const [localStartDate, setLocalStartDate] = useState<Date | null>(
     storeStartDate || null
   );
   const [localEndDate, setLocalEndDate] = useState<Date | null>(
     storeEndDate || null
   );
-  const [localDistance, setLocalDistance] = useState(storeDistance || "");
   const [localBranch, setLocalBranch] = useState<Branch | null>(branch || null);
-
-  useEffect(() => {
-    setLocalCity(storeCity || "");
-  }, [storeCity]);
 
   useEffect(() => {
     setLocalStartDate(storeStartDate || null);
@@ -76,9 +66,6 @@ export function SearchBar() {
     setLocalEndDate(storeEndDate || null);
   }, [storeEndDate]);
 
-  useEffect(() => {
-    setLocalDistance(storeDistance || "");
-  }, [storeDistance]);
   useEffect(() => {
     setLocalBranch(branch || null);
   }, [branch]);
@@ -95,11 +82,8 @@ export function SearchBar() {
   console.log("Branches fetched:", branches);
 
   const handleSearch = () => {
-    setCity(localCity);
     setDates(localStartDate || undefined, localEndDate || undefined);
-    setDistance(localDistance);
     setBranch(localBranch!);
-
     router.push(`/select-vehicle`);
   };
 
@@ -115,7 +99,7 @@ export function SearchBar() {
   };
 
   return (
-    <section className="bg-muted rounded-xl p-6 my-6 shadow-sm grid md:grid-cols-5 gap-4 items-end">
+    <section className="bg-muted rounded-xl p-6 my-6 shadow-sm grid md:grid-cols-4 gap-4 items-end">
       <div className="space-y-2">
         <Label>Location</Label>
         <CommandPopover open={open} onOpenChange={setOpen}>
@@ -146,10 +130,9 @@ export function SearchBar() {
                     <CommandItem
                       key={branch.id}
                       value={branch.city}
-                      onSelect={(currentValue: SetStateAction<string>) => {
-                        setLocalCity(
-                          currentValue === localCity ? "" : currentValue
-                        );
+                      onSelect={() => {
+                        setLocalCity(branch.city);
+                        setLocalBranch(branch);
                         setOpen(false);
                       }}
                     >
@@ -238,23 +221,12 @@ export function SearchBar() {
         </Popover>
       </div>
 
-      {/* Travel Distance */}
-      <div className="space-y-2">
-        <Label>Approx travel distance</Label>
-        <Input
-          placeholder="50 kms"
-          value={localDistance}
-          onChange={(e) => setLocalDistance(e.target.value)}
-          className="bg-white"
-        />
-      </div>
-
       {/* Search Button */}
       <Button
         className="w-full"
         onClick={handleSearch}
         disabled={
-          !localStartDate || !localEndDate || !localCity || !localDistance
+          !localStartDate || !localEndDate || !localCity || !localBranch
         }
       >
         Find

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useSearchStore } from "@/lib/store/searchStore";
 import { Car as CarType } from "@/lib/database/table-types";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -110,7 +110,7 @@ function filtersToQueryString(filters: FilterState): string {
 }
 
 export default function ClientSelectVehiclePage() {
-  const { city, startDate, endDate } = useSearchStore();
+  const { branch, startDate, endDate } = useSearchStore();
   const [dialogOpen, setDialogOpen] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -125,6 +125,8 @@ export default function ClientSelectVehiclePage() {
 
   const startDateKey = startDateObj?.toISOString() || null;
   const endDateKey = endDateObj?.toISOString() || null;
+
+  const city = branch?.city || "";
 
   const {
     data: cars = [],
