@@ -7,7 +7,7 @@ async function getAvailableCars(
   endDate?: string
 ) {
   let query = `
-    SELECT c.* FROM car c
+    SELECT c.* FROM cars c
     WHERE c.available = true
   `;
 
@@ -15,7 +15,7 @@ async function getAvailableCars(
   const params: any[] = [];
 
   if (city) {
-    query += ` AND c."branchId" IN (SELECT id FROM branch WHERE city = $${
+    query += ` AND c.branch_id IN (SELECT id FROM branches WHERE city = $${
       params.length + 1
     })`;
     params.push(city);
@@ -24,19 +24,19 @@ async function getAvailableCars(
   if (startDate && endDate) {
     query += `
       AND c.id NOT IN (
-        SELECT "carId" FROM booking 
+        SELECT car_id FROM bookings 
         WHERE (
-          ("startDate" <= $${params.length + 1} AND "endDate" >= $${
+          (start_date <= $${params.length + 1} AND end_date >= $${
       params.length + 2
     })
-          OR ("startDate" <= $${params.length + 2} AND "endDate" >= $${
+          OR (start_date <= $${params.length + 2} AND end_date >= $${
       params.length + 1
     })
-          OR ("startDate" >= $${params.length + 1} AND "endDate" <= $${
+          OR (start_date >= $${params.length + 1} AND end_date <= $${
       params.length + 2
     })
         )
-        AND status != 'cancelled'
+        AND status != 'Cancelled'
       )
     `;
     params.push(new Date(startDate), new Date(endDate));

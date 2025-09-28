@@ -39,11 +39,13 @@ export default function CheckoutPage() {
       ? Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
       : 1;
 
-  const rentalCharge = selectedCar.pricePerDay * days;
+  const rentalCharge = selectedCar.price_per_day * days;
   const serviceCharge = 15;
   const rewards =
-    selectedCar.fuelType === "Electric" ? rentalCharge * 2 : rentalCharge;
-  const rewardsDiscount = -(rewards / 100).toFixed(2);
+    currentUser?.reward_points && currentUser.reward_points >= 1
+      ? Math.min(100, currentUser.reward_points)
+      : 0;
+  const rewardsDiscount = -(rewards / 10).toFixed(2);
   const tax = rentalCharge * 0.13;
   const amountDue =
     rentalCharge + serviceCharge + tax + Number(rewardsDiscount);
@@ -64,7 +66,7 @@ export default function CheckoutPage() {
 
       const data = await res.json();
       if (data.url) {
-        window.location.href = data.url; // redirect to stripe
+        router.push(data.url);
       }
     } catch (error) {
       console.error(error);
@@ -81,7 +83,7 @@ export default function CheckoutPage() {
       <div className="grid md:grid-cols-2 gap-10 items-start">
         {/* Car image */}
         <Image
-          src={selectedCar.images || "/car-placeholder.png"}
+          src={selectedCar.image || "/car-placeholder.png"}
           alt={`${selectedCar.brand} ${selectedCar.model}`}
           width={700}
           height={400}
@@ -105,7 +107,7 @@ export default function CheckoutPage() {
                 </span>
                 <span className="text-muted-foreground">{branch?.address}</span>
                 <span className="text-muted-foreground">
-                  {branch?.city}, {branch?.province} {branch?.postalCode}
+                  {branch?.city}, {branch?.province} {branch?.postal_code}
                 </span>
               </div>
 
@@ -156,6 +158,9 @@ export default function CheckoutPage() {
           <Card>
             <CardContent className="space-y-3">
               <h3 className="text-lg font-semibold">Trip Cost</h3>
+              <h2 className="text-md">
+                Available Reward Points: {currentUser?.reward_points || 0}
+              </h2>
               <div className="flex justify-between text-sm text-muted-foreground">
                 <span>Rental Charge</span>
                 <span>${rentalCharge.toFixed(2)}</span>

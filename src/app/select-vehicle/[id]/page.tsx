@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Fuel, CarFront } from "lucide-react";
 import Image from "next/image";
 import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog";
-import { Car as CarType } from "@/lib/database/table-types";
+import { Cars as CarType } from "@/lib/database/table-types";
 import { useParams, useRouter } from "next/navigation";
 import { useSearchStore } from "@/lib/store/searchStore";
 
@@ -69,7 +69,7 @@ export default function VehicleDetailPage() {
 
         <div className="grid md:grid-cols-2 gap-10 items-start">
           <Image
-            src={Car.images || "/car-placeholder.png"}
+            src={Car.image || "/car-placeholder.png"}
             alt={`${Car.brand} ${Car.model}`}
             width={700}
             height={400}
@@ -83,7 +83,7 @@ export default function VehicleDetailPage() {
             <div className="">
               {" "}
               <span className="font-semibold text-lg">
-                ${Car.pricePerDay}
+                ${Car.price_per_day}
                 <span className="text-sm font-normal">/day</span>
               </span>
             </div>
@@ -94,15 +94,15 @@ export default function VehicleDetailPage() {
                   <div className="space-y-2">
                     <p>
                       <CarFront className="inline h-4 w-4 mr-2" />
-                      {Car.bodyType}
+                      {Car.body_type}
                     </p>
                     <p>
                       <CarFront className="inline h-4 w-4 mr-2" />
-                      {Car.carbonEmissions} g/km CO2
+                      {Car.carbon_emissions} g/km CO2
                     </p>
                     <p>
                       <Users className="inline h-4 w-4 mr-2" />
-                      {Car.passengerCapacity} Passengers
+                      {Car.passenger_capacity} Passengers
                     </p>
                   </div>
 
@@ -113,7 +113,7 @@ export default function VehicleDetailPage() {
                     </p>
                     <p>
                       <Fuel className="inline h-4 w-4 mr-2" />
-                      {Car.fuelType}
+                      {Car.fuel_type}
                     </p>
                   </div>
                 </div>
@@ -125,7 +125,7 @@ export default function VehicleDetailPage() {
                 className="whitespace-nowrap flex-1"
                 onClick={(e) => {
                   e.preventDefault();
-                  if (Car.fuelType === "Electric") {
+                  if (Car.fuel_type === "Electric") {
                     router.push(`/checkout`);
                   }
                   setDialogOpen(true);

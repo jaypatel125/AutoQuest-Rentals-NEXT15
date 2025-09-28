@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useSearchStore } from "@/lib/store/searchStore";
-import { Car as CarType } from "@/lib/database/table-types";
+import { Cars as CarType } from "@/lib/database/table-types";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState, useEffect } from "react";
 import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog";
@@ -164,12 +164,12 @@ export default function ClientSelectVehiclePage() {
 
     return {
       brands: distinct(cars.map((c) => c.brand)),
-      fuelTypes: distinct(cars.map((c) => c.fuelType)),
+      fuelTypes: distinct(cars.map((c) => c.fuel_type)),
       transmissions: distinct(cars.map((c) => c.transmission)),
-      bodyTypes: distinct(cars.map((c) => c.bodyType)),
-      passengerCapacities: distinct(cars.map((c) => c.passengerCapacity)).sort(
-        (a, b) => a - b
-      ),
+      bodyTypes: distinct(cars.map((c) => c.body_type)),
+      passengerCapacities: distinct(
+        cars.map((c) => c.passenger_capacity!)
+      ).sort((a, b) => a - b),
     };
   }, [cars]);
 
@@ -185,25 +185,25 @@ export default function ClientSelectVehiclePage() {
 
       if (
         selectedFilters.fuelTypes.length > 0 &&
-        !selectedFilters.fuelTypes.includes(car.fuelType)
+        !selectedFilters.fuelTypes.includes(car.fuel_type!)
       )
         return false;
 
       if (
         selectedFilters.transmissions.length > 0 &&
-        !selectedFilters.transmissions.includes(car.transmission)
+        !selectedFilters.transmissions.includes(car.transmission!)
       )
         return false;
 
       if (
         selectedFilters.bodyTypes.length > 0 &&
-        !selectedFilters.bodyTypes.includes(car.bodyType)
+        !selectedFilters.bodyTypes.includes(car.body_type!)
       )
         return false;
 
       if (
         selectedFilters.passengerCapacities.length > 0 &&
-        !selectedFilters.passengerCapacities.includes(car.passengerCapacity)
+        !selectedFilters.passengerCapacities.includes(car.passenger_capacity!)
       )
         return false;
 
@@ -364,14 +364,14 @@ export default function ClientSelectVehiclePage() {
                   href={`/select-vehicle/${car.id}`}
                   className="block"
                 >
-                  <Card className="hover:shadow-md h-fit cursor-pointer transition">
-                    <CardContent className="p-4">
+                  <Card className="hover:shadow-md  cursor-pointer transition">
+                    <CardContent className="px-4">
                       <Image
-                        src={car.images || "/car-placeholder.png"}
+                        src={car.image || "/car-placeholder.png"}
                         alt={`${car.brand} ${car.model}`}
                         width={400}
                         height={200}
-                        className="rounded-md mb-3"
+                        className="rounded-md mb-3 h-48 object-cover"
                       />
                       <h3 className="font-semibold mb-2">
                         {car.brand} {car.model}
@@ -380,7 +380,7 @@ export default function ClientSelectVehiclePage() {
                       <ul className="text-sm text-muted-foreground space-y-1 mb-3">
                         <li>
                           <Users className="inline h-4 w-4 mr-1" />{" "}
-                          {car.passengerCapacity} Passengers
+                          {car.passenger_capacity} Passengers
                         </li>
                         <li>
                           <Car className="inline h-4 w-4 mr-1" />{" "}
@@ -388,16 +388,16 @@ export default function ClientSelectVehiclePage() {
                         </li>
                         <li>
                           <Fuel className="inline h-4 w-4 mr-1" />{" "}
-                          {car.fuelType}
+                          {car.fuel_type}
                         </li>
                         <li>
                           <CarFront className="inline h-4 w-4 mr-2" />
-                          {car.bodyType}
+                          {car.body_type}
                         </li>
                       </ul>
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-semibold text-lg">
-                          ${car.pricePerDay}
+                          ${car.price_per_day}
                           <span className="text-sm font-normal">/day</span>
                         </span>
                         <Button
@@ -406,7 +406,7 @@ export default function ClientSelectVehiclePage() {
                           className="whitespace-nowrap"
                           onClick={(e) => {
                             e.preventDefault();
-                            if (car.fuelType === "Electric") {
+                            if (car.fuel_type === "Electric") {
                               router.push(`/checkout`);
                             }
                             setDialogOpen(true);

@@ -9,7 +9,6 @@ import { authClient } from "../../../auth-client";
 import { signUpSchema } from "@/lib/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import Image from "next/image";
 
@@ -126,16 +125,6 @@ export default function SignupForm() {
               </FormItem>
             )}
           />
-
-          <div className="flex items-center space-x-2">
-            <Checkbox id="terms" required />
-            <label htmlFor="terms" className="text-sm text-gray-600">
-              I agree to the{" "}
-              <a href="#" className="font-medium text-primary underline">
-                terms & policy
-              </a>
-            </label>
-          </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign Up"}

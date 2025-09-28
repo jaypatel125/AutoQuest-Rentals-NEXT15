@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const result = await pool.query(`
       SELECT * 
-      FROM branch 
+      FROM branches
       WHERE city IS NOT NULL 
       ORDER BY city
     `);

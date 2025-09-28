@@ -1,15 +1,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Branch, Car } from "@/lib/database/table-types";
+import { Branches, Cars } from "@/lib/database/table-types";
 
 interface SearchState {
-  branch?: Branch;
+  branch?: Branches;
   startDate?: Date;
   endDate?: Date;
-  selectedCar?: Car;
+  selectedCar?: Cars;
   setDates: (startDate?: Date, endDate?: Date) => void;
-  setSelectedCar: (car: Car) => void;
-  setBranch: (branch: Branch) => void;
+  setSelectedCar: (car: Cars) => void;
+  setBranch: (branch: Branches) => void;
   reset: () => void;
 }
 

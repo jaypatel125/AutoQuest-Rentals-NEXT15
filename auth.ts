@@ -20,6 +20,12 @@ export const auth = betterAuth({
   user: {
     changeEmail: { enabled: true },
     deleteUser: { enabled: true },
+    additionalFields: {
+      reward_points: {
+        type: "number",
+        defaultValue: 0,
+      },
+    },
   },
   plugins: [
     openAPI(),

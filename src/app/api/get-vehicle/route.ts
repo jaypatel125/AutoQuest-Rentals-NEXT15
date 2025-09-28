@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
         { status: 400 }
       );
     }
-    const result = await pool.query(`SELECT * FROM car WHERE id = $1`, [id]);
+    const result = await pool.query(`SELECT * FROM cars WHERE id = $1`, [id]);
 
     if (result.rows.length === 0) {
       return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });

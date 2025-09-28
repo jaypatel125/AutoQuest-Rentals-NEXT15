@@ -26,9 +26,18 @@ export async function POST(req: Request) {
       const totalPrice = Number(metadata.total!);
 
       const query = `
-  INSERT INTO booking ("userId", "carId", "startDate", "endDate", "totalPrice", status, "createdAt", "updatedAt")
-  VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-  RETURNING *;
+INSERT INTO bookings (
+  user_id,
+  car_id,
+  start_date,
+  end_date,
+  total_price,
+  status,
+  created_at,
+  updated_at
+)
+VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+RETURNING *;
 `;
 
       const values = [
@@ -37,7 +46,7 @@ export async function POST(req: Request) {
         startDate,
         endDate,
         totalPrice,
-        "confirmed",
+        "Confirmed",
       ];
 
       const result = await pool.query(query, values);

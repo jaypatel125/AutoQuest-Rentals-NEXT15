@@ -22,10 +22,8 @@ export async function POST(req: Request) {
             currency: "cad",
             product_data: {
               name: `${selectedCar.brand} ${selectedCar.model}`,
-              images: [selectedCar.images || ""],
-              description: `Pickup/Drop-off Location: ${branch?.name}, ${
-                branch?.address
-              }, ${branch?.city}, ${branch?.province}, ${branch?.postalCode} |  
+              images: [selectedCar.image || ""],
+              description: `
                         ${new Date(
                           startDate
                         ).toLocaleDateString()} → ${new Date(
