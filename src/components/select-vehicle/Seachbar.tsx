@@ -69,6 +69,10 @@ export function SearchBar() {
   }, [storeEndDate]);
 
   useEffect(() => {
+    setLocalCity(branch?.city || "");
+  }, [branch]);
+
+  useEffect(() => {
     setLocalBranch(branch || null);
   }, [branch]);
 

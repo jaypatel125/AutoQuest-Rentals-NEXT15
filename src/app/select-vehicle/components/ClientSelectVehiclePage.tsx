@@ -14,6 +14,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState, useEffect } from "react";
 import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog";
 import { useRouter, useSearchParams } from "next/navigation";
+import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
+import Loader from "@/components/utility/Loader";
 
 export interface CarFilters {
   brands: string[];
@@ -355,7 +357,15 @@ export default function ClientSelectVehiclePage() {
         {/* Cars Grid */}
         <div className="md:w-4/5">
           {isLoading ? (
-            <div className="text-center py-12">Loading cars...</div>
+            <div className="w-full h-[60vh] flex items-center justify-center">
+              <div className="flex flex-col items-center gap-2">
+                <Loader />
+                <h3 className="font-semibold text-xl">
+                  Fetching available vehicles...
+                </h3>
+                <p>This won&apos;t take too long!</p>
+              </div>
+            </div>
           ) : filteredCars.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCars.map((car) => (
@@ -436,7 +446,6 @@ export default function ClientSelectVehiclePage() {
           )}
         </div>
       </div>
-
       <EVPromotionDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
@@ -445,8 +454,6 @@ export default function ClientSelectVehiclePage() {
           setDialogOpen(false);
           router.push("/checkout");
         }}
-        carbonSaved={4.7}
-        rewards={47}
       />
     </div>
   );

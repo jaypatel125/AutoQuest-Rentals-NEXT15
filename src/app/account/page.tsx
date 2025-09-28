@@ -29,10 +29,10 @@ export default function SettingsProfilePage() {
   }
 
   return (
-    <div>
+    <div className="my-6">
       <div className="space-y-6">
         <div>
-          <h3 className="text-lg">Profile</h3>
+          <h3 className="text-md font-semibold">Profile</h3>
           <p className="text-sm text-muted-foreground">
             Update your profile information to personalize your shopping
             experience.

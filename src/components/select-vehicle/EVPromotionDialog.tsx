@@ -16,8 +16,6 @@ interface EVPromotionDialogProps {
   onOpenChange: (open: boolean) => void;
   onCheckoutEV: () => void;
   onContinue: () => void;
-  carbonSaved?: number;
-  rewards?: number;
 }
 
 export function EVPromotionDialog({
@@ -25,12 +23,10 @@ export function EVPromotionDialog({
   onOpenChange,
   onCheckoutEV,
   onContinue,
-  carbonSaved = 4.7,
-  rewards = 47,
 }: EVPromotionDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold">
             Make a Greener Choice!
@@ -40,34 +36,33 @@ export function EVPromotionDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {/* Carbon Impact */}
-          <div className="flex items-start space-x-3">
-            <Leaf className="h-5 w-5 text-green-600 mt-1" />
-            <div>
-              <p className="font-medium">Carbon Emissions Impact</p>
-              <p className="text-sm text-muted-foreground">
-                Switching to an EV would reduce emissions by{" "}
-                <span className="text-green-600 font-medium">
-                  {carbonSaved}kg CO₂
-                </span>
-              </p>
-            </div>
+        {/* Carbon Impact */}
+        <div className="flex items-start space-x-3">
+          <Leaf className="h-5 w-5 text-green-600 mt-1" />
+          <div>
+            <p className="font-medium">Carbon Emissions Impact</p>
+            <p className="text-sm text-muted-foreground">
+              Switching to an EV can reduce emissions by{" "}
+              <span className="text-green-600 font-medium">
+                up to 2,000 kg CO₂ per year
+              </span>
+              .
+            </p>
           </div>
+        </div>
 
-          {/* Rewards */}
-          <div className="flex items-start space-x-3">
-            <Leaf className="h-5 w-5 text-blue-600 mt-1" />
-            <div>
-              <p className="font-medium">EV Rewards Available</p>
-              <p className="text-sm text-muted-foreground">
-                Book an EV instead and earn{" "}
-                <span className="text-blue-600 font-medium">
-                  {rewards} points
-                </span>
-                . Points can be used for future discounts.
-              </p>
-            </div>
+        {/* Rewards */}
+        <div className="flex items-start space-x-3">
+          <Leaf className="h-5 w-5 text-blue-600 mt-1" />
+          <div>
+            <p className="font-medium">EV Rewards Available</p>
+            <p className="text-sm text-muted-foreground">
+              Book an EV and earn{" "}
+              <span className="text-blue-600 font-medium">
+                2x reward points
+              </span>
+              . Points can be redeemed for discounts on future rentals.
+            </p>
           </div>
         </div>
 

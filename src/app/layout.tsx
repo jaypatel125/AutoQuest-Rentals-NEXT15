@@ -35,9 +35,7 @@ export default function RootLayout({
           <UserNavbarWrapper />
 
           <main className="min-h-screen flex flex-col">
-            <MaxWidthWrapper className="flex-1 mt-6">
-              {children}
-            </MaxWidthWrapper>
+            <MaxWidthWrapper className="flex-1">{children}</MaxWidthWrapper>
           </main>
 
           <Toaster />

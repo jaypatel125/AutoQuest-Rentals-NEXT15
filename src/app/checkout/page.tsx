@@ -74,8 +74,9 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 my-6">
       {/* Back button */}
+
       <Button variant="ghost" onClick={() => router.back()}>
         ← Back
       </Button>

@@ -47,7 +47,7 @@ export function Dropdown() {
           Hi, {user?.name} <RiArrowDropDownLine />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 " align="end">
+      <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => router.push("/account")}>

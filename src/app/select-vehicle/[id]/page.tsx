@@ -11,6 +11,7 @@ import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog
 import { Cars as CarType } from "@/lib/database/table-types";
 import { useParams, useRouter } from "next/navigation";
 import { useSearchStore } from "@/lib/store/searchStore";
+import Loader from "@/components/utility/Loader";
 
 // query function to fetch vehicle details
 async function fetchVehicle(id: string) {
@@ -41,7 +42,15 @@ export default function VehicleDetailPage() {
   });
 
   if (carLoading) {
-    return <p className="text-center py-20">Loading vehicle details...</p>;
+    return (
+      <div className="w-full h-[80vh] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader />
+          <h3 className="font-semibold text-xl">Fetching vehicle details...</h3>
+          <p>This won&apos;t take too long!</p>
+        </div>
+      </div>
+    );
   }
 
   if (carError || !Car) {
@@ -57,7 +66,7 @@ export default function VehicleDetailPage() {
 
   return (
     <div>
-      <div className="space-y-6">
+      <div className="space-y-6 my-6">
         <Button
           variant="ghost"
           onClick={() => {
@@ -150,8 +159,6 @@ export default function VehicleDetailPage() {
           setDialogOpen(false);
           router.push("/checkout");
         }}
-        carbonSaved={4.7}
-        rewards={47}
       />
     </div>
   );

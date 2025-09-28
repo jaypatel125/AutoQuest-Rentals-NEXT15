@@ -3,7 +3,6 @@
 import Link from "next/link";
 import MaxWidthWrapper from "../utility/MaxWidthWrapper";
 import { ISession, IUser } from "../../../auth-client";
-import { useIsMobile } from "@/hooks/useIsMobile";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import useUserStore from "@/lib/store/useUserStore";
@@ -32,9 +31,7 @@ const Navbar = ({
 
   const params = useParams();
 
-  const isMobile = useIsMobile();
-
-  const renderSignInTag = !user && !isMobile;
+  const renderSignInTag = !user;
 
   if (params && (params.slug === "signin" || params.slug === "signup")) {
   }

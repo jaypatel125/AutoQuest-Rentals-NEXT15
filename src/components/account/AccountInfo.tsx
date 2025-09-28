@@ -41,8 +41,8 @@ const AccountInfo = ({
     <div data-testid={dataTestid}>
       <div className="flex items-end justify-between">
         <div className="flex flex-col">
-          <span className="font-semibold">{label}</span>
-          <div className="flex items-center flex-1 basis-0 gap-x-4 text-muted-foreground">
+          <span className="text-sm">{label}</span>
+          <div className="flex items-center flex-1 basis-0 gap-x-4 text-muted-foreground text-sm">
             {typeof currentInfo === "string" ? (
               <span data-testid="current-info">{currentInfo}</span>
             ) : (
