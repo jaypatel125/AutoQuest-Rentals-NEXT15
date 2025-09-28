@@ -335,7 +335,7 @@ export default function ClientSelectVehiclePage() {
                           onCheckedChange={(checked) =>
                             handleFilterChange(
                               key as keyof FilterState,
-                              opt,
+                              opt!,
                               checked === true
                             )
                           }

@@ -1,33 +1,37 @@
-import { redirect } from "next/navigation";
+export default async function ConfirmatoinPage() {
+  // const sessionId = Array.isArray(searchParams.session_id)
+  //   ? searchParams.session_id[0]
+  //   : searchParams.session_id;
 
-import { stripe } from "../../lib/stripe";
+  // if (!sessionId) {
+  //   throw new Error("Please provide a valid session_id (`cs_test_...`)");
+  // }
 
-export default async function Success({ searchParams }) {
-  const { session_id } = await searchParams;
+  // const session = await stripe.checkout.sessions.retrieve(sessionId, {
+  //   expand: ["line_items", "payment_intent"],
+  // });
 
-  if (!session_id)
-    throw new Error("Please provide a valid session_id (`cs_test_...`)");
+  // const { status, customer_details } = session;
 
-  const {
-    status,
-    customer_details: { email: customerEmail },
-  } = await stripe.checkout.sessions.retrieve(session_id, {
-    expand: ["line_items", "payment_intent"],
-  });
-
-  if (status === "open") {
-    return redirect("/");
-  }
+  // if (status === "open") {
+  //   return redirect("/");
+  // }
 
   if (status === "complete") {
     return (
       <section id="success">
         <p>
-          We appreciate your business! A confirmation email will be sent to{" "}
-          {customerEmail}. If you have any questions, please email{" "}
+          We appreciate your business! A confirmation email will be sent to....
+          If you have any questions, please email{" "}
         </p>
         <a href="mailto:orders@example.com">orders@example.com</a>.
       </section>
     );
   }
+
+  return (
+    <section id="success">
+      <p>Unable to determine checkout session status.</p>
+    </section>
+  );
 }

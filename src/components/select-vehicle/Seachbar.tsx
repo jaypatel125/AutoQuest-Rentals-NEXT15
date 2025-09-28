@@ -28,9 +28,9 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/lib/store/searchStore";
 import { Label } from "@/components/ui/label";
-import { Branch } from "@/lib/database/table-types";
+import { Branches } from "@/lib/database/table-types";
 
-async function fetchBranches(): Promise<Branch[]> {
+async function fetchBranches(): Promise<Branches[]> {
   const response = await fetch("/api/branch");
   if (!response.ok) {
     throw new Error("Failed to fetch cities");
@@ -56,7 +56,9 @@ export function SearchBar() {
   const [localEndDate, setLocalEndDate] = useState<Date | null>(
     storeEndDate || null
   );
-  const [localBranch, setLocalBranch] = useState<Branch | null>(branch || null);
+  const [localBranch, setLocalBranch] = useState<Branches | null>(
+    branch || null
+  );
 
   useEffect(() => {
     setLocalStartDate(storeStartDate || null);
@@ -129,9 +131,9 @@ export function SearchBar() {
                   {branches.map((branch) => (
                     <CommandItem
                       key={branch.id}
-                      value={branch.city}
+                      value={branch.city ?? undefined}
                       onSelect={() => {
-                        setLocalCity(branch.city);
+                        setLocalCity(branch.city || "");
                         setLocalBranch(branch);
                         setOpen(false);
                       }}
