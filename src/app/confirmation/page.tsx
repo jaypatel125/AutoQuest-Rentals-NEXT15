@@ -17,21 +17,21 @@ export default async function ConfirmatoinPage() {
   //   return redirect("/");
   // }
 
-  if (status === "complete") {
-    return (
-      <section id="success">
-        <p>
-          We appreciate your business! A confirmation email will be sent to....
-          If you have any questions, please email{" "}
-        </p>
-        <a href="mailto:orders@example.com">orders@example.com</a>.
-      </section>
-    );
-  }
+  // if (status === "complete") {
+  //   return (
+  //     <section id="success">
+  //       <p>
+  //         We appreciate your business! A confirmation email will be sent to....
+  //         If you have any questions, please email{" "}
+  //       </p>
+  //       <a href="mailto:orders@example.com">orders@example.com</a>.
+  //     </section>
+  //   );
+  // }
 
   return (
-    <section id="success">
-      <p>Unable to determine checkout session status.</p>
-    </section>
+    <p>
+      We appreciate your business! A confirmation email will be sent to.....
+    </p>
   );
 }
