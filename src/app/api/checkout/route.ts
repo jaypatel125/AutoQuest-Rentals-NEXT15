@@ -41,7 +41,7 @@ export async function POST(req: Request) {
         carId: selectedCar.id,
         startDate,
         endDate,
-        branch: branch?.name,
+        branch: branch?.id,
         total: amountDue.toFixed(2).toString(),
       },
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/confirmation?session_id={CHECKOUT_SESSION_ID}`,

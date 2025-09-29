@@ -1,5 +1,5 @@
 import React, { Suspense } from "react";
-import ClientSelectVehiclePage from "./components/ClientSelectVehiclePage";
+import ClientSelectVehiclePage from "@/components/select-vehicle/ClientSelectVehiclePage";
 
 export default function Page() {
   return (

@@ -1,37 +1,41 @@
-export default async function ConfirmatoinPage() {
-  // const sessionId = Array.isArray(searchParams.session_id)
-  //   ? searchParams.session_id[0]
-  //   : searchParams.session_id;
+// app/confirmation/page.tsx (Server Component)
+import { redirect } from "next/navigation";
+import { stripe } from "../../lib/stripe";
+import BookingDetailsClient from "@/components/confirmation/BookingDetailsClient";
 
-  // if (!sessionId) {
-  //   throw new Error("Please provide a valid session_id (`cs_test_...`)");
-  // }
+interface ConfirmationPageProps {
+  searchParams: Record<string, string | string[] | undefined>;
+}
 
-  // const session = await stripe.checkout.sessions.retrieve(sessionId, {
-  //   expand: ["line_items", "payment_intent"],
-  // });
+export default async function ConfirmationPage({
+  searchParams,
+}: ConfirmationPageProps) {
+  const sessionId = Array.isArray(searchParams.session_id)
+    ? searchParams.session_id[0]
+    : searchParams.session_id;
 
-  // const { status, customer_details } = session;
+  if (!sessionId) {
+    throw new Error("Please provide a valid session_id (`cs_test_...`)");
+  }
 
-  // if (status === "open") {
-  //   return redirect("/");
-  // }
+  const session = await stripe.checkout.sessions.retrieve(sessionId, {
+    expand: ["line_items", "payment_intent"],
+  });
 
-  // if (status === "complete") {
-  //   return (
-  //     <section id="success">
-  //       <p>
-  //         We appreciate your business! A confirmation email will be sent to....
-  //         If you have any questions, please email{" "}
-  //       </p>
-  //       <a href="mailto:orders@example.com">orders@example.com</a>.
-  //     </section>
-  //   );
-  // }
+  const { status, customer_details, amount_total, currency, metadata } =
+    session;
+
+  if (status === "open") {
+    return redirect("/");
+  }
 
   return (
-    <p>
-      We appreciate your business! A confirmation email will be sent to.....
-    </p>
+    <BookingDetailsClient
+      status={status!}
+      customerEmail={customer_details?.email ?? ""}
+      amountTotal={amount_total}
+      currency={currency ?? "CAD"}
+      metadata={metadata ?? {}}
+    />
   );
 }
