@@ -9,13 +9,13 @@ import { useRouter } from "next/navigation";
 import { Label, Separator } from "@radix-ui/react-dropdown-menu";
 import {
   CheckCircle,
-  Loader2,
   Calendar,
   CalendarDays,
   ListChecks,
   Home,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
+import Loader from "../utility/Loader";
 
 interface BookingDetailsClientProps {
   status: string;
@@ -89,14 +89,26 @@ export default function BookingDetailsClient({
       </Card>
 
       {/* Car Details */}
-      {Car && (
+      {isLoading ? (
+        <div className="w-full h-40 flex items-center justify-center">
+          <Loader />
+        </div>
+      ) : error ? (
+        <div className="text-center py-10">
+          <h2 className="text-xl font-bold">Vehicle not found</h2>
+          <p className="text-muted-foreground mt-2">
+            Try going back and selecting a different vehicle.
+          </p>
+        </div>
+      ) : Car ? (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Car Details</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-4 items-start">
-              <div className="relative w-40 h-28 rounded-lg overflow-hidden flex-shrink-0">
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Car Image */}
+              <div className="relative w-full md:w-48 h-32 rounded-lg overflow-hidden flex-shrink-0">
                 <Image
                   src={Car.image}
                   alt={`${Car.brand} ${Car.model}`}
@@ -104,37 +116,17 @@ export default function BookingDetailsClient({
                   className="object-cover"
                 />
               </div>
-              <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <div>
-                    <h4 className="font-semibold text-lg">
-                      {Car.brand} {Car.model}
-                    </h4>
-                    <p className="text-sm text-muted-foreground capitalize">
-                      {Car.body_type || "Not specified"}
-                    </p>
-                  </div>
 
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Transmission:
-                      </span>
-                      <span className="text-sm font-medium capitalize">
-                        {Car.transmission || "Not specified"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Fuel Type:
-                      </span>
-                      <span className="text-sm font-medium capitalize">
-                        {Car.fuel_type || "Not specified"}
-                      </span>
-                    </div>
-                  </div>
+              {/* Car Info */}
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Left column */}
+                <div className="space-y-3">
+                  <h4 className="font-semibold text-lg">
+                    {Car.brand} {Car.model}
+                  </h4>
                 </div>
 
+                {/* Right column */}
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">
@@ -148,31 +140,26 @@ export default function BookingDetailsClient({
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">
-                      Carbon Emissions:
+                      Body Type:
                     </span>
-                    <span className="text-sm font-medium">
-                      {Car.carbon_emissions
-                        ? `${Car.carbon_emissions} g/km`
-                        : "Not specified"}
+                    <span className="text-sm font-medium capitalize">
+                      {Car.body_type || "Not specified"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">
-                      Price per Day:
+                      Transmission:
                     </span>
-                    <span className="text-sm font-medium">
-                      {new Intl.NumberFormat("en-CA", {
-                        style: "currency",
-                        currency: currency.toUpperCase(),
-                      }).format(Car.price_per_day)}
+                    <span className="text-sm font-medium capitalize">
+                      {Car.transmission || "Not specified"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">
-                      Availability:
+                      Fuel Type:
                     </span>
-                    <span className="capitalize">
-                      {Car.available ? "Available" : "Not Available"}
+                    <span className="text-sm font-medium capitalize">
+                      {Car.fuel_type || "Not specified"}
                     </span>
                   </div>
                 </div>
@@ -180,7 +167,8 @@ export default function BookingDetailsClient({
             </div>
           </CardContent>
         </Card>
-      )}
+      ) : null}
+
       {/* Booking Details */}
       <Card>
         <CardHeader className="pb-3">

@@ -38,11 +38,12 @@ const AccountInfo = ({
   }, [isSuccess]);
 
   return (
-    <div data-testid={dataTestid}>
-      <div className="flex items-end justify-between">
-        <div className="flex flex-col">
-          <span className="text-sm">{label}</span>
-          <div className="flex items-center flex-1 basis-0 gap-x-4 text-muted-foreground text-sm">
+    
+    <div data-testid={dataTestid} className="w-full">
+      <div className="flex items-center justify-between py-2">
+        <div className="space-y-1 flex-1">
+          <span className="text-base font-medium">{label}</span>
+          <div className="text-muted-foreground text-sm">
             {typeof currentInfo === "string" ? (
               <span data-testid="current-info">{currentInfo}</span>
             ) : (
@@ -50,10 +51,10 @@ const AccountInfo = ({
             )}
           </div>
         </div>
-        <div className="mb-auto">
+        <div>
           <Button
-            variant="secondary"
-            className="w-[100px] min-h-[25px] py-1"
+            variant="outline"
+            className="w-20 min-h-8"
             onClick={handleToggle}
             type={isOpen ? "reset" : "button"}
             data-testid="edit-button"
@@ -69,21 +70,18 @@ const AccountInfo = ({
         <Disclosure.Panel
           static
           className={cn(
-            "transition-[max-height,opacity] duration-300 ease-in-out overflow-hidden ",
+            "transition-[max-height,opacity] duration-300 ease-in-out overflow-hidden",
             {
               "max-h-[1000px] opacity-100": isOpen,
               "max-h-0 opacity-0": !isOpen,
             }
           )}
         >
-          <div className="lg:flex flex-wrap gap-x-4 py-4 sm:block sm:flex-nowrap">
-            {/* Ensure full width on small screens */}
-            <div className="w-full sm:space-y-2">{children}</div>
-
-            {/* Add margin-top only on small screens */}
+          <div className="py-4 space-y-4">
+            <div className="w-full">{children}</div>
             <Button
-              className="w-full sm:w-auto sm:mt-4 mt-4 lg:mt-auto sm:ml-auto"
-              variant="outline"
+              className="w-full sm:w-auto"
+              variant="default"
               type="submit"
               data-testid="save-button"
               disabled={isLoading}

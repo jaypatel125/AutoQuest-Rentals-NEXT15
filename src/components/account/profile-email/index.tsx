@@ -100,7 +100,7 @@ const ProfileEmail = ({ currentUser }: { currentUser: IUser }) => {
           updateCustomerEmail();
         }
       }}
-      className="w-full overflow-visible space-y-4 md:space-y-6"
+      className="w-full space-y-4"
     >
       <AccountInfo
         label="Email"
@@ -111,21 +111,18 @@ const ProfileEmail = ({ currentUser }: { currentUser: IUser }) => {
         data-testid="account-email-editor"
         isLoading={loading}
       >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4">
+        <div className="space-y-4">
           <Input
             name="email"
             required
             value={email}
             disabled={loading}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full sm:w-auto flex-grow"
+            className="w-full"
             data-testid="email-input"
           />
+          {errorState && <p className="text-red-500 text-sm">{errorState}</p>}
         </div>
-
-        {errorState && (
-          <p className="text-red-500 mt-2 text-sm">{errorState}</p>
-        )}
       </AccountInfo>
     </form>
   );

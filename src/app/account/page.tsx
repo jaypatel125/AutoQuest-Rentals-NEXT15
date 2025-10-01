@@ -6,9 +6,12 @@ import useUserStore from "@/lib/store/useUserStore";
 import ProfilePassword from "../../components/account/profile-password";
 import { Button } from "@/components/ui/button";
 import { authClient } from "./../../../auth-client";
+import { useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
 
 export default function SettingsProfilePage() {
   const { currentUser, logoutUser } = useUserStore();
+  const router = useRouter();
 
   const handleDeleteAccount = async () => {
     if (currentUser) {
@@ -29,27 +32,47 @@ export default function SettingsProfilePage() {
   }
 
   return (
-    <div className="my-6">
+    <div className="py-6 space-y-6">
+      <Button
+        variant="ghost"
+        onClick={() => router.back()}
+        className="gap-2 px-0"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Button>
+
       <div className="space-y-6">
-        <div>
-          <h3 className="text-md font-semibold">Profile</h3>
-          <p className="text-sm text-muted-foreground">
+        <div className="space-y-2">
+          <h1 className="text-xl font-bold tracking-tight">Profile Settings</h1>
+          <p className="text-muted-foreground">
             Update your profile information to personalize your shopping
             experience.
           </p>
         </div>
+
         <Separator />
-        <div className="flex flex-col gap-y-8 w-full">
+
+        <div className="space-y-8">
           <ProfileName currentUser={currentUser!} />
           <Separator />
           <ProfileEmail currentUser={currentUser!} />
           <Separator />
           <ProfilePassword />
           <Separator />
-          <div className="">
+
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold text-destructive">
+                Danger Zone
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Permanently delete your account and all associated data.
+              </p>
+            </div>
             <Button
-              className="text-red-500"
-              variant={"outline"}
+              variant="outline"
+              className="text-destructive border-destructive hover:bg-destructive hover:text-white"
               onClick={handleDeleteAccount}
             >
               Delete Account

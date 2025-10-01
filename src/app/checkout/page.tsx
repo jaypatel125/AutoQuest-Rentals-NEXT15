@@ -13,7 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Info } from "lucide-react";
+import { ArrowLeft, Info } from "lucide-react";
 import useUserStore from "@/lib/store/useUserStore";
 import { Separator } from "@/components/ui/separator";
 
@@ -78,7 +78,7 @@ export default function CheckoutPage() {
       {/* Back button */}
 
       <Button variant="ghost" onClick={() => router.back()}>
-        ← Back
+        <ArrowLeft /> BackBack
       </Button>
 
       <div className="grid md:grid-cols-2 gap-10 items-start">

@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Fuel, CarFront } from "lucide-react";
+import { Users, Fuel, CarFront, ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog";
 import { Cars as CarType } from "@/lib/database/table-types";
@@ -73,7 +73,7 @@ export default function VehicleDetailPage() {
             router.back();
           }}
         >
-          ← Back
+          <ArrowLeft /> Back Back
         </Button>
 
         <div className="grid md:grid-cols-2 gap-10 items-start">

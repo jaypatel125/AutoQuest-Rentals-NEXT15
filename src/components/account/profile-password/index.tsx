@@ -80,7 +80,7 @@ const ProfilePassword = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full overflow-visible">
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
       <AccountInfo
         label="Password"
         currentInfo={"The password is not shown for security reasons."}
@@ -90,29 +90,33 @@ const ProfilePassword = () => {
         data-testid="account-password-editor"
         isLoading={loading}
       >
-        <div className="mb-1">
-          <p className="text-sm text-muted-foreground">Current Password</p>
-          <Input
-            name="current-password"
-            type="password"
-            required
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            disabled={loading}
-            data-testid="current-password-input"
-          />
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Current Password</p>
+            <Input
+              name="current-password"
+              type="password"
+              required
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              disabled={loading}
+              data-testid="current-password-input"
+              className="w-full"
+            />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">New Password</p>
+            <Input
+              name="password"
+              type="password"
+              required
+              onChange={(e) => setNewPassword(e.target.value)}
+              disabled={loading}
+              data-testid="new-password-input"
+              className="w-full"
+            />
+          </div>
+          {errorState && <p className="text-red-500 text-sm">{errorState}</p>}
         </div>
-        <div className="">
-          <p className="text-sm text-muted-foreground">New Password</p>
-          <Input
-            name="password"
-            type="password"
-            required
-            onChange={(e) => setNewPassword(e.target.value)}
-            disabled={loading}
-            data-testid="new-password-input"
-          />
-        </div>
-        {errorState && <p className="text-red-500 mt-2">{errorState}</p>}
       </AccountInfo>
     </form>
   );

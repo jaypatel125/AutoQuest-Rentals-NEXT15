@@ -95,7 +95,7 @@ const ProfileName = ({ currentUser }: { currentUser: IUser }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full overflow-visible">
+    <form onSubmit={handleSubmit} className="w-full space-y-4">
       <AccountInfo
         label="Name"
         currentInfo={currentUser?.name || ""}
@@ -105,15 +105,18 @@ const ProfileName = ({ currentUser }: { currentUser: IUser }) => {
         data-testid="account-name-editor"
         isLoading={loading}
       >
-        <Input
-          name="name"
-          required
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          disabled={loading}
-          data-testid="name-input"
-        />
-        {errorState && <p className="text-red-500 mt-2">{errorState}</p>}
+        <div className="space-y-4">
+          <Input
+            name="name"
+            required
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={loading}
+            data-testid="name-input"
+            className="w-full"
+          />
+          {errorState && <p className="text-red-500 text-sm">{errorState}</p>}
+        </div>
       </AccountInfo>
     </form>
   );

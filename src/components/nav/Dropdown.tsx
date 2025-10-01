@@ -53,7 +53,9 @@ export function Dropdown() {
           <DropdownMenuItem onClick={() => router.push("/account")}>
             Profile
           </DropdownMenuItem>
-          <DropdownMenuItem>Bookings</DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push("/bookings")}>
+            Bookings
+          </DropdownMenuItem>
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
