@@ -26,10 +26,9 @@ interface BookingDetailsClientProps {
   metadata: Record<string, any>;
 }
 
+// query function to fetch vehicle details
 async function fetchVehicle(id: string) {
-  const res = await fetch(`/api/get-vehicle`, {
-    headers: { "x-Car-id": id },
-  });
+  const res = await fetch(`/api/vehicles/${id}`);
   if (!res.ok) {
     throw new Error("Failed to fetch vehicle details");
   }

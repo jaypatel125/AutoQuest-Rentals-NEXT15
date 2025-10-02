@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { Car, CalendarIcon, MapPin } from "lucide-react";
-import { SearchBar } from "@/components/select-vehicle/Seachbar";
+import { SearchBar } from "@/components/Seachbar";
 export default function Home() {
   return (
     <div>

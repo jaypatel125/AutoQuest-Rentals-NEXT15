@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Users, Fuel, Car, CarFront, FilterX } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { SearchBar } from "@/components/select-vehicle/Seachbar";
+import { SearchBar } from "@/components/Seachbar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -14,51 +14,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState, useEffect } from "react";
 import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog";
 import { useRouter, useSearchParams } from "next/navigation";
-import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
 import Loader from "@/components/utility/Loader";
-
-export interface CarFilters {
-  brands: string[];
-  fuelTypes: string[];
-  transmissions: string[];
-  bodyTypes: string[];
-  passengerCapacities: number[];
-}
-
-interface FilterState {
-  brands: string[];
-  fuelTypes: string[];
-  transmissions: string[];
-  bodyTypes: string[];
-  passengerCapacities: number[];
-}
-
-async function fetchCars(
-  city?: string,
-  startDate?: Date,
-  endDate?: Date
-): Promise<CarType[]> {
-  const payload = {
-    city,
-    startDate: startDate?.toISOString(),
-    endDate: endDate?.toISOString(),
-  };
-
-  const res = await fetch("/api/vehicles", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch cars");
-  }
-
-  return res.json();
-}
-
+import { useFormatPrice } from "@/lib/utils";
+import { fetchCars } from "@/app/select-vehicle/actions";
 function safeToDate(
   date: string | number | Date | undefined
 ): Date | undefined {
@@ -97,6 +55,14 @@ function parseFiltersFromParams(params: URLSearchParams | null): FilterState {
   };
 }
 
+interface FilterState {
+  brands: string[];
+  fuelTypes: string[];
+  transmissions: string[];
+  bodyTypes: string[];
+  passengerCapacities: number[];
+}
+
 function filtersToQueryString(filters: FilterState): string {
   const params = new URLSearchParams();
   if (filters.brands.length > 0) params.set("brands", filters.brands.join(","));
@@ -111,13 +77,14 @@ function filtersToQueryString(filters: FilterState): string {
   return params.toString();
 }
 
-export default function ClientSelectVehiclePage() {
+export default function SelectVehiclePage() {
   const { branch, startDate, endDate } = useSearchStore();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { formatPrice } = useFormatPrice();
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Parse initial filters from URL only once on component mount
+  // Parse initial filters from URL only once
   const [selectedFilters, setSelectedFilters] = useState<FilterState>(() =>
     parseFiltersFromParams(searchParams as unknown as URLSearchParams)
   );
@@ -125,21 +92,24 @@ export default function ClientSelectVehiclePage() {
   const startDateObj = safeToDate(startDate);
   const endDateObj = safeToDate(endDate);
 
-  const startDateKey = startDateObj?.toISOString() || null;
-  const endDateKey = endDateObj?.toISOString() || null;
-
   const city = branch?.city || "";
 
   const {
     data: cars = [],
     isLoading,
     error,
-  } = useQuery({
-    queryKey: ["cars", city, startDateKey, endDateKey],
+  } = useQuery<CarType[]>({
+    queryKey: [
+      "cars",
+      city,
+      startDateObj?.toISOString(),
+      endDateObj?.toISOString(),
+    ],
     queryFn: () => fetchCars(city, startDateObj, endDateObj),
     enabled: !!city && !!startDateObj && !!endDateObj,
   });
 
+  // Sync filters with URL
   useEffect(() => {
     const queryString = filtersToQueryString(selectedFilters);
     const currentQueryString = searchParams?.toString() || "";
@@ -156,12 +126,10 @@ export default function ClientSelectVehiclePage() {
     if (!searchParams?.toString()) {
       clearAllFilters();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [city, startDate, endDate, searchParams?.toString()]);
+  }, [city, startDate, endDate, searchParams]);
 
   const availableFilters = useMemo(() => {
     if (!cars.length) return null;
-
     const distinct = <T,>(arr: T[]) => Array.from(new Set(arr)).filter(Boolean);
 
     return {
@@ -177,38 +145,32 @@ export default function ClientSelectVehiclePage() {
 
   const filteredCars = useMemo(() => {
     if (!cars.length) return [];
-
     return cars.filter((car) => {
       if (
-        selectedFilters.brands.length > 0 &&
+        selectedFilters.brands.length &&
         !selectedFilters.brands.includes(car.brand)
       )
         return false;
-
       if (
-        selectedFilters.fuelTypes.length > 0 &&
+        selectedFilters.fuelTypes.length &&
         !selectedFilters.fuelTypes.includes(car.fuel_type!)
       )
         return false;
-
       if (
-        selectedFilters.transmissions.length > 0 &&
+        selectedFilters.transmissions.length &&
         !selectedFilters.transmissions.includes(car.transmission!)
       )
         return false;
-
       if (
-        selectedFilters.bodyTypes.length > 0 &&
+        selectedFilters.bodyTypes.length &&
         !selectedFilters.bodyTypes.includes(car.body_type!)
       )
         return false;
-
       if (
-        selectedFilters.passengerCapacities.length > 0 &&
+        selectedFilters.passengerCapacities.length &&
         !selectedFilters.passengerCapacities.includes(car.passenger_capacity!)
       )
         return false;
-
       return true;
     });
   }, [cars, selectedFilters]);
@@ -220,18 +182,12 @@ export default function ClientSelectVehiclePage() {
   ) => {
     setSelectedFilters((prev) => {
       const currentValues = [...prev[category]];
-
-      if (checked) {
-        return {
-          ...prev,
-          [category]: [...currentValues, value],
-        };
-      } else {
-        return {
-          ...prev,
-          [category]: currentValues.filter((v) => v !== value),
-        };
-      }
+      return {
+        ...prev,
+        [category]: checked
+          ? [...currentValues, value]
+          : currentValues.filter((v) => v !== value),
+      };
     });
   };
 
@@ -249,9 +205,7 @@ export default function ClientSelectVehiclePage() {
     (filters) => filters.length > 0
   );
 
-  if (error) {
-    return <div>Error loading cars: {error.message}</div>;
-  }
+  if (error) return <div>Error loading cars: {(error as Error).message}</div>;
 
   const handleLocalCheckoutEV = () => {
     setSelectedFilters({
@@ -268,6 +222,7 @@ export default function ClientSelectVehiclePage() {
       <div className="flex flex-col md:flex-row gap-6">
         {/* Filters Sidebar */}
         <aside className="md:w-1/5 space-y-6">
+          {/* Active filters summary */}
           {(city || startDate || endDate || hasActiveFilters) && (
             <div className="px-6 py-4 space-y-2 bg-muted rounded-lg">
               <h3 className="font-semibold my-2">Search Results For:</h3>
@@ -296,27 +251,25 @@ export default function ClientSelectVehiclePage() {
                   </span>
                 )}
 
-                {hasActiveFilters && (
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(selectedFilters).map(([key, values]) =>
-                      values.length > 0 ? (
-                        <span
-                          key={key}
-                          className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm"
-                        >
-                          {key
-                            .replace(/([A-Z])/g, " $1")
-                            .replace(/^./, (str) => str.toUpperCase())}
-                          : {values.join(", ")}
-                        </span>
-                      ) : null
-                    )}
-                  </div>
-                )}
+                {hasActiveFilters &&
+                  Object.entries(selectedFilters).map(([key, values]) =>
+                    values.length > 0 ? (
+                      <span
+                        key={key}
+                        className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm"
+                      >
+                        {key
+                          .replace(/([A-Z])/g, " $1")
+                          .replace(/^./, (str) => str.toUpperCase())}
+                        : {values.join(", ")}
+                      </span>
+                    ) : null
+                  )}
               </div>
             </div>
           )}
 
+          {/* Filters UI */}
           {availableFilters && (
             <div className="space-y-6">
               {Object.entries(availableFilters).map(([key, values]) => (
@@ -374,7 +327,7 @@ export default function ClientSelectVehiclePage() {
                   href={`/select-vehicle/${car.id}`}
                   className="block"
                 >
-                  <Card className="hover:shadow-md  cursor-pointer transition">
+                  <Card className="hover:shadow-md cursor-pointer transition">
                     <CardContent className="px-4">
                       <Image
                         src={car.image || "/car-placeholder.png"}
@@ -386,7 +339,6 @@ export default function ClientSelectVehiclePage() {
                       <h3 className="font-semibold mb-2">
                         {car.brand} {car.model}
                       </h3>
-
                       <ul className="text-sm text-muted-foreground space-y-1 mb-3">
                         <li>
                           <Users className="inline h-4 w-4 mr-1" />{" "}
@@ -401,14 +353,13 @@ export default function ClientSelectVehiclePage() {
                           {car.fuel_type}
                         </li>
                         <li>
-                          <CarFront className="inline h-4 w-4 mr-2" />
+                          <CarFront className="inline h-4 w-4 mr-2" />{" "}
                           {car.body_type}
                         </li>
                       </ul>
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-semibold text-lg">
-                          ${car.price_per_day}
-                          <span className="text-sm font-normal">/day</span>
+                          {formatPrice(car.price_per_day)}/day
                         </span>
                         <Button
                           variant="outline"
@@ -446,6 +397,8 @@ export default function ClientSelectVehiclePage() {
           )}
         </div>
       </div>
+
+      {/* EV Promo */}
       <EVPromotionDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}

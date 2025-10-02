@@ -1,26 +1,20 @@
-// app/confirmation/page.tsx (Server Component)
 import { redirect } from "next/navigation";
-import { stripe } from "../../lib/stripe";
-import BookingDetailsClient from "@/components/confirmation/BookingDetailsClient";
+import BookingDetailsClient from "@/components/confirmation";
+import { getCheckoutSession } from "@/app/confirmation/action";
 
 interface ConfirmationPageProps {
-  searchParams: Record<string, string | string[] | undefined>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
 export default async function ConfirmationPage({
   searchParams,
 }: ConfirmationPageProps) {
-  const sessionId = Array.isArray(searchParams.session_id)
-    ? searchParams.session_id[0]
-    : searchParams.session_id;
+  const params = await searchParams;
+  const sessionId = Array.isArray(params.session_id)
+    ? params.session_id[0]
+    : params.session_id;
 
-  if (!sessionId) {
-    throw new Error("Please provide a valid session_id (`cs_test_...`)");
-  }
-
-  const session = await stripe.checkout.sessions.retrieve(sessionId, {
-    expand: ["line_items", "payment_intent"],
-  });
+  const session = await getCheckoutSession(sessionId || "");
 
   const { status, customer_details, amount_total, currency, metadata } =
     session;
