@@ -35,7 +35,7 @@ export const auth = betterAuth({
   ],
   trustedOrigins: [
     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    "https://autoquest.vercel.app",
+    "https://jay-capstone.vercel.app",
   ],
   emailVerification: {
     sendOnSignUp: true,
