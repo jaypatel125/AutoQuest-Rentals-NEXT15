@@ -9,6 +9,7 @@ export const auth = betterAuth({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
   }),
+
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
@@ -17,6 +18,7 @@ export const auth = betterAuth({
       maxAge: 5 * 60, // 5 minutes
     },
   },
+
   user: {
     changeEmail: { enabled: true },
     deleteUser: { enabled: true },
