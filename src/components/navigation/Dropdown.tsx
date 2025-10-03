@@ -56,10 +56,14 @@ export function Dropdown() {
           <DropdownMenuItem onClick={() => router.push("/bookings")}>
             Bookings
           </DropdownMenuItem>
+
           <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => router.push("/select-vehicle")}>
+            Start booking
+          </DropdownMenuItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
             <DropdownMenuPortal>

@@ -6,14 +6,13 @@ import { format } from "date-fns";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ArrowLeft, Info } from "lucide-react";
+import { ArrowLeft, ArrowRight, Info } from "lucide-react";
 import useUserStore from "@/lib/store/useUserStore";
 import { Separator } from "@/components/ui/separator";
 import { useFormatPrice } from "@/lib/utils";
@@ -116,89 +115,86 @@ export default function Checkout() {
         />
 
         {/* Right column */}
-        <div className="space-y-6">
+        <div className="space-y-8">
           {/* Title */}
-          <h1 className="text-3xl font-bold">
+          <h1 className="text-lg font-semibold">
             {selectedCar.brand} {selectedCar.model}
           </h1>
 
-          {/* City + Dates */}
-          <Card>
-            <CardContent className="text-sm space-y-3">
-              <div className="flex flex-col space-y-1">
-                <span>
-                  <span className="font-semibold">Pick-up Location:</span>{" "}
-                  {branch?.name || "--"}
-                </span>
-                <span className="text-muted-foreground">{branch?.address}</span>
-                <span className="text-muted-foreground">
-                  {branch?.city}, {branch?.province} {branch?.postal_code}
-                </span>
+          {/* Pick-up Location + Dates */}
+          <div className="space-y-4 text-sm">
+            <div>
+              <span className="font-semibold">Pick-up Location:</span>{" "}
+              {branch?.name || "--"}
+              <div className="text-muted-foreground">{branch?.address}</div>
+              <div className="text-muted-foreground">
+                {branch?.city}, {branch?.province} {branch?.postal_code}
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="block font-medium">Pick-up Date</span>
-                  <span className="text-muted-foreground">
-                    {start ? format(start, "dd/MM/yyyy") : "--"}
-                  </span>
-                </div>
-                <div>
-                  <span className="block font-medium">Drop-off Date</span>
-                  <span className="text-muted-foreground">
-                    {end ? format(end, "dd/MM/yyyy") : "--"}
-                  </span>
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="block font-medium">Pick-up Date</span>
+                <span className="text-muted-foreground">
+                  {start ? format(start, "dd/MM/yyyy") : "--"}
+                </span>
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <span className="block font-medium">Drop-off Date</span>
+                <span className="text-muted-foreground">
+                  {end ? format(end, "dd/MM/yyyy") : "--"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
 
           {/* Renter Information */}
-          <Card>
-            <CardContent className="space-y-4">
-              <h3 className="text-lg font-semibold">Renter Information</h3>
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-muted-foreground">
-                    Full Name
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="John Doe"
-                    defaultValue={currentUser?.name}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="block text-sm font-medium text-muted-foreground">
-                    Email Address
-                  </label>
-                  <Input type="email" defaultValue={currentUser?.email} />
-                </div>
+          <div className="space-y-4 ">
+            <h3 className="text-lg font-semibold">Renter Information</h3>
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-muted-foreground">
+                  Full Name
+                </label>
+                <Input
+                  type="text"
+                  placeholder="John Doe"
+                  defaultValue={currentUser?.name}
+                />
               </div>
-            </CardContent>
-          </Card>
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-muted-foreground">
+                  Email Address
+                </label>
+                <Input type="email" defaultValue={currentUser?.email} />
+              </div>
+            </div>
+          </div>
+
+          <Separator />
 
           {/* Trip Cost */}
-          <Card>
-            <CardContent className="space-y-3">
-              <h3 className="text-lg font-semibold">Trip Cost</h3>
-              <h2 className="text-md">
-                Available Reward Points: {currentUser?.reward_points || 0}
-              </h2>
-              <div className="flex justify-between text-sm text-muted-foreground">
+          <div className="space-y-4 gap-6 p-4 bg-muted/80 rounded-lg">
+            <h3 className="text-lg font-semibold">Trip Cost</h3>
+            <h2 className="text-md">
+              Available Reward Points: {currentUser?.reward_points || 0}
+            </h2>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between text-muted-foreground">
                 <span>Rental Charge</span>
                 <span>{formatPrice(rentalCharge)}</span>
               </div>
-              <div className="flex justify-between text-sm text-muted-foreground">
+              <div className="flex justify-between text-muted-foreground">
                 <span>Service Charge</span>
                 <span>{formatPrice(serviceCharge)}</span>
               </div>
-              <div className="flex justify-between text-sm text-green-600">
+              <div className="flex justify-between text-green-600">
                 <span>Rewards</span>
                 <span>{formatPrice(rewardsDiscount)}</span>
               </div>
-              <div className="flex justify-between text-sm text-muted-foreground">
+              <div className="flex justify-between text-muted-foreground">
                 <span>HST (13%)</span>
                 <span>{formatPrice(tax)}</span>
               </div>
@@ -207,74 +203,77 @@ export default function Checkout() {
                 <span>Amount Due</span>
                 <span>{formatPrice(amountDue)}</span>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
+
+          <Separator />
 
           {/* Terms & Conditions */}
-          <Card>
-            <CardContent className="space-y-4">
-              <h3 className="text-lg font-semibold">Terms & Conditions</h3>
-              <TooltipProvider>
-                <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    Minimum age requirement: 21
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          Drivers must be at least 21 years old with a valid
-                          licence.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    Fuel policy: Same-to-same
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          Return the car with the same fuel level as at pick-up.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    Insurance coverage required
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          Basic insurance is mandatory. Additional coverage
-                          optional.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    Late return charges apply
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          Extra charges will apply if the vehicle is returned
-                          later than the agreed time.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </li>
-                </ul>
-              </TooltipProvider>
-            </CardContent>
-          </Card>
+
+          <div className="space-y-4 gap-6 p-4 bg-muted/80 rounded-lg">
+            <h3 className="text-lg font-semibold">Terms & Conditions</h3>
+            <TooltipProvider>
+              <ul className="list-disc pl-6 space-y-2 text-sm text-muted-foreground">
+                <li className="flex items-center gap-2">
+                  Minimum age requirement: 21
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        Drivers must be at least 21 years old with a valid
+                        licence.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </li>
+                <li className="flex items-center gap-2">
+                  Fuel policy: Same-to-same
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        Return the car with the same fuel level as at pick-up.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </li>
+                <li className="flex items-center gap-2">
+                  Insurance coverage required
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        Basic insurance is mandatory. Additional coverage
+                        optional.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </li>
+                <li className="flex items-center gap-2">
+                  Late return charges apply
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>
+                        Extra charges will apply if the vehicle is returned
+                        later than agreed.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </li>
+              </ul>
+            </TooltipProvider>
+          </div>
+
+          <Separator />
 
           {/* Actions */}
           <div className="flex gap-4">
@@ -282,7 +281,7 @@ export default function Checkout() {
               Cancel
             </Button>
             <Button className="flex-1" onClick={onPayNow}>
-              Pay Now →
+              Pay Now <ArrowRight className="ml-1" />
             </Button>
           </div>
         </div>

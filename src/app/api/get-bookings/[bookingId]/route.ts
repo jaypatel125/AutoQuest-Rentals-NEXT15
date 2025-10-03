@@ -21,9 +21,19 @@ export async function GET(
       );
     }
 
-    const result = await pool.query(`SELECT * FROM bookings WHERE id = $1`, [
-      bookingId,
-    ]);
+    const result = await pool.query(
+      `SELECT 
+  b.id AS booking_id,
+  b.*,
+  c.*, 
+  br.id,
+  br.*
+FROM bookings b
+JOIN cars c ON b.car_id = c.id
+JOIN branches br ON c.branch_id = br.id
+WHERE b.id = $1`,
+      [bookingId]
+    );
 
     if (result.rows.length === 0) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });

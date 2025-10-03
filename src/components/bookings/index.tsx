@@ -2,12 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent } from "@/components/ui/card";
 import Loader from "@/components/utility/Loader";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import type { Booking } from "@/app/bookings/actions";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { Separator } from "../ui/separator";
 
 type Props = {
   data?: Booking[];
@@ -50,18 +50,22 @@ export default function Bookings({ data, isLoading, isError, router }: Props) {
         </p>
       </div>
 
+      <Separator />
+
       {data && data.length > 0 ? (
-        <div className="space-y-4">
-          {data.map((booking) => (
-            <Card key={booking.booking_id} className="overflow-hidden p-6">
+        <div className="space-y-6">
+          {data.map((booking, index) => (
+            <div key={booking.booking_id} className="space-y-4">
               <div className="flex flex-col sm:flex-row">
-                <Image
-                  src={booking.image}
-                  alt={`${booking.brand} ${booking.model}`}
-                  height={100}
-                  width={200}
-                  className="object-cover rounded-lg shadow-md"
-                />
+                <div className="flex justify-center">
+                  <Image
+                    src={booking.image}
+                    alt={`${booking.brand} ${booking.model}`}
+                    width={300}
+                    height={100}
+                    className="rounded-md mb-3 object-cover"
+                  />
+                </div>
 
                 <div className="flex-1 p-4">
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
@@ -129,25 +133,24 @@ export default function Bookings({ data, isLoading, isError, router }: Props) {
                   </div>
                 </div>
               </div>
-            </Card>
+
+              {/* Add separator except after last item */}
+              {index < data.length - 1 && <Separator />}
+            </div>
           ))}
         </div>
       ) : (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <div className="text-center space-y-2">
-              <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold">No bookings found</h3>
-              <p className="text-muted-foreground">
-                You haven&apos;t made any bookings yet. Start exploring our
-                available cars.
-              </p>
-              <Button onClick={() => router.push("/")} className="mt-4">
-                Browse Cars
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+          <Calendar className="h-12 w-12 text-muted-foreground mx-auto" />
+          <h3 className="text-lg font-semibold">No bookings found</h3>
+          <p className="text-muted-foreground">
+            You haven&apos;t made any bookings yet. Start exploring our
+            available cars.
+          </p>
+          <Button onClick={() => router.push("/")} className="mt-2">
+            Browse Cars
+          </Button>
+        </div>
       )}
     </div>
   );

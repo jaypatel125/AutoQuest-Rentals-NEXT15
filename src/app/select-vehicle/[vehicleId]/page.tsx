@@ -9,7 +9,7 @@ import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog
 import { useSearchStore } from "@/lib/store/searchStore";
 import { Cars as CarType } from "@/lib/database/table-types";
 import { fetchVehicle } from "./actions";
-import VehicleDetails from "@/components/select-vehicle-detail";
+import VehicleDetails from "@/components/select-vehicle-details";
 
 export default function VehicleDetailPage() {
   const params = useParams();
@@ -58,7 +58,9 @@ export default function VehicleDetailPage() {
         onRentNow={() => {
           if (Car.fuel_type === "Electric") {
             router.push(`/checkout`);
+            return;
           }
+
           setDialogOpen(true);
           useSearchStore.getState().setSelectedCar(Car);
         }}
