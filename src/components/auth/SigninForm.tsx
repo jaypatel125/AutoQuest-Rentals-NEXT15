@@ -126,7 +126,7 @@ export default function SigninForm() {
                 try {
                   const res = await authClient.signIn.social({
                     provider: "google",
-                    callbackURL: "/",
+                    callbackURL: "/api/auth/callback/google",
                   });
 
                   if (res.error) {
