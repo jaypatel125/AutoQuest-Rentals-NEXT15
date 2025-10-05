@@ -1,13 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import Loader from "@/components/utility/Loader";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import type { Booking } from "@/app/bookings/actions";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { Separator } from "../ui/separator";
+import { Calendar } from "lucide-react";
 
 type Props = {
   data?: Booking[];
@@ -53,37 +53,55 @@ export default function Bookings({ data, isLoading, isError, router }: Props) {
       <Separator />
 
       {data && data.length > 0 ? (
-        <div className="space-y-6">
-          {data.map((booking, index) => (
-            <div key={booking.booking_id} className="space-y-4">
-              <div className="flex flex-col sm:flex-row">
-                <div className="flex justify-center">
-                  <Image
-                    src={booking.image}
-                    alt={`${booking.brand} ${booking.model}`}
-                    width={300}
-                    height={100}
-                    className="rounded-md mb-3 object-cover"
-                  />
+        <div className="space-y-4">
+          {data.map((booking) => (
+            <div key={booking.booking_id}>
+              <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
+                <div className="flex justify-between items-center text-xs text-gray-500">
+                  <span>Booking ID: {booking.booking_id}</span>
+                  <span>
+                    Booked on{" "}
+                    {new Date(booking.created_at).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
                 </div>
+              </div>
+              <div className="py-6">
+                <div className="flex flex-col lg:flex-row gap-6">
+                  {/* Car Image */}
+                  <div className="flex-shrink-0">
+                    <div className="w-48 h-32 rounded-md overflow-hidden">
+                      <Image
+                        src={booking.image}
+                        alt={`${booking.brand} ${booking.model}`}
+                        width={192}
+                        height={128}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
 
-                <div className="flex-1 p-4">
-                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                    <div className="flex-1 space-y-2">
-                      <h2 className="text-base font-semibold">
-                        {booking.brand} {booking.model}
-                      </h2>
-                      <p className="text-sm text-muted-foreground">
-                        {booking.name}, {booking.city}, {booking.province}
-                      </p>
+                  {/* Booking Details */}
+                  <div className="w-[100%]">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {booking.brand} {booking.model}
+                    </h3>
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {/* Car & Location Info */}
+                      <div className="space-y-3">
+                        <p className="text-sm text-gray-600 mt-1">
+                          {booking.branch_name}, {booking.city},{" "}
+                          {booking.province}
+                        </p>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">
-                              Pickup:
-                            </span>
-                            <span>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Calendar className="h-4 w-4 text-gray-400" />
+                            <span className="text-gray-600">Pickup:</span>
+                            <span className="font-medium">
                               {new Date(booking.start_date).toLocaleDateString(
                                 "en-US",
                                 {
@@ -94,11 +112,10 @@ export default function Bookings({ data, isLoading, isError, router }: Props) {
                               )}
                             </span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">
-                              Return:
-                            </span>
-                            <span>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Calendar className="h-4 w-4 text-gray-400" />
+                            <span className="text-gray-600">Return:</span>
+                            <span className="font-medium">
                               {new Date(booking.end_date).toLocaleDateString(
                                 "en-US",
                                 {
@@ -109,33 +126,94 @@ export default function Bookings({ data, isLoading, isError, router }: Props) {
                               )}
                             </span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">
+                        </div>
+                      </div>
+
+                      {/* Booking Status & Financial Info */}
+                      <div className="space-y-3">
+                        <div className="flex flex-col gap-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">
                               Status:
                             </span>
-                            <span>{booking.status}</span>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                booking.status === "confirmed"
+                                  ? "bg-green-100 text-green-800"
+                                  : booking.status === "pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : booking.status === "cancelled"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-blue-100 text-blue-800"
+                              }`}
+                            >
+                              {booking.status.charAt(0).toUpperCase() +
+                                booking.status.slice(1)}
+                            </span>
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">
+                              Total Price:
+                            </span>
+                            <span className="font-semibold text-gray-900">
+                              ${parseFloat(booking.total_price).toFixed(2)}
+                            </span>
+                          </div>
+
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">
+                              Price per day:
+                            </span>
+                            <span className="text-gray-900">
+                              ${parseFloat(booking.price_per_day).toFixed(2)}
+                            </span>
                           </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex gap-2 lg:flex-col">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          router.push(`/bookings/${booking.booking_id}`)
-                        }
-                      >
-                        View Details
-                      </Button>
+                      {/* Points & Actions */}
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">
+                              Points Earned:
+                            </span>
+                            <span className="font-semibold text-green-600">
+                              +{booking.points_earned}
+                            </span>
+                          </div>
+
+                          {booking.points_redeemed &&
+                            parseInt(booking.points_redeemed) > 0 && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600">
+                                  Points Redeemed:
+                                </span>
+                                <span className="font-semibold text-orange-600">
+                                  -{booking.points_redeemed}
+                                </span>
+                              </div>
+                            )}
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              router.push(`/bookings/${booking.booking_id}`)
+                            }
+                            className="flex-1"
+                          >
+                            View Details
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-
-              {/* Add separator except after last item */}
-              {index < data.length - 1 && <Separator />}
             </div>
           ))}
         </div>

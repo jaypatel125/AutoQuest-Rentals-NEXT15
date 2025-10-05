@@ -460,14 +460,13 @@ export default function SelectVehiclePage() {
                               className="whitespace-nowrap"
                               onClick={(e) => {
                                 e.preventDefault();
-
+                                useSearchStore.getState().setSelectedCar(car);
                                 if (car.fuel_type === "Electric") {
                                   router.push(`/checkout`);
                                   return;
                                 }
 
                                 setDialogOpen(true);
-                                useSearchStore.getState().setSelectedCar(car);
                               }}
                             >
                               Rent Now <ArrowRight className="ml-1" />

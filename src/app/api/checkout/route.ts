@@ -1,3 +1,4 @@
+import db from "@/lib/db";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -26,10 +27,14 @@ export async function POST(req: Request) {
 
     const rentalCharge = selectedCar.price_per_day * days;
     const serviceCharge = 15;
-    const rewards =
-      currentUser?.reward_points && currentUser.reward_points >= 1
-        ? Math.min(100, currentUser.reward_points)
-        : 0;
+
+    // Fetch the latest reward points directly from the database
+    const userRes = await db.query(
+      `SELECT reward_points FROM "user" WHERE id = $1`,
+      [currentUser.id]
+    );
+
+    const rewards = userRes.rows[0]?.reward_points || 0;
 
     const rewardsDiscount = Number(-(rewards / 10).toFixed(2)); // Convert to number
     const tax = rentalCharge * 0.13;
@@ -70,6 +75,7 @@ export async function POST(req: Request) {
       ],
       metadata: {
         userId: currentUser.id,
+        redeemedPoints: rewards.toString(),
         carId: selectedCar.id,
         startDate,
         endDate,

@@ -61,6 +61,7 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
       <Button variant="ghost" onClick={() => router.back()} className="gap-2">
         <ArrowLeft /> Back
       </Button>
+
       <div className="flex justify-between">
         <div className="space-y-2">
           <h1 className="text-lg font-semibold tracking-tight">
@@ -70,23 +71,22 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
         </div>
         <Badge
           variant={
-            booking.status === "Confirmed"
+            booking.booking_status === "Confirmed"
               ? "default"
-              : booking.status === "Pending"
+              : booking.booking_status === "Pending"
               ? "secondary"
-              : booking.status === "Cancelled"
+              : booking.booking_status === "Cancelled"
               ? "destructive"
               : "outline"
           }
           className="capitalize text-sm h-fit px-3 py-1"
         >
-          {booking.status}
+          {booking.booking_status}
         </Badge>
       </div>
 
       <Separator />
 
-      {/* Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Column */}
         <div className="lg:col-span-2 space-y-8">
@@ -156,7 +156,7 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 bg-muted/80 rounded-lg">
               <div>
                 <p className="text-sm text-muted-foreground">Pick-up</p>
-                <p className=" font-semibold">
+                <p className="font-semibold">
                   {new Date(booking.start_date).toLocaleDateString("en-US", {
                     weekday: "long",
                     year: "numeric",
@@ -167,7 +167,7 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Return</p>
-                <p className=" font-semibold">
+                <p className="font-semibold">
                   {new Date(booking.end_date).toLocaleDateString("en-US", {
                     weekday: "long",
                     year: "numeric",
@@ -185,10 +185,11 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
           <section className="space-y-4">
             <h2 className="text-lg font-semibold">Pick-up Location</h2>
             <div className="p-4 bg-muted/80 rounded-lg space-y-2">
-              <p className="font-semibold">{booking.name}</p>
+              <p className="font-semibold">{booking.branch_name}</p>
               <p className="text-sm text-muted-foreground">
-                {booking.address} <br />
-                {booking.city}, {booking.province} {booking.postal_code}
+                {booking.branch_address} <br />
+                {booking.branch_city}, {booking.branch_province}{" "}
+                {booking.branch_postal_code}
               </p>
             </div>
           </section>
@@ -224,9 +225,54 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
             </div>
           </section>
 
+          {/*  Rewards Summary */}
+          <section className="space-y-4">
+            <h2 className="text-lg font-semibold">Rewards Summary</h2>
+            <div className="space-y-3 p-4 border rounded-lg ">
+              <div className="flex justify-between text-sm text-green-600">
+                <span>Points Earned:</span>
+                <span>
+                  +{parseInt(booking.points_earned).toLocaleString()} pts
+                </span>
+              </div>
+              {parseInt(booking.points_redeemed) > 0 && (
+                <div className="flex justify-between text-sm text-red-600">
+                  <span>Points Redeemed:</span>
+                  <span>
+                    -{parseInt(booking.points_redeemed).toLocaleString()} pts
+                  </span>
+                </div>
+              )}
+              <Separator />
+              <div className="flex justify-between font-semibold text-sm">
+                <span>Net Points:</span>
+                <span>
+                  {(
+                    parseInt(booking.points_earned) -
+                    parseInt(booking.points_redeemed)
+                  ).toLocaleString()}{" "}
+                  pts
+                </span>
+              </div>
+
+              {/* Bonus message for EVs */}
+              {booking.fuel_type?.toLowerCase() === "electric" ? (
+                <div className="mt-3 p-3 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm">
+                  Thank you for choosing an <strong>Electric Vehicle</strong>!
+                  You earned <strong>2× rewards</strong> for this booking.
+                </div>
+              ) : (
+                <div className="mt-3 p-3 rounded-md bg-blue-50 border border-blue-200 text-blue-700 text-sm">
+                  Earn <strong>2× rewards</strong> on your next booking by
+                  choosing an
+                </div>
+              )}
+            </div>
+          </section>
+
           {/* Actions */}
           <section className="space-y-3">
-            {booking.status === "Confirmed" && (
+            {booking.booking_status === "Confirmed" && (
               <Button
                 variant="outline"
                 className="w-full text-destructive border-destructive hover:bg-destructive hover:text-white"
@@ -234,21 +280,21 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
                 Cancel Booking
               </Button>
             )}
-            <Button variant="outline" className="w-full">
-              Contact Support
-            </Button>
-            <Button className="w-full">Download Receipt</Button>
           </section>
 
           {/* Metadata */}
           <section className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Created:</span>
-              <span>{new Date(booking.created_at).toLocaleDateString()}</span>
+              <span>
+                {new Date(booking.booking_created_at).toLocaleDateString()}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Updated:</span>
-              <span>{new Date(booking.updated_at).toLocaleDateString()}</span>
+              <span>
+                {new Date(booking.booking_updated_at).toLocaleDateString()}
+              </span>
             </div>
           </section>
         </aside>

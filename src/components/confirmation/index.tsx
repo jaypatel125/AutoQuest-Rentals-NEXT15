@@ -13,6 +13,8 @@ import {
   CalendarDays,
   ListChecks,
   Home,
+  CarIcon,
+  ArrowRight,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import Loader from "../utility/Loader";
@@ -26,12 +28,10 @@ interface BookingDetailsClientProps {
   metadata: Record<string, any>;
 }
 
-// query function to fetch vehicle details
+// Query function to fetch vehicle details
 async function fetchVehicle(id: string) {
   const res = await fetch(`/api/vehicles/${id}`);
-  if (!res.ok) {
-    throw new Error("Failed to fetch vehicle details");
-  }
+  if (!res.ok) throw new Error("Failed to fetch vehicle details");
   return res.json();
 }
 
@@ -44,6 +44,7 @@ export default function BookingDetailsClient({
 }: BookingDetailsClientProps) {
   const { branch } = useSearchStore();
   const router = useRouter();
+
   const {
     data: Car,
     isLoading,
@@ -67,13 +68,50 @@ export default function BookingDetailsClient({
     branch &&
     (metadata.branch === branch.id || metadata.branch === branch.name);
 
+  let fuelType = "";
+  let isEV = false;
+  let redeemedPoints = 0;
+  let totalPrice = 0;
+  let pointsEarned = 0;
+
+  if (Car) {
+    fuelType = Car.fuel_type?.toLowerCase() || "";
+    isEV = fuelType === "electric";
+  }
+
+  redeemedPoints = Number(metadata.redeemedPoints ?? 0);
+  totalPrice = Number(metadata.total ?? 0);
+  pointsEarned = Math.floor(isEV ? totalPrice * 2 : totalPrice * 1);
+
+  const rewardMessage = isEV
+    ? {
+        text: (
+          <>
+            Thank you for choosing an <strong>Electric Vehicle</strong>! You’ve
+            earned <strong>2× reward points</strong> on this booking.
+          </>
+        ),
+        style: "bg-green-50 border border-green-200 text-green-700",
+      }
+    : {
+        text: (
+          <>
+            You’ve earned standard reward points for this rental. Next time,
+            rent an EV and earn <strong>2× rewards!</strong>{" "}
+          </>
+        ),
+        style: "bg-blue-50 border border-blue-200 text-blue-700",
+      };
+
+  // ====== RETURN JSX ======
   return (
     <section id="success" className="space-y-8 my-8">
+      {/* Booking Confirmation */}
       <Card className="border-l-4 border-l-green-500">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <CheckCircle className="h-6 w-6 text-green-500" />
-            <CardTitle className="text-2xl">Booking Confirmed</CardTitle>
+            <CardTitle className="text-xl">Booking Confirmed</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
@@ -102,11 +140,14 @@ export default function BookingDetailsClient({
       ) : Car ? (
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-lg">Car Details</CardTitle>
+            <div className="flex items-center gap-2">
+              <CarIcon className="h-5 w-5" />
+              <CardTitle className="text-lg">Car Details</CardTitle>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col md:flex-row gap-6">
-              {/* Car Image */}
+              {/* Image */}
               <div className="relative w-full md:w-48 h-32 rounded-lg overflow-hidden flex-shrink-0">
                 <Image
                   src={Car.image}
@@ -116,51 +157,35 @@ export default function BookingDetailsClient({
                 />
               </div>
 
-              {/* Car Info */}
+              {/* Info */}
               <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Left column */}
                 <div className="space-y-3">
                   <h4 className="font-semibold text-lg">
                     {Car.brand} {Car.model}
                   </h4>
                 </div>
 
-                {/* Right column */}
                 <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Passenger Capacity:
-                    </span>
-                    <span className="text-sm font-medium">
-                      {Car.passenger_capacity
+                  {[
+                    [
+                      "Passenger Capacity",
+                      Car.passenger_capacity
                         ? `${Car.passenger_capacity} people`
-                        : "Not specified"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Body Type:
-                    </span>
-                    <span className="text-sm font-medium capitalize">
-                      {Car.body_type || "Not specified"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Transmission:
-                    </span>
-                    <span className="text-sm font-medium capitalize">
-                      {Car.transmission || "Not specified"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      Fuel Type:
-                    </span>
-                    <span className="text-sm font-medium capitalize">
-                      {Car.fuel_type || "Not specified"}
-                    </span>
-                  </div>
+                        : "Not specified",
+                    ],
+                    ["Body Type", Car.body_type || "Not specified"],
+                    ["Transmission", Car.transmission || "Not specified"],
+                    ["Fuel Type", Car.fuel_type || "Not specified"],
+                  ].map(([label, value]) => (
+                    <div key={label} className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        {label}:
+                      </span>
+                      <span className="text-sm font-medium capitalize">
+                        {value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -177,6 +202,7 @@ export default function BookingDetailsClient({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Branch + Price */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <Label className="text-sm font-medium text-muted-foreground">
@@ -188,7 +214,6 @@ export default function BookingDetailsClient({
                   : metadata.branch}
               </p>
             </div>
-
             <div className="space-y-1">
               <Label className="text-sm font-medium text-muted-foreground">
                 Total Price
@@ -204,44 +229,67 @@ export default function BookingDetailsClient({
 
           <Separator />
 
+          {/* Dates */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <Label className="text-sm font-medium text-muted-foreground">
-                Pickup Date
-              </Label>
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground">
-                  {new Date(metadata.startDate).toLocaleDateString("en-US", {
-                    weekday: "short",
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </span>
+            {[
+              ["Pickup Date", metadata.startDate],
+              ["Return Date", metadata.endDate],
+            ].map(([label, date]) => (
+              <div key={label} className="space-y-1">
+                <Label className="text-sm font-medium text-muted-foreground">
+                  {label}
+                </Label>
+                <div className="flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-foreground">
+                    {new Date(date as string).toLocaleDateString("en-US", {
+                      weekday: "short",
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                </div>
               </div>
-            </div>
-
-            <div className="space-y-1">
-              <Label className="text-sm font-medium text-muted-foreground">
-                Return Date
-              </Label>
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground">
-                  {new Date(metadata.endDate).toLocaleDateString("en-US", {
-                    weekday: "short",
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </span>
-              </div>
-            </div>
+            ))}
           </div>
         </CardContent>
       </Card>
 
+      {/* Rewards Summary */}
+      {Car && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              Rewards Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {redeemedPoints > 0 && (
+              <div className="flex justify-between text-muted-foreground">
+                <span>Redeemed Points:</span>
+                <span className="text-red-600 font-medium">
+                  -{redeemedPoints.toLocaleString()} pts
+                </span>
+              </div>
+            )}
+
+            <div className="flex justify-between text-muted-foreground">
+              <span>Earned Points:</span>
+              <span className="text-green-600 font-medium">
+                +{pointsEarned.toLocaleString()} pts
+              </span>
+            </div>
+
+            <div className={`mt-3 p-3 rounded-md ${rewardMessage.style}`}>
+              {rewardMessage.text}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Button
           onClick={() => router.push("/bookings")}

@@ -45,12 +45,16 @@ export default function Checkout() {
   const serviceCharge = 15;
   const rewards =
     currentUser?.reward_points && currentUser.reward_points >= 1
-      ? Math.min(100, currentUser.reward_points)
+      ? Math.min(1000, currentUser.reward_points)
       : 0;
   const rewardsDiscount = -(rewards / 10).toFixed(2);
   const tax = rentalCharge * 0.13;
   const amountDue =
     rentalCharge + serviceCharge + tax + Number(rewardsDiscount);
+  const isEV =
+    selectedCar.fuel_type && selectedCar.fuel_type.toLowerCase() === "electric";
+
+  const pointsEarned = Math.floor(isEV ? amountDue * 2 : amountDue * 1);
 
   if (!currentUser) {
     return (
@@ -120,6 +124,16 @@ export default function Checkout() {
           <h1 className="text-lg font-semibold">
             {selectedCar.brand} {selectedCar.model}
           </h1>
+          {selectedCar.fuel_type?.toLowerCase() === "electric" && (
+            <div className="flex items-start gap-3 p-4 rounded-lg bg-green-50 border border-green-200 text-green-700">
+              <Info className="w-5 h-5 mt-0.5 text-green-600" />
+              <p className="text-sm leading-relaxed">
+                Thank you for choosing an <strong>Electric Vehicle</strong>!
+                You’ll earn <strong>2× reward points</strong> for this rental as
+                part of our sustainability program.
+              </p>
+            </div>
+          )}
 
           {/* Pick-up Location + Dates */}
           <div className="space-y-4 text-sm">
@@ -179,7 +193,8 @@ export default function Checkout() {
           <div className="space-y-4 gap-6 p-4 bg-muted/80 rounded-lg">
             <h3 className="text-lg font-semibold">Trip Cost</h3>
             <h2 className="text-md">
-              Available Reward Points: {currentUser?.reward_points || 0}
+              Available Reward Points: {currentUser?.reward_points || 0} (10
+              point = $1 discount)
             </h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between text-muted-foreground">
@@ -190,10 +205,25 @@ export default function Checkout() {
                 <span>Service Charge</span>
                 <span>{formatPrice(serviceCharge)}</span>
               </div>
-              <div className="flex justify-between text-green-600">
-                <span>Rewards</span>
+              <div className="flex justify-between text-green-600 items-center">
+                <div className="flex items-center gap-1">
+                  <span>Rewards</span>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Info className="w-4 h-4  cursor-pointer" />
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <p>
+                          Maximum 1000 points can be redeemed per transaction.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
                 <span>{formatPrice(rewardsDiscount)}</span>
               </div>
+
               <div className="flex justify-between text-muted-foreground">
                 <span>HST (13%)</span>
                 <span>{formatPrice(tax)}</span>
@@ -202,6 +232,13 @@ export default function Checkout() {
               <div className="flex justify-between text-base font-semibold">
                 <span>Amount Due</span>
                 <span>{formatPrice(amountDue)}</span>
+              </div>
+              <Separator />
+              <div className="flex flex-col">
+                <div className="flex justify-between text-blue-600">
+                  <span>Reward Points You&apos;ll Earn</span>
+                  <span>+{pointsEarned.toLocaleString()} pts</span>
+                </div>
               </div>
             </div>
           </div>

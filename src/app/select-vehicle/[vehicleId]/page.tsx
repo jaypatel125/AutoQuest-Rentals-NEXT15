@@ -56,13 +56,13 @@ export default function VehicleDetailPage() {
       <VehicleDetails
         car={Car}
         onRentNow={() => {
+          useSearchStore.getState().setSelectedCar(Car);
           if (Car.fuel_type === "Electric") {
             router.push(`/checkout`);
             return;
           }
 
           setDialogOpen(true);
-          useSearchStore.getState().setSelectedCar(Car);
         }}
         onBack={() => router.back()}
       />

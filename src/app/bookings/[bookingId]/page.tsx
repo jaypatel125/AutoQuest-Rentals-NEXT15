@@ -19,6 +19,8 @@ export default function BookingDetailPage() {
     enabled: !!bookingId,
   });
 
+  console.log(booking);
+
   return (
     <BookingDetail booking={booking} isLoading={isLoading} error={error} />
   );

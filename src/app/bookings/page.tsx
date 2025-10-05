@@ -1,4 +1,3 @@
-// src/app/bookings/page.tsx
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +12,8 @@ export default function BookingsPage() {
     queryKey: ["get-bookings"],
     queryFn: getAllBookingsByUserId,
   });
+
+  console.log(data);
 
   return (
     <Bookings
