@@ -9,7 +9,6 @@ export const auth = betterAuth({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
   }),
-
   session: {
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // 1 day
@@ -18,7 +17,6 @@ export const auth = betterAuth({
       maxAge: 5 * 60, // 5 minutes
     },
   },
-
   user: {
     changeEmail: { enabled: true },
     deleteUser: { enabled: true },
@@ -35,7 +33,7 @@ export const auth = betterAuth({
   ],
   trustedOrigins: [
     process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    "https://jay-capstone.vercel.app",
+    "https://autoquest.vercel.app",
   ],
   emailVerification: {
     sendOnSignUp: true,
@@ -228,8 +226,6 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      accessType: "offline",
-      prompt: "select_account consent",
     },
   },
 } satisfies BetterAuthOptions);
