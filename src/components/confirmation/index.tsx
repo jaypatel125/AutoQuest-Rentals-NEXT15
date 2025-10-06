@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { Cars as CarType } from "@/lib/database/table-types";
 import { useSearchStore } from "@/lib/store/searchStore";
@@ -14,10 +14,10 @@ import {
   ListChecks,
   Home,
   CarIcon,
-  ArrowRight,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import Loader from "../utility/Loader";
+import { useEffect } from "react";
 
 interface BookingDetailsClientProps {
   status: string;
@@ -54,6 +54,15 @@ export default function BookingDetailsClient({
     queryFn: () => fetchVehicle(metadata.carId),
     enabled: !!metadata?.carId,
   });
+
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    if (status === "complete" || status === "paid") {
+      queryClient.invalidateQueries({ queryKey: ["get-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["booking"] });
+    }
+  }, [status, queryClient]);
 
   if (status !== "complete") {
     return (

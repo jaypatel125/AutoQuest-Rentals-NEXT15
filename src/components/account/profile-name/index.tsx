@@ -3,7 +3,6 @@ import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import AccountInfo from "../AccountInfo";
 import { authClient, IUser } from "../../../../auth-client";
-import useUserStore from "@/lib/store/useUserStore";
 import { z } from "zod";
 import { getNameSchema } from "@/lib/zod";
 import { useRouter } from "next/navigation";
@@ -20,8 +19,6 @@ const ProfileName = ({ currentUser }: { currentUser: IUser }) => {
   const [name, setName] = useState("");
   const router = useRouter();
   const { toast } = useToast();
-
-  const setCurrentUser = useUserStore((state) => state.setCurrentUser);
 
   const hasChanges = name.trim() !== currentUser?.name;
 
@@ -60,7 +57,6 @@ const ProfileName = ({ currentUser }: { currentUser: IUser }) => {
       }
 
       await authClient.updateUser({ name });
-      setCurrentUser({ ...currentUser, name });
       setSuccessState(true);
       toast({
         title: "Success",

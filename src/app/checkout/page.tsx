@@ -1,7 +1,12 @@
-"use client";
-
 import Checkout from "@/components/checkout";
+import { getServerSideSession } from "@/hooks/SessionHandler";
+import { notFound } from "next/navigation";
 
-export default function CheckoutPage() {
-  return <Checkout />;
+export default async function CheckoutPage() {
+  const { user } = await getServerSideSession();
+
+  if (!user) {
+    notFound();
+  }
+  return <Checkout user={user} />;
 }

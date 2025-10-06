@@ -4,33 +4,17 @@ import Link from "next/link";
 import MaxWidthWrapper from "../utility/MaxWidthWrapper";
 import { ISession, IUser } from "../../../auth-client";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
-import useUserStore from "@/lib/store/useUserStore";
 import { Button } from "../ui/button";
 import { Dropdown } from "./Dropdown";
 
 const Navbar = ({
-  session,
   user,
 }: {
   session: ISession | null;
   user: IUser | null | undefined;
 }) => {
-  const { setCurrentUser, setSession } = useUserStore();
-
-  useEffect(() => {
-    if (session) {
-      setSession(session);
-    }
-    if (user) {
-      setCurrentUser(user);
-    }
-  }, [session, user, setCurrentUser, setSession]);
-
   const router = useRouter();
-
   const params = useParams();
-
   const renderSignInTag = !user;
 
   if (params && (params.slug === "signin" || params.slug === "signup")) {
@@ -84,7 +68,7 @@ const Navbar = ({
                     </Button>
                   </div>
                 ) : (
-                  <div>{user && <Dropdown />}</div>
+                  <div>{user && <Dropdown user={user} />}</div>
                 )}
               </div>
             </nav>

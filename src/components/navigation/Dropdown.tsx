@@ -13,15 +13,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RiArrowDropDownLine } from "react-icons/ri";
-
-import useUserStore from "@/lib/store/useUserStore";
 import { useRouter } from "next/navigation";
-import { authClient } from "../../../auth-client";
+import { authClient, IUser } from "../../../auth-client";
 
-export function Dropdown() {
-  const user = useUserStore((state) => state.currentUser);
+export function Dropdown({ user }: { user: IUser }) {
   const router = useRouter();
-  const { logoutUser } = useUserStore();
 
   const handleSignOut = async () => {
     try {
@@ -35,8 +31,6 @@ export function Dropdown() {
       });
     } catch (error) {
       console.error("Error signing out:", error);
-    } finally {
-      logoutUser();
     }
   };
 

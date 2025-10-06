@@ -1,9 +1,8 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { authClient, IUser } from "../../../../auth-client";
 import AccountInfo from "../AccountInfo";
 import { Input } from "@/components/ui/input";
-import useUserStore from "@/lib/store/useUserStore";
 import { z } from "zod";
 import { getEmailSchema } from "@/lib/zod";
 import { useRouter } from "next/navigation";
@@ -21,15 +20,7 @@ const ProfileEmail = ({ currentUser }: { currentUser: IUser }) => {
   const router = useRouter();
   const { toast } = useToast();
 
-  const setCurrentUser = useUserStore((state) => state.setCurrentUser);
-
   const hasChanges = email.trim() !== currentUser?.email;
-
-  useEffect(() => {
-    if (currentUser?.email) {
-      setEmail(currentUser.email);
-    }
-  }, [currentUser]);
 
   const validateEmail = (email: string) => {
     try {
@@ -65,7 +56,6 @@ const ProfileEmail = ({ currentUser }: { currentUser: IUser }) => {
         callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}/account/profile`,
       });
 
-      setCurrentUser({ ...currentUser, email });
       setSuccessState(true);
       toast({
         title: "Success",

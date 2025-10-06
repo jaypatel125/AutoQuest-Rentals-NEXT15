@@ -13,15 +13,15 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ArrowLeft, ArrowRight, Info } from "lucide-react";
-import useUserStore from "@/lib/store/useUserStore";
 import { Separator } from "@/components/ui/separator";
 import { useFormatPrice } from "@/lib/utils";
 import { handleCheckout } from "@/app/checkout/actions";
+import { IUser } from "../../../auth-client";
 
-export default function Checkout() {
+export default function Checkout({ user }: { user: IUser }) {
   const router = useRouter();
+  const currentUser = user;
   const { formatPrice } = useFormatPrice();
-  const { currentUser } = useUserStore();
   const { startDate, endDate, selectedCar, branch } = useSearchStore();
 
   if (!selectedCar) {

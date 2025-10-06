@@ -1,85 +1,15 @@
-"use client";
-import { Separator } from "@/components/ui/separator";
-import ProfileName from "../../components/account/profile-name";
-import ProfileEmail from "../../components/account/profile-email";
-import useUserStore from "@/lib/store/useUserStore";
-import ProfilePassword from "../../components/account/profile-password";
-import { Button } from "@/components/ui/button";
-import { authClient } from "./../../../auth-client";
-import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import SettingsProfilePage from "@/components/account";
+import { getServerSideSession } from "@/hooks/SessionHandler";
+import { notFound } from "next/navigation";
+import React from "react";
 
-export default function SettingsProfilePage() {
-  const { currentUser, logoutUser } = useUserStore();
-  const router = useRouter();
+const AccountPage = async () => {
+  const { user } = await getServerSideSession();
 
-  const handleDeleteAccount = async () => {
-    if (currentUser) {
-      const confirm = window.confirm(
-        "Are you sure you want to delete your account?"
-      );
-      if (confirm) {
-        await authClient.deleteUser({
-          callbackURL: "/signin",
-        });
-        logoutUser();
-      }
-    }
-  };
-
-  if (!currentUser) {
-    return null;
+  if (!user) {
+    notFound();
   }
+  return <SettingsProfilePage user={user} />;
+};
 
-  return (
-    <div className="py-6 space-y-6">
-      <Button
-        variant="ghost"
-        onClick={() => router.back()}
-        className="gap-2 px-0"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Button>
-
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-xl font-bold tracking-tight">Profile Settings</h1>
-          <p className="text-muted-foreground">
-            Update your profile information to personalize your shopping
-            experience.
-          </p>
-        </div>
-
-        <Separator />
-
-        <div className="space-y-8">
-          <ProfileName currentUser={currentUser!} />
-          <Separator />
-          <ProfileEmail currentUser={currentUser!} />
-          <Separator />
-          <ProfilePassword />
-          <Separator />
-
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold text-destructive">
-                Danger Zone
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Permanently delete your account and all associated data.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              className="text-destructive border-destructive hover:bg-destructive hover:text-white"
-              onClick={handleDeleteAccount}
-            >
-              Delete Account
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+export default AccountPage;
