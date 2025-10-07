@@ -38,25 +38,12 @@ const Navbar = ({
                 </div>
               </div>
 
-              <div className="flex items-center h-full flex-1 basis-0 justify-end">
-                <div className="hidden small:flex items-center gap-x-6 h-full">
-                  {process.env.NEXT_PUBLIC_FEATURE_SEARCH_ENABLED && (
-                    <Link
-                      className="hover:text-muted-foreground"
-                      href="/search"
-                      data-testid="nav-search-link"
-                    >
-                      Search
-                    </Link>
-                  )}
-                  <Link
-                    className="hover:text-muted-foreground"
-                    href="/account"
-                    data-testid="nav-account-link"
-                  >
-                    Account
-                  </Link>
-                </div>
+              <div className="flex items-center h-full flex-1 basis-0 justify-end gap-5">
+                {user && (
+                  <div className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-3 py-1.5 rounded-full text-sm font-medium hidden md:block">
+                    <span>{user.reward_points} pts</span>
+                  </div>
+                )}
                 {renderSignInTag ? (
                   <div>
                     <Button

@@ -8,6 +8,7 @@ import { SearchBar } from "@/components/Seachbar";
 import { fetchCarBodyTypes, fetchCarBrands } from "@/app/actions";
 import { useQuery } from "@tanstack/react-query";
 import Loader from "../utility/Loader";
+import { useRouter } from "next/navigation";
 
 const HomePage = () => {
   const {
@@ -28,8 +29,7 @@ const HomePage = () => {
     queryFn: () => fetchCarBodyTypes(),
   });
 
-  console.log(bodyTypes);
-  console.log(brands);
+  const router = useRouter();
 
   if (isLoading || bodyTypesLoading) {
     return (
@@ -55,8 +55,9 @@ const HomePage = () => {
   }
 
   return (
-    <div>
-      <section className="grid md:grid-cols-2 gap-8 items-center py-12">
+    <div className="space-y-18 my-10 md:my-16">
+      {/* Hero Section */}
+      <section className="grid md:grid-cols-2 gap-8 items-center">
         <div>
           <h1 className="text-4xl font-bold leading-tight">
             Find, Book, and Drive Green <br />
@@ -78,13 +79,15 @@ const HomePage = () => {
         </div>
       </section>
 
-      <SearchBar />
+      {/* Search Bar */}
+      <section>
+        <SearchBar />
+      </section>
 
       {/* Rent by Brands */}
-      <section className="py-12">
+      <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold">Rent by Brands</h2>
-          <Button variant="ghost">View all →</Button>
+          <h2 className="text-xl font-semibold">Available Brands</h2>
         </div>
         <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
           {brands.map((brand, i) => (
@@ -98,10 +101,9 @@ const HomePage = () => {
       </section>
 
       {/* Rent by Body Type */}
-      <section className="py-12">
+      <section>
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold">Rent by Body Type</h2>
-          <Button variant="ghost">View all →</Button>
+          <h2 className="text-xl font-semibold">Available Body Type</h2>
         </div>
         <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
           {bodyTypes.map((type, i) => (
@@ -114,9 +116,21 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Rewards Section */}
+      <section className="py-12 lg:px-0 px-10 bg-green-50 dark:bg-green-900/10 rounded-xl text-center">
+        <h2 className="text-2xl font-semibold mb-4">
+          Earn Rewards for Going Green
+        </h2>
+        <p className="text-muted-foreground  mb-8">
+          Earn <span className="font-semibold">2x points</span> when renting
+          electric vehicles. Redeem your points for discounts on future rides.
+        </p>
+        <Button onClick={() => router.push("/rewards")}>Learn More</Button>
+      </section>
+
       {/* How It Works */}
       <section className="py-8 bg-muted rounded-xl text-center">
-        <h2 className="text-2xl font-semibold mb-6">
+        <h2 className="text-2xl lg:px-0 px-10 font-semibold mb-6">
           Rent with following 3 working steps
         </h2>
         <div className="grid md:grid-cols-3 gap-6 p-12">
@@ -150,8 +164,35 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Our Reach Section */}
+      <section className="py-16 lg:px-0 px-10 bg-muted rounded-xl text-center">
+        <h2 className="text-2xl font-semibold mb-6">Our Growing Community</h2>
+        <p className="text-muted-foreground max-w-2xl mx-auto mb-10">
+          We&apos;re proud to serve a growing network of eco-conscious drivers,
+          modern vehicles, and trusted branch locations across the region.
+        </p>
+        <div className="grid md:grid-cols-3 gap-8">
+          <div className="space-y-3">
+            <h3 className="text-4xl font-bold text-green-600">2,500+</h3>
+            <p className="text-muted-foreground text-sm">Registered Users</p>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-4xl font-bold text-green-600">180+</h3>
+            <p className="text-muted-foreground text-sm">
+              Electric & Hybrid Vehicles
+            </p>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-4xl font-bold text-green-600">35+</h3>
+            <p className="text-muted-foreground text-sm">
+              Branches Across Canada
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Why Choose Us */}
-      <section className="py-16">
+      <section>
         <h2 className="text-2xl font-semibold text-center mb-8">
           Why Choose Us
         </h2>

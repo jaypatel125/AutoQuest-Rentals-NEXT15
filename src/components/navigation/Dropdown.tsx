@@ -43,6 +43,11 @@ export function Dropdown({ user }: { user: IUser }) {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        {user && (
+          <div className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-3 py-1.5 rounded-full text-sm font-medium md:hidden block">
+            <span>{user.reward_points} pts</span>
+          </div>
+        )}
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => router.push("/account")}>
             Profile
@@ -50,10 +55,18 @@ export function Dropdown({ user }: { user: IUser }) {
           <DropdownMenuItem onClick={() => router.push("/bookings")}>
             Bookings
           </DropdownMenuItem>
-
-          <DropdownMenuItem>Settings</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={() => router.push("/rewards")}>
+            Rewards
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push("/terms")}>
+            Terms & Conditions
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+
         <DropdownMenuGroup>
           <DropdownMenuItem onClick={() => router.push("/select-vehicle")}>
             Start booking

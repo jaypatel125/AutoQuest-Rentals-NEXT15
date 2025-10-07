@@ -85,8 +85,6 @@ export function SearchBar() {
     queryFn: fetchBranches,
   });
 
-  console.log("Branches fetched:", branches);
-
   const handleSearch = () => {
     setDates(localStartDate || undefined, localEndDate || undefined);
     setBranch(localBranch!);
