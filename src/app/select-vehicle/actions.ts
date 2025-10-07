@@ -19,7 +19,6 @@ export async function fetchCars(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
-    cache: "no-store", // ensure fresh data
   });
 
   if (!res.ok) {

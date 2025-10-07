@@ -26,12 +26,7 @@ export type Booking = {
 
 export async function getAllBookingsByUserId(): Promise<Booking[]> {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/get-bookings`,
-    {
-      method: "GET",
-      credentials: "include",
-      cache: "no-store",
-    }
+    `${process.env.NEXT_PUBLIC_APP_URL}/api/get-bookings`
   );
 
   if (!res.ok) {
