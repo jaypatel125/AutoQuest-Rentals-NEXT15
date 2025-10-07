@@ -56,32 +56,17 @@ export default function Bookings({ data, isLoading, isError, router }: Props) {
         <div className="space-y-4">
           {data.map((booking) => (
             <div key={booking.booking_id}>
-              <div className="bg-gray-50 px-6 py-3 border-t border-gray-200">
-                <div className="flex justify-between items-center text-xs text-gray-500">
-                  <span>Booking ID: {booking.booking_id}</span>
-                  <span>
-                    Booked on{" "}
-                    {new Date(booking.created_at).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </span>
-                </div>
-              </div>
               <div className="py-6">
-                <div className="flex flex-col lg:flex-row gap-6">
+                <div className="flex flex-col md:flex-row gap-6">
                   {/* Car Image */}
                   <div className="flex-shrink-0">
-                    <div className="w-48 h-32 rounded-md overflow-hidden">
-                      <Image
-                        src={booking.image}
-                        alt={`${booking.brand} ${booking.model}`}
-                        width={192}
-                        height={128}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+                    <Image
+                      src={booking.image}
+                      alt={`${booking.brand} ${booking.model}`}
+                      width={200}
+                      height={120}
+                      className="min-w-full lg:h-full object-cover rounded-lg shadow-md"
+                    />
                   </div>
 
                   {/* Booking Details */}
@@ -89,7 +74,7 @@ export default function Bookings({ data, isLoading, isError, router }: Props) {
                     <h3 className="text-lg font-semibold text-gray-900">
                       {booking.brand} {booking.model}
                     </h3>
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:gap-6 gap-2">
                       {/* Car & Location Info */}
                       <div className="space-y-3">
                         <p className="text-sm text-gray-600 mt-1">
@@ -149,6 +134,22 @@ export default function Bookings({ data, isLoading, isError, router }: Props) {
                             >
                               {booking.status.charAt(0).toUpperCase() +
                                 booking.status.slice(1)}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">
+                              Booked on:
+                            </span>
+                            <span className="text-sm text-gray-600">
+                              <span>
+                                {new Date(
+                                  booking.created_at
+                                ).toLocaleDateString("en-US", {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                })}
+                              </span>
                             </span>
                           </div>
 
@@ -214,6 +215,7 @@ export default function Bookings({ data, isLoading, isError, router }: Props) {
                   </div>
                 </div>
               </div>
+              <Separator className="mt-4" />
             </div>
           ))}
         </div>
