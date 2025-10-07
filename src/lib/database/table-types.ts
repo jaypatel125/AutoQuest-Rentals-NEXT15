@@ -14,7 +14,7 @@ export type booking_status_type =
   | "Pending";
 export type fuel_type = "Diesel" | "Electric" | "Hybrid" | "Petrol";
 export type reward_transaction_type = "Adjusted" | "Earned" | "Redeemed";
-export type role_type = "Admin" | "User";
+export type transaction_type_enum = "adjustment" | "earn" | "redeem";
 export type transmission_type = "Automatic" | "Manual";
 
 // Table account
@@ -118,7 +118,9 @@ const bookings = {
     "total_price",
   ],
   primaryKey: "id",
-  foreignKeys: {},
+  foreignKeys: {
+    car_id: { table: "cars", column: "id", $type: null as unknown as Cars },
+  },
   $type: null as unknown as Bookings,
   $input: null as unknown as BookingsInput,
 } as const;
@@ -176,7 +178,7 @@ export interface Cars {
   carbon_emissions: number | null;
   price_per_day: number;
   available: boolean;
-  image: string;
+  image: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -192,7 +194,7 @@ export interface CarsInput {
   carbon_emissions?: number | null;
   price_per_day: number;
   available?: boolean;
-  image: string;
+  image?: string | null;
   created_at?: Date;
   updated_at?: Date;
 }
@@ -214,7 +216,7 @@ const cars = {
     "created_at",
     "updated_at",
   ],
-  requiredForInsert: ["brand", "model", "price_per_day", "image"],
+  requiredForInsert: ["brand", "model", "price_per_day"],
   primaryKey: "id",
   foreignKeys: {
     branch_id: {
@@ -227,8 +229,8 @@ const cars = {
   $input: null as unknown as CarsInput,
 } as const;
 
-// Table rewards_history
-export interface RewardsHistory {
+// Table rewardshistory
+export interface Rewardshistory {
   id: string;
   user_id: string;
   booking_id: string | null;
@@ -236,7 +238,7 @@ export interface RewardsHistory {
   transaction_type: reward_transaction_type;
   created_at: Date;
 }
-export interface RewardsHistoryInput {
+export interface RewardshistoryInput {
   id?: string;
   user_id: string;
   booking_id?: string | null;
@@ -244,8 +246,8 @@ export interface RewardsHistoryInput {
   transaction_type: reward_transaction_type;
   created_at?: Date;
 }
-const rewards_history = {
-  tableName: "rewards_history",
+const rewardshistory = {
+  tableName: "rewardshistory",
   columns: [
     "id",
     "user_id",
@@ -257,14 +259,15 @@ const rewards_history = {
   requiredForInsert: ["user_id", "points", "transaction_type"],
   primaryKey: "id",
   foreignKeys: {
+    user_id: { table: "user", column: "id", $type: null as unknown as User },
     booking_id: {
       table: "bookings",
       column: "id",
       $type: null as unknown as Bookings,
     },
   },
-  $type: null as unknown as RewardsHistory,
-  $input: null as unknown as RewardsHistoryInput,
+  $type: null as unknown as Rewardshistory,
+  $input: null as unknown as RewardshistoryInput,
 } as const;
 
 // Table session
@@ -408,9 +411,9 @@ export interface TableTypes {
     select: Cars;
     input: CarsInput;
   };
-  rewards_history: {
-    select: RewardsHistory;
-    input: RewardsHistoryInput;
+  rewardshistory: {
+    select: Rewardshistory;
+    input: RewardshistoryInput;
   };
   session: {
     select: Session;
@@ -431,7 +434,7 @@ export const tables = {
   bookings,
   branches,
   cars,
-  rewards_history,
+  rewardshistory,
   session,
   user,
   verification,

@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Fuel, CarFront, ArrowLeft } from "lucide-react";
+import { Users, Fuel, CarFront, ArrowLeft, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { Cars as CarType } from "@/lib/database/table-types";
 import { useFormatPrice } from "@/lib/utils";
@@ -76,7 +76,7 @@ export default function VehicleDetails({ car, onRentNow, onBack }: Props) {
           </Card>
 
           <Button className="whitespace-nowrap flex-1" onClick={onRentNow}>
-            Rent Now →
+            Rent Now <ArrowRight />
           </Button>
         </div>
       </div>

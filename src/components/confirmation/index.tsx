@@ -159,7 +159,7 @@ export default function BookingDetailsClient({
               {/* Image */}
               <div className="relative w-full md:w-48 h-32 rounded-lg overflow-hidden flex-shrink-0">
                 <Image
-                  src={Car.image}
+                  src={Car.image || "/car-placeholder.png"}
                   alt={`${Car.brand} ${Car.model}`}
                   fill
                   className="object-cover"
