@@ -32,8 +32,7 @@ export const auth = betterAuth({
     admin({ impersonationSessionDuration: 60 * 60 * 24 * 7 }),
   ],
   trustedOrigins: [
-    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    "https://autoquest.vercel.app",
+    process.env.NEXT_PUBLIC_APP_URL || "https://autoquest.vercel.app",
   ],
   emailVerification: {
     sendOnSignUp: true,
