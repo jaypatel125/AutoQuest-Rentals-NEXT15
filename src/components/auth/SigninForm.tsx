@@ -128,6 +128,8 @@ export default function SigninForm() {
                     provider: "google",
                     callbackURL: "/",
                   });
+                  console.log("social signIn result:", res.data);
+                  console.log("social signIn error:", res.error);
 
                   if (res.error) {
                     console.error("Google sign-in failed:", res.error);
