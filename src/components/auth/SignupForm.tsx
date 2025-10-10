@@ -20,10 +20,12 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SignupForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
@@ -59,6 +61,23 @@ export default function SignupForm() {
     }
     setLoading(false);
   };
+
+  async function handleSiginInWithGoogle() {
+    await authClient.signIn.social(
+      {
+        provider: "google",
+        callbackURL: "/",
+      },
+      {
+        onError: (error) => {
+          toast({
+            title: "Something went wrong",
+            description: error.error.message ?? "Something went wrong.",
+          });
+        },
+      }
+    );
+  }
 
   return (
     <div>
@@ -141,24 +160,7 @@ export default function SignupForm() {
               variant="outline"
               className="w-full justify-center gap-2"
               type="button"
-              onClick={async () => {
-                try {
-                  const res = await authClient.signIn.social({
-                    provider: "google",
-                    callbackURL: "/",
-                  });
-
-                  if (res.error) {
-                    console.error("Google sign-in failed:", res.error);
-                    return;
-                  }
-
-                  router.push("/");
-                  router.refresh();
-                } catch (err) {
-                  console.error("Google login error:", err);
-                }
-              }}
+              onClick={handleSiginInWithGoogle}
             >
               <Image
                 src="https://www.svgrepo.com/show/475656/google-color.svg"

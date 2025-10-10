@@ -60,6 +60,23 @@ export default function SigninForm() {
     setLoading(false);
   };
 
+  async function handleSiginInWithGoogle() {
+    await authClient.signIn.social(
+      {
+        provider: "google",
+        callbackURL: "/",
+      },
+      {
+        onError: (error) => {
+          toast({
+            title: "Something went wrong",
+            description: error.error.message ?? "Something went wrong.",
+          });
+        },
+      }
+    );
+  }
+
   return (
     <div>
       <h2 className="mb-6 text-2xl font-bold">Welcome Back</h2>
@@ -122,25 +139,7 @@ export default function SigninForm() {
               variant="outline"
               className="w-full justify-center gap-2"
               type="button"
-              onClick={async () => {
-                try {
-                  const res = await authClient.signIn.social({
-                    provider: "google",
-                  });
-                  console.log("social signIn result:", res.data);
-                  console.log("social signIn error:", res.error);
-
-                  if (res.error) {
-                    console.error("Google sign-in failed:", res.error);
-                    return;
-                  }
-
-                  router.push("/");
-                  router.refresh();
-                } catch (err) {
-                  console.error("Google login error:", err);
-                }
-              }}
+              onClick={handleSiginInWithGoogle}
             >
               <Image
                 src="https://www.svgrepo.com/show/475656/google-color.svg"
