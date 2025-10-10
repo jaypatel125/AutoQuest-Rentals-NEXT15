@@ -32,7 +32,7 @@ export const auth = betterAuth({
     admin({ impersonationSessionDuration: 60 * 60 * 24 * 7 }),
   ],
   trustedOrigins: [
-    process.env.NEXT_PUBLIC_APP_URL || "https://autoquest.vercel.app",
+    process.env.NEXT_PUBLIC_APP_URL || "https://jay-capstone.vercel.app",
   ],
   emailVerification: {
     sendOnSignUp: true,
@@ -225,8 +225,6 @@ export const auth = betterAuth({
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID as string,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-      prompt: "select_account",
-      accessType: "offline",
     },
   },
 } satisfies BetterAuthOptions);
