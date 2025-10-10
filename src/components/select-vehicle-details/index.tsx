@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Fuel, CarFront, ArrowLeft, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { Cars as CarType } from "@/lib/database/table-types";
-import { useFormatPrice } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 
 type Props = {
   car: CarType;
@@ -14,8 +14,6 @@ type Props = {
 };
 
 export default function VehicleDetails({ car, onRentNow, onBack }: Props) {
-  const { formatPrice } = useFormatPrice();
-
   return (
     <div className="space-y-6 my-6">
       <Button variant="ghost" onClick={onBack}>

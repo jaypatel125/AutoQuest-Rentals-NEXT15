@@ -26,7 +26,7 @@ import {
 import { CalendarIcon, ChevronsUpDown, Check } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useSearchStore } from "@/lib/store/searchStore";
+import { useSearchStore } from "@/context/searchStore";
 import { Label } from "@/components/ui/label";
 import { Branches } from "@/lib/database/table-types";
 

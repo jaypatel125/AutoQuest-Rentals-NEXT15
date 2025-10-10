@@ -8,14 +8,13 @@ import { SearchBar } from "@/components/Seachbar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useSearchStore } from "@/lib/store/searchStore";
+import { useSearchStore } from "@/context/searchStore";
 import { Cars as CarType } from "@/lib/database/table-types";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState, useEffect } from "react";
 import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog";
 import { useRouter, useSearchParams } from "next/navigation";
 import Loader from "@/components/utility/Loader";
-import { useFormatPrice } from "@/lib/utils";
 import { fetchCars } from "@/app/select-vehicle/actions";
 import { Separator } from "../ui/separator";
 import {
@@ -25,6 +24,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
+import { formatPrice } from "@/lib/utils";
 function safeToDate(
   date: string | number | Date | undefined
 ): Date | undefined {
@@ -88,7 +88,6 @@ function filtersToQueryString(filters: FilterState): string {
 export default function SelectVehiclePage() {
   const { branch, startDate, endDate } = useSearchStore();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const { formatPrice } = useFormatPrice();
   const searchParams = useSearchParams();
   const router = useRouter();
 

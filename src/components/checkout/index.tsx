@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchStore } from "@/lib/store/searchStore";
+import { useSearchStore } from "@/context/searchStore";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 import Image from "next/image";
@@ -14,14 +14,13 @@ import {
 } from "@/components/ui/tooltip";
 import { ArrowLeft, ArrowRight, Info } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { useFormatPrice } from "@/lib/utils";
 import { handleCheckout } from "@/app/checkout/actions";
 import { IUser } from "../../../auth-client";
+import { formatPrice } from "@/lib/utils";
 
 export default function Checkout({ user }: { user: IUser }) {
   const router = useRouter();
   const currentUser = user;
-  const { formatPrice } = useFormatPrice();
   const { startDate, endDate, selectedCar, branch } = useSearchStore();
 
   if (!selectedCar) {

@@ -8,6 +8,7 @@ import type { Booking } from "@/app/bookings/actions";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { Separator } from "../ui/separator";
 import { Calendar } from "lucide-react";
+import { formatDate, formatPrice } from "@/lib/utils";
 
 type Props = {
   data?: Booking[];
@@ -87,28 +88,14 @@ export default function Bookings({ data, isLoading, isError, router }: Props) {
                             <Calendar className="h-4 w-4 text-gray-400" />
                             <span className="text-gray-600">Pickup:</span>
                             <span className="font-medium">
-                              {new Date(booking.start_date).toLocaleDateString(
-                                "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                }
-                              )}
+                              {formatDate(booking.start_date)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <Calendar className="h-4 w-4 text-gray-400" />
                             <span className="text-gray-600">Return:</span>
                             <span className="font-medium">
-                              {new Date(booking.end_date).toLocaleDateString(
-                                "en-US",
-                                {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                }
-                              )}
+                              {formatDate(booking.end_date)}
                             </span>
                           </div>
                         </div>
@@ -158,7 +145,7 @@ export default function Bookings({ data, isLoading, isError, router }: Props) {
                               Total Price:
                             </span>
                             <span className="font-semibold text-gray-900">
-                              ${parseFloat(booking.total_price).toFixed(2)}
+                              {formatPrice(Number(booking.total_price))}
                             </span>
                           </div>
 
@@ -167,7 +154,7 @@ export default function Bookings({ data, isLoading, isError, router }: Props) {
                               Price per day:
                             </span>
                             <span className="text-gray-900">
-                              ${parseFloat(booking.price_per_day).toFixed(2)}
+                              {formatPrice(Number(booking.price_per_day))}
                             </span>
                           </div>
                         </div>

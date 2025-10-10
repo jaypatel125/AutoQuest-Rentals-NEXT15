@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/utility/Loader";
 import { Booking } from "@/app/bookings/[bookingId]/actions";
+import { formatPrice } from "@/lib/utils";
 
 interface Props {
   booking?: Booking;
@@ -135,10 +136,7 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
                 </div>
 
                 <p className="text-lg font-semibold">
-                  {new Intl.NumberFormat("en-CA", {
-                    style: "currency",
-                    currency: "CAD",
-                  }).format(parseFloat(booking.price_per_day))}
+                  {formatPrice(Number(booking.price_per_day))}
                   <span className="text-sm font-normal text-muted-foreground">
                     {" "}
                     / day
@@ -205,22 +203,12 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
                 <span className="text-muted-foreground">
                   Daily rate × duration
                 </span>
-                <span>
-                  {new Intl.NumberFormat("en-CA", {
-                    style: "currency",
-                    currency: "CAD",
-                  }).format(parseFloat(booking.total_price))}
-                </span>
+                <span>{formatPrice(Number(booking.total_price))}</span>
               </div>
               <Separator />
               <div className="flex justify-between text-lg font-bold">
                 <span>Total</span>
-                <span>
-                  {new Intl.NumberFormat("en-CA", {
-                    style: "currency",
-                    currency: "CAD",
-                  }).format(parseFloat(booking.total_price))}
-                </span>
+                <span>{formatPrice(Number(booking.total_price))}</span>
               </div>
             </div>
           </section>

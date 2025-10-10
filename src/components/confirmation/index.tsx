@@ -3,7 +3,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Image from "next/image";
 import { Cars as CarType } from "@/lib/database/table-types";
-import { useSearchStore } from "@/lib/store/searchStore";
+import { useSearchStore } from "@/context/searchStore";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
 import { Label, Separator } from "@radix-ui/react-dropdown-menu";
@@ -18,6 +18,7 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import Loader from "../utility/Loader";
 import { useEffect } from "react";
+import { formatPrice } from "@/lib/utils";
 
 interface BookingDetailsClientProps {
   status: string;
@@ -228,10 +229,7 @@ export default function BookingDetailsClient({
                 Total Price
               </Label>
               <p className="font-semibold text-foreground">
-                {new Intl.NumberFormat("en-CA", {
-                  style: "currency",
-                  currency: currency.toUpperCase(),
-                }).format((amountTotal ?? 0) / 100)}
+                {formatPrice(Number(amountTotal) / 100)}
               </p>
             </div>
           </div>

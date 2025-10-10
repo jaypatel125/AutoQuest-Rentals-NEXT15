@@ -6,7 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 
 import Loader from "@/components/utility/Loader";
 import { EVPromotionDialog } from "@/components/select-vehicle/EVPromotionDialog";
-import { useSearchStore } from "@/lib/store/searchStore";
+import { useSearchStore } from "@/context/searchStore";
 import { Cars as CarType } from "@/lib/database/table-types";
 import { fetchVehicle } from "./actions";
 import VehicleDetails from "@/components/select-vehicle-details";

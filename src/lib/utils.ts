@@ -5,18 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function useFormatPrice() {
-  const formatPrice = (price: number) => {
-    const numericPrice = typeof price === "string" ? parseFloat(price) : price;
-    const currency = "CAD";
+export function formatPrice(price: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "CAD",
+  }).format(price);
+}
 
-    const formattedPrice = new Intl.NumberFormat("en-US", {
-      style: "decimal",
-      maximumFractionDigits: 2,
-    }).format(numericPrice);
-
-    return `${currency}${formattedPrice}`;
-  };
-
-  return { formatPrice };
+export function formatDate(dateString: string | Date) {
+  const date =
+    typeof dateString === "string" ? new Date(dateString) : dateString;
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(date);
 }
