@@ -20,7 +20,7 @@ import Loader from "../utility/Loader";
 import { useEffect } from "react";
 import { formatPrice } from "@/lib/utils";
 
-interface BookingDetailsClientProps {
+interface ConfirmationDetailsProps {
   status: string;
   customerEmail: string;
   amountTotal: number | null;
@@ -36,13 +36,13 @@ async function fetchVehicle(id: string) {
   return res.json();
 }
 
-export default function BookingDetailsClient({
+export default function ConfirmationDetails({
   status,
   customerEmail,
   amountTotal,
   currency,
   metadata,
-}: BookingDetailsClientProps) {
+}: ConfirmationDetailsProps) {
   const { branch } = useSearchStore();
   const router = useRouter();
 
