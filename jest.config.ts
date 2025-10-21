@@ -8,6 +8,12 @@ module.exports = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
+  testMatch: [
+    "**/__tests__/**/*.[jt]s?(x)",
+    "**/?(*.)+(spec|test).[tj]s?(x)",
+    // Add this line:
+    "**/[[]*[]]/*.test.[tj]s?(x)",
+  ],
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
   testPathIgnorePatterns: ["/node_modules/", "/tests/"],
   transformIgnorePatterns: ["/node_modules/"],
