@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import BookingDetailsClient from "@/components/confirmation";
+import ConfirmationDetails from "@/components/confirmation";
 import { getCheckoutSession } from "@/app/confirmation/action";
 import { getServerSideSession } from "@/hooks/SessionHandler";
 interface ConfirmationPageProps {
@@ -28,7 +28,7 @@ export default async function ConfirmationPage({
   }
 
   return (
-    <BookingDetailsClient
+    <ConfirmationDetails
       status={status!}
       customerEmail={customer_details?.email ?? ""}
       amountTotal={amount_total}
