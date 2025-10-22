@@ -95,7 +95,7 @@ export async function POST(req: Request) {
       );
       const user = userRes.rows[0];
       const userEmail = user?.email;
-      const userName = user?.full_name || "Customer";
+      const userName = user?.name || "Customer";
 
       const branchRes = await pool.query(
         `SELECT * FROM branches WHERE id = $1`,
