@@ -1,5 +1,5 @@
-import AuthLayout from "@/components/auth/AuthLayout";
-import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
+import AuthLayout from "@/components/common/auth/AuthLayout";
+import ResetPasswordForm from "@/components/common/auth/ResetPasswordForm";
 import Loader from "@/components/utility/Loader";
 import { Suspense } from "react";
 

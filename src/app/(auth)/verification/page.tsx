@@ -1,4 +1,4 @@
-import VerificationPage from "@/components/auth/Verification";
+import VerificationPage from "@/components/common/auth/Verification";
 
 export default function Verification() {
   return (

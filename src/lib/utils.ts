@@ -21,3 +21,14 @@ export function formatDate(dateString: string | Date) {
     day: "numeric",
   }).format(date);
 }
+
+export function isAuthRoutes(pathname: string) {
+  const authRoutes = [
+    "/signin",
+    "/signup",
+    "/verification",
+    "/forgot-password",
+    "/reset-password",
+  ];
+  return authRoutes.includes(pathname);
+}

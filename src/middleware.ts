@@ -4,22 +4,33 @@ import { betterFetch } from "@better-fetch/fetch";
 
 const authRoutes = ["/signin", "/signup"];
 const passwordRoutes = ["/reset-password", "/forgot-password"];
-const adminRoutes = ["/dashboard"];
-const protectedRoutes = ["/account", "/checkout", "/addproduct"];
+
+// Admin-only sections
+const adminRoutes = ["/admin"];
+
+// Regular user-only protected routes
+const protectedRoutes = [
+  "/account",
+  "/checkout",
+  "/bookings",
+  "/rewards",
+  "/select-vehicle",
+  "/confirmation",
+];
 
 export default async function authMiddleware(request: NextRequest) {
   const pathName = request.nextUrl.pathname;
 
-  const isAuthRoute = authRoutes.includes(pathName);
-  const isPasswordRoute = passwordRoutes.includes(pathName);
-  const isAdminRoute = adminRoutes.includes(pathName);
+  const isAuthRoute = authRoutes.some((route) => pathName.startsWith(route));
+  const isPasswordRoute = passwordRoutes.some((route) =>
+    pathName.startsWith(route)
+  );
+  const isAdminRoute = adminRoutes.some((route) => pathName.startsWith(route));
   const isProtectedRoute = protectedRoutes.some((route) =>
     pathName.startsWith(route)
   );
 
-  // const session = await auth.api.getSession({
-  //   headers: await headers(),
-  // });
+  // Fetch current user session
   const { data: session } = await betterFetch<Session>(
     "/api/auth/get-session",
     {
@@ -30,28 +41,43 @@ export default async function authMiddleware(request: NextRequest) {
     }
   );
 
-  // console.log(session);
+  // --- ADMIN-ONLY ENFORCEMENT ---
+  // If user is logged in and is an admin, only allow /admin/* routes.
+  if (session?.user.role === "admin") {
+    if (isAdminRoute || pathName.startsWith("/account")) {
+      return NextResponse.next(); // allow admin pages
+    }
+    // Any other route — including "/", auth pages, or protected user routes — redirect to /admin
+    return NextResponse.redirect(new URL("/admin", request.url));
+  }
 
+  // --- Non-admin / unauthenticated flows ---
+
+  // Allow unauthenticated users on auth & password routes
   if ((isAuthRoute || isPasswordRoute) && !session) {
     return NextResponse.next();
   }
 
+  // Prevent logged-in non-admin users from accessing signin/signup/reset pages
   if ((isAuthRoute || isPasswordRoute) && session) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if (isAdminRoute && session?.user.role !== "admin") {
+  // Block non-admins from admin routes
+  if (isAdminRoute) {
+    if (!session) {
+      return NextResponse.redirect(new URL("/signin", request.url));
+    }
     return NextResponse.redirect(new URL("/unauthorized", request.url));
   }
 
+  // Require authentication for user-protected routes
   if (isProtectedRoute && !session) {
     return NextResponse.redirect(new URL("/signin", request.url));
   }
 
   return NextResponse.next();
 }
-
-export const runtime = "nodejs";
 
 export const config = {
   matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
