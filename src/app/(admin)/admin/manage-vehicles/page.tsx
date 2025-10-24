@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import Loader from "@/components/utility/Loader";
@@ -11,7 +10,11 @@ import ManageVehicleTable from "@/components/admin/manage-vehicles";
 
 export default function ManageVehiclesPage() {
   const router = useRouter();
-  const { data: vehicles, isLoading } = useQuery({
+  const {
+    data: vehicles,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["vehicles"],
     queryFn: fetchAllVehicles,
   });
@@ -28,16 +31,20 @@ export default function ManageVehiclesPage() {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="w-full h-[80vh] flex items-center justify-center">
+        <p className="text-red-500">Something went wrong. Please try again.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="py-6 space-y-6">
       <div className="flex justify-between items-center mb-2">
         <Button variant="ghost" onClick={() => router.back()} className="gap-2">
           <ArrowLeft /> Back
         </Button>
-
-        <Link href="/admin/manage-vehicles/add-vehicle">
-          <Button>Add Vehicle</Button>
-        </Link>
       </div>
 
       <ManageVehicleTable vehicles={vehicles} />

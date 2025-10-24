@@ -8,7 +8,5 @@ export default function BookingsPage() {
     queryFn: getAllBookingsByUserId,
   });
 
-  console.log(data);
-
   return <Bookings data={data} isLoading={isLoading} isError={isError} />;
 }
