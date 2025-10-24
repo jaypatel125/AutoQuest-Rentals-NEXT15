@@ -5,19 +5,19 @@ import Loader from "@/components/utility/Loader";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import type { Booking } from "@/app/(main)/bookings/actions";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { Separator } from "../../ui/separator";
 import { Calendar } from "lucide-react";
 import { formatDate, formatPrice } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 type Props = {
   data?: Booking[];
   isLoading: boolean;
   isError: boolean;
-  router: AppRouterInstance;
 };
 
-export default function Bookings({ data, isLoading, isError, router }: Props) {
+export default function Bookings({ data, isLoading, isError }: Props) {
+  const router = useRouter();
   if (isLoading) {
     return (
       <div className="w-full h-[80vh] flex items-center justify-center">
