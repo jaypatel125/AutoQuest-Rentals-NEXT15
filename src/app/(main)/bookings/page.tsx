@@ -1,3 +1,5 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
 import { getAllBookingsByUserId } from "./actions";
 import Bookings from "@/components/main/bookings";

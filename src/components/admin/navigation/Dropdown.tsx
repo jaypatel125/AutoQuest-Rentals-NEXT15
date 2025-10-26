@@ -5,11 +5,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RiArrowDropDownLine } from "react-icons/ri";
@@ -41,44 +37,64 @@ export function Dropdown({ user }: { user: IUser }) {
           Hi, {user?.name} <RiArrowDropDownLine />
         </Button>
       </DropdownMenuTrigger>
+
       <DropdownMenuContent className="w-56" align="end">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        {user && (
-          <div className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-3 py-1.5 rounded-full text-sm font-medium md:hidden block">
-            <span>{user.reward_points} pts</span>
-          </div>
-        )}
+        {/* Account Section */}
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => router.push("/")}>
-            Vehicles
+          <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => router.push("/account")}>
+            Profile
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push("/")}>
-            Add Vehicle
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSignOut}>Log out</DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => router.push("/")}>
-            Branches
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push("/")}>
-            Add Branch
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
+
         <DropdownMenuSeparator />
 
+        {/* Dashboard Section */}
         <DropdownMenuGroup>
-          <DropdownMenuItem onClick={() => router.push("/")}>
+          <DropdownMenuLabel>Dashboards</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => router.push("/admin/")}>
+            Sales Overview
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+
+        {/* Management Section */}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Management</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => router.push("/admin/manage-users")}>
             Users
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => router.push("/")}>
-            Manage Users
+          <DropdownMenuItem
+            onClick={() => router.push("/admin/manage-bookings")}
+          >
+            Bookings
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => router.push("/admin/manage-vehicles")}
+          >
+            Vehicles
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => router.push("/admin/manage-branches")}
+          >
+            Branches
           </DropdownMenuItem>
         </DropdownMenuGroup>
-        <DropdownMenuSeparator />
 
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>Log out</DropdownMenuItem>
+
+        {/* Add New Section */}
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Add New</DropdownMenuLabel>
+          <DropdownMenuItem onClick={() => router.push("/admin/add-vehicle")}>
+            Vehicle
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push("/admin/add-branch")}>
+            Branch
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );

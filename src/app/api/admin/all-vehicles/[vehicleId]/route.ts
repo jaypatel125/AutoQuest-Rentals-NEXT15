@@ -1,31 +1,31 @@
 import { NextResponse } from "next/server";
-import pool from "@/lib/db"; // adjust if your db file is elsewhere
+import pool from "@/lib/db";
 import { z } from "zod";
 
-// Zod schema for validating input
 const vehicleSchema = z.object({
-  brand: z.string().min(1),
-  model: z.string().min(1),
-  branch_id: z.number(),
-  price_per_day: z.number(),
-  available: z.boolean(),
+  brand: z.string().min(1).optional(),
+  model: z.string().min(1).optional(),
+  branch_id: z.string().optional(),
+  price_per_day: z.number().optional(),
+  available: z.boolean().optional(),
+  carbon_emissions: z.number().optional(),
+  body_type: z.string().optional(),
+  passenger_capacity: z.number().optional(),
+  fuel_type: z.string().optional(),
+  transmission: z.string().optional(),
+  image: z.string().url().optional(),
 });
 
-// GET — fetch a single vehicle by ID (with branch info)
 export async function GET(
-  _req: Request,
-  { params }: { params: { vehicleId: string } }
+  req: Request,
+  { params }: { params: Promise<{ vehicleId: string }> }
 ) {
   try {
-    const { vehicleId } = params;
+    const { vehicleId } = await params;
 
     const query = `
       SELECT 
-        v.id,
-        v.brand,
-        v.model,
-        v.price_per_day,
-        v.available,
+        v.*,
         b.id AS branch_id,
         b.name AS branch_name,
         b.city AS branch_city
@@ -50,13 +50,12 @@ export async function GET(
   }
 }
 
-// PUT — update a vehicle by ID
 export async function PUT(
   req: Request,
-  { params }: { params: { vehicleId: string } }
+  { params }: { params: Promise<{ vehicleId: string }> }
 ) {
   try {
-    const { vehicleId } = params;
+    const { vehicleId } = await params;
     const body = await req.json();
     const parsed = vehicleSchema.safeParse(body);
 
@@ -67,21 +66,35 @@ export async function PUT(
       );
     }
 
-    const { brand, model, branch_id, price_per_day, available } = parsed.data;
+    const data = parsed.data;
 
-    const result = await pool.query(
-      `
-        UPDATE cars
-        SET brand = $1,
-            model = $2,
-            branch_id = $3,
-            price_per_day = $4,
-            available = $5
-        WHERE id = $6
-        RETURNING *
-      `,
-      [brand, model, branch_id, price_per_day, available, vehicleId]
+    // Remove undefined fields (so only changed ones are updated)
+    const entries = Object.entries(data).filter(
+      ([, value]) => value !== undefined
     );
+
+    if (entries.length === 0) {
+      return NextResponse.json(
+        { error: "No valid fields to update" },
+        { status: 400 }
+      );
+    }
+
+    // Build the dynamic SET clause
+    const setClause = entries
+      .map(([key], index) => `${key} = $${index + 1}`)
+      .join(", ");
+
+    const values = entries.map(([, value]) => value);
+
+    const query = `
+      UPDATE cars
+      SET ${setClause}
+      WHERE id = $${entries.length + 1}
+      RETURNING *;
+    `;
+
+    const result = await pool.query(query, [...values, vehicleId]);
 
     if (result.rowCount === 0) {
       return NextResponse.json({ error: "Vehicle not found" }, { status: 404 });

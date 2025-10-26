@@ -1,11 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import UserNavbarWrapper from "@/components/main/navigation/UseNavbarWrapper";
 import { Providers } from "./providers";
-import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/toaster";
-import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,12 +30,8 @@ export default function RootLayout({
       <body className="antialiased">
         <Providers>
           <main className="min-h-screen flex flex-col">
-            <UserNavbarWrapper />
-
-            <MaxWidthWrapper className="flex-1">{children}</MaxWidthWrapper>
-            <Footer />
+            <div className="flex-1">{children}</div>
           </main>
-
           <Toaster />
         </Providers>
       </body>

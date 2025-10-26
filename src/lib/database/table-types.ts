@@ -16,6 +16,7 @@ export type fuel_type = "Diesel" | "Electric" | "Hybrid" | "Petrol";
 export type reward_transaction_type = "Adjusted" | "Earned" | "Redeemed";
 export type transaction_type_enum = "adjustment" | "earn" | "redeem";
 export type transmission_type = "Automatic" | "Manual";
+export type passenger_capacity = 2 | 4 | 5 | 6 | 7 | 8;
 
 // Table account
 export interface Account {
@@ -168,17 +169,17 @@ const branches = {
 // Table cars
 export interface Cars {
   id: string;
-  branch_id: string | null;
+  branch_id: string;
   brand: string;
   model: string;
-  transmission: transmission_type | null;
-  fuel_type: fuel_type | null;
-  passenger_capacity: number | null;
-  body_type: body_type | null;
-  carbon_emissions: number | null;
+  transmission: transmission_type;
+  fuel_type: fuel_type;
+  passenger_capacity: number;
+  body_type: body_type;
+  carbon_emissions: number;
   price_per_day: number;
   available: boolean;
-  image: string | null;
+  image: string;
   created_at: Date;
   updated_at: Date;
 }
