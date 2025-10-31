@@ -1,7 +1,10 @@
 import React from "react";
+import CustomersOverview from "./components/customers-overview";
+import { getServerSideSession } from "@/hooks/SessionHandler";
 
-const ManageUsers = () => {
-  return <div>ManageUsers</div>;
+const CustomersPage = async () => {
+  const { user } = await getServerSideSession();
+  return user ? <CustomersOverview user={user} /> : <div>Loading...</div>;
 };
 
-export default ManageUsers;
+export default CustomersPage;

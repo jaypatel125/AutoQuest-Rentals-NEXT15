@@ -72,7 +72,7 @@ export default function ManageVehicleTable({
           className="hover:bg-transparent"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Brand <ArrowUpDown className="pl-1 w-5 h-5" />
+          Brand <ArrowUpDown className="ml-2 size-4" />
         </Button>
       ),
       cell: ({ row }) => <div>{row.getValue("brand")}</div>,
@@ -90,7 +90,7 @@ export default function ManageVehicleTable({
           className="hover:bg-transparent"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Branch <ArrowUpDown className="pl-1 w-5 h-5" />
+          Branch <ArrowUpDown className="ml-2 size-4" />
         </Button>
       ),
       cell: ({ row }) => <div>{row.getValue("branch_name")}</div>,
@@ -103,7 +103,7 @@ export default function ManageVehicleTable({
           className="hover:bg-transparent"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          City <ArrowUpDown className="pl-1 w-5 h-5" />
+          City <ArrowUpDown className="ml-2 size-4" />
         </Button>
       ),
       cell: ({ row }) => <div>{row.getValue("branch_city")}</div>,
@@ -116,7 +116,7 @@ export default function ManageVehicleTable({
           className="hover:bg-transparent"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Price/Day <ArrowUpDown className="pl-1 w-5 h-5" />
+          Price/Day <ArrowUpDown className="ml-2 size-4" />
         </Button>
       ),
       cell: ({ row }) => (
@@ -131,7 +131,7 @@ export default function ManageVehicleTable({
           className="hover:bg-transparent"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Status <ArrowUpDown className="pl-1 w-5 h-5" />
+          Status <ArrowUpDown className="ml-2 size-4" />
         </Button>
       ),
       cell: ({ row }) => {

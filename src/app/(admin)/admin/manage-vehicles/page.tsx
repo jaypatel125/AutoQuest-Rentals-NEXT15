@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import Loader from "@/components/utility/Loader";
 import { fetchAllVehicles } from "./actions";
 import ManageVehicleTable from "@/components/admin/manage-vehicles";
+import { Separator } from "@/components/ui/separator";
 
 export default function ManageVehiclesPage() {
   const router = useRouter();
@@ -41,11 +42,17 @@ export default function ManageVehiclesPage() {
 
   return (
     <div className="py-6 space-y-6">
-      <div className="flex justify-between items-center mb-2">
-        <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-          <ArrowLeft /> Back
-        </Button>
+      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
+        <ArrowLeft /> Back
+      </Button>
+
+      <div className="space-y-2">
+        <h1 className="text-xl font-bold tracking-tight">Manage Vehicles</h1>
+        <p className="text-muted-foreground">
+          View and manage all vehicles listed on the platform.
+        </p>
       </div>
+      <Separator />
 
       <ManageVehicleTable vehicles={vehicles} />
     </div>
