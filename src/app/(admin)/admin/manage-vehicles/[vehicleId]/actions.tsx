@@ -58,3 +58,27 @@ export async function fetchBranches(): Promise<Branches[]> {
   }
   return response.json();
 }
+
+export async function replaceVehiclePhoto(
+  vehicleId: string,
+  file: File,
+  currentImage: string
+) {
+  const form = new FormData();
+  form.append("file", file);
+  form.append("carId", vehicleId);
+  form.append("image", currentImage);
+
+  const res = await fetch("/api/admin/update-image", {
+    method: "POST",
+    body: form,
+    credentials: "include",
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || "Failed to upload image");
+  }
+
+  return res.json();
+}

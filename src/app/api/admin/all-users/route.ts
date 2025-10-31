@@ -151,3 +151,7 @@ export async function GET(req: Request) {
     client.release();
   }
 }
+
+export async function POST() {
+  return NextResponse.json({ status: "API is running" });
+}

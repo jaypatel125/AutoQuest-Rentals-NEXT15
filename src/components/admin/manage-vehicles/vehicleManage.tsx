@@ -32,6 +32,7 @@ import {
 import Image from "next/image";
 import {
   CarWithBranchDetails,
+  replaceVehiclePhoto,
   updateVehicle,
 } from "@/app/(admin)/admin/manage-vehicles/[vehicleId]/actions";
 import { ArrowLeft, Check, Loader2, Trash2 } from "lucide-react";
@@ -68,6 +69,20 @@ export default function VehicleManage({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["vehicles", vehicleId] });
       router.push("/admin/manage-vehicles");
+    },
+  });
+
+  const replacePhotoMutation = useMutation({
+    mutationFn: (file: File) =>
+      replaceVehiclePhoto(vehicleId, file, vehicle.image),
+    onSuccess: (data) => {
+      setFormData((prev) => ({ ...prev, image_url: data.image }));
+      queryClient.invalidateQueries({ queryKey: ["vehicles", vehicleId] });
+      alert("Photo replaced successfully");
+    },
+    onError: (error: unknown) => {
+      console.error(error);
+      alert("Error replacing photo. See console for details.");
     },
   });
 
@@ -144,34 +159,59 @@ export default function VehicleManage({
           {/* Left Column - Image & Basic Info */}
           <div className="xl:col-span-1 space-y-6">
             <Card className="border-0 shadow-sm">
-              <CardHeader className="pb-4">
+              <CardHeader>
                 <CardTitle className="text-lg font-semibold">
                   Vehicle Image
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border border-dashed rounded-xl p-6 bg-muted/20">
+                <div className="space-y-3">
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+                    {" "}
                     <Image
                       src={formData.image_url || "/placeholder-car.png"}
-                      alt={`${formData.brand} ${formData.model}`}
+                      alt={formData.model}
                       fill
                       className="object-cover"
-                    />
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <Label htmlFor="image_url" className="text-sm font-medium">
-                    Image URL
+                    />{" "}
+                  </div>{" "}
+                  <Label htmlFor="file" className="text-sm font-medium">
+                    Replace Photo
                   </Label>
-                  <Input
-                    id="image_url"
-                    name="image_url"
-                    value={formData.image_url}
-                    onChange={handleChange}
-                    placeholder="https://example.com/image.jpg"
-                    className="h-9"
+                  <input
+                    id="file"
+                    type="file"
+                    accept="image/png, image/jpeg, image/jpg, image/webp"
+                    className="text-sm border border-input rounded-md p-2 w-full"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const previewUrl = URL.createObjectURL(file);
+                        setFormData((prev) => ({
+                          ...prev,
+                          image_url: previewUrl,
+                        }));
+                      }
+                    }}
                   />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={replacePhotoMutation.isPending}
+                    onClick={() => {
+                      const fileInput = document.getElementById(
+                        "file"
+                      ) as HTMLInputElement;
+                      const file = fileInput?.files?.[0];
+                      if (!file) return alert("Please select a file first");
+                      replacePhotoMutation.mutate(file);
+                    }}
+                    className="w-full"
+                  >
+                    {replacePhotoMutation.isPending
+                      ? "Replacing..."
+                      : "Replace Photo"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
@@ -238,65 +278,70 @@ export default function VehicleManage({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <Label htmlFor="brand" className="text-sm font-medium">
-                    Brand
-                  </Label>
-                  <Input
-                    id="brand"
-                    name="brand"
-                    value={formData.brand}
-                    onChange={handleChange}
-                    placeholder="e.g., Toyota"
-                    className="h-9"
-                  />
+                <div className="flex w-full gap-4">
+                  <div className="space-y-3 w-full">
+                    <Label htmlFor="brand" className="text-sm font-medium">
+                      Brand
+                    </Label>
+                    <Input
+                      id="brand"
+                      name="brand"
+                      value={formData.brand}
+                      onChange={handleChange}
+                      placeholder="e.g., Toyota"
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-3 w-full">
+                    <Label htmlFor="model" className="text-sm font-medium">
+                      Model
+                    </Label>
+                    <Input
+                      id="model"
+                      name="model"
+                      value={formData.model}
+                      onChange={handleChange}
+                      placeholder="e.g., Camry"
+                      className="h-9"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-3">
-                  <Label htmlFor="model" className="text-sm font-medium">
-                    Model
-                  </Label>
-                  <Input
-                    id="model"
-                    name="model"
-                    value={formData.model}
-                    onChange={handleChange}
-                    placeholder="e.g., Camry"
-                    className="h-9"
-                  />
-                </div>
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="price_per_day"
-                    className="text-sm font-medium"
-                  >
-                    Price per Day ($)
-                  </Label>
-                  <Input
-                    id="price_per_day"
-                    name="price_per_day"
-                    type="number"
-                    value={formData.price_per_day}
-                    onChange={handleChange}
-                    placeholder="0.00"
-                    className="h-9"
-                  />
-                </div>
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="carbon_emissions"
-                    className="text-sm font-medium"
-                  >
-                    Carbon Emissions (g/km)
-                  </Label>
-                  <Input
-                    id="carbon_emissions"
-                    name="carbon_emissions"
-                    type="number"
-                    value={formData.carbon_emissions}
-                    onChange={handleChange}
-                    placeholder="0"
-                    className="h-9"
-                  />
+
+                <div className="flex w-full gap-4">
+                  <div className="space-y-3 w-full">
+                    <Label
+                      htmlFor="price_per_day"
+                      className="text-sm font-medium"
+                    >
+                      Price per Day ($)
+                    </Label>
+                    <Input
+                      id="price_per_day"
+                      name="price_per_day"
+                      type="number"
+                      value={formData.price_per_day}
+                      onChange={handleChange}
+                      placeholder="0.00"
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-3 w-full">
+                    <Label
+                      htmlFor="carbon_emissions"
+                      className="text-sm font-medium"
+                    >
+                      Carbon Emissions (g/km)
+                    </Label>
+                    <Input
+                      id="carbon_emissions"
+                      name="carbon_emissions"
+                      type="number"
+                      value={formData.carbon_emissions}
+                      onChange={handleChange}
+                      placeholder="0"
+                      className="h-9"
+                    />
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -358,7 +403,7 @@ export default function VehicleManage({
                         passenger_capacity: Number(val),
                       }))
                     }
-                    className="grid grid-cols-4 gap-3"
+                    className="grid grid-cols-5 gap-3"
                   >
                     {passengerCapacity.map((capacity) => (
                       <div
@@ -384,69 +429,66 @@ export default function VehicleManage({
                 <Separator />
 
                 {/* Fuel Type & Transmission */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-4">
-                    <Label className="text-sm font-medium">Fuel Type</Label>
-                    <RadioGroup
-                      value={formData.fuel_type}
-                      onValueChange={(val: string) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          fuel_type: val as fuel_type,
-                        }))
-                      }
-                      className="space-y-3"
-                    >
-                      {fuelTypes.map((fuel) => (
-                        <div key={fuel} className="flex items-center space-x-2">
-                          <RadioGroupItem
-                            value={fuel}
-                            id={`fuel-${fuel}`}
-                            className="h-4 w-4"
-                          />
-                          <Label
-                            htmlFor={`fuel-${fuel}`}
-                            className="text-sm font-normal cursor-pointer"
-                          >
-                            {fuel}
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  </div>
-
-                  <div className="space-y-4">
-                    <Label className="text-sm font-medium">Transmission</Label>
-                    <RadioGroup
-                      value={formData.transmission}
-                      onValueChange={(val: string) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          transmission: val as transmission_type,
-                        }))
-                      }
-                      className="space-y-3"
-                    >
-                      {transmissionTypes.map((trans) => (
-                        <div
-                          key={trans}
-                          className="flex items-center space-x-2"
+                <div className="space-y-4">
+                  <Label className="text-sm font-medium">Fuel Type</Label>
+                  <RadioGroup
+                    value={formData.fuel_type}
+                    onValueChange={(val: string) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        fuel_type: val as fuel_type,
+                      }))
+                    }
+                    className="grid grid-cols-5 gap-3"
+                  >
+                    {fuelTypes.map((fuel) => (
+                      <div key={fuel} className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value={fuel}
+                          id={`fuel-${fuel}`}
+                          className="h-4 w-4"
+                        />
+                        <Label
+                          htmlFor={`fuel-${fuel}`}
+                          className="text-sm font-normal cursor-pointer"
                         >
-                          <RadioGroupItem
-                            value={trans}
-                            id={`trans-${trans}`}
-                            className="h-4 w-4"
-                          />
-                          <Label
-                            htmlFor={`trans-${trans}`}
-                            className="text-sm font-normal cursor-pointer"
-                          >
-                            {trans}
-                          </Label>
-                        </div>
-                      ))}
-                    </RadioGroup>
-                  </div>
+                          {fuel}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-4">
+                  <Label className="text-sm font-medium">Transmission</Label>
+                  <RadioGroup
+                    value={formData.transmission}
+                    onValueChange={(val: string) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        transmission: val as transmission_type,
+                      }))
+                    }
+                    className="grid grid-cols-5 gap-3"
+                  >
+                    {transmissionTypes.map((trans) => (
+                      <div key={trans} className="flex items-center space-x-2">
+                        <RadioGroupItem
+                          value={trans}
+                          id={`trans-${trans}`}
+                          className="h-4 w-4"
+                        />
+                        <Label
+                          htmlFor={`trans-${trans}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {trans}
+                        </Label>
+                      </div>
+                    ))}
+                  </RadioGroup>
                 </div>
               </CardContent>
             </Card>
