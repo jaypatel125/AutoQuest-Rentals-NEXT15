@@ -102,11 +102,6 @@ export default function Checkout({ user }: { user: IUser }) {
 
   return (
     <div className="space-y-8 my-6">
-      {/* Back button */}
-      <Button variant="ghost" onClick={() => router.back()}>
-        <ArrowLeft /> Back
-      </Button>
-
       <div className="grid md:grid-cols-2 gap-10 items-start">
         {/* Car image */}
         <Image

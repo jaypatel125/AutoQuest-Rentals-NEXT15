@@ -2,29 +2,11 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Gift, Leaf, Trophy } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { useRouter } from "next/navigation";
+import { Gift, Leaf, Trophy } from "lucide-react";
 
 const RewardsPage = () => {
-  const router = useRouter();
   return (
     <div className="py-6 space-y-10">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft /> Back
-      </Button>
-
-      <div className="space-y-2">
-        <h1 className="text-xl font-bold tracking-tight">EV Rewards Program</h1>
-        <p className="text-muted-foreground">
-          Drive green, earn rewards, and enjoy exclusive benefits every time you
-          rent an electric vehicle.
-        </p>
-      </div>
-
-      <Separator />
-
       {/* Reward Highlights */}
       <section className="grid md:grid-cols-3 gap-8">
         <Card className="text-center hover:shadow-md transition">

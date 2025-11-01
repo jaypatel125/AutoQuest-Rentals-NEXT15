@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/utility/Loader";
-import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import type { Booking } from "@/app/(main)/bookings/actions";
 import { Separator } from "../../ui/separator";
@@ -39,20 +38,7 @@ export default function Bookings({ data, isLoading, isError }: Props) {
   }
 
   return (
-    <div className="py-6 space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft /> Back
-      </Button>
-
-      <div className="space-y-2">
-        <h1 className="text-xl font-bold tracking-tight">My Bookings</h1>
-        <p className="text-muted-foreground">
-          Manage and view your rental bookings
-        </p>
-      </div>
-
-      <Separator />
-
+    <div>
       {data && data.length > 0 ? (
         <div className="space-y-4">
           {data.map((booking) => (

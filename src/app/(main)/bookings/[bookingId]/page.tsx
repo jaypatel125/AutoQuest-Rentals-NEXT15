@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import getBooking, { Booking } from "./actions";
 import BookingDetail from "@/components/main/booking-details";
+import PageLayout from "@/components/common/page-layout";
 
 export default function BookingDetailPage() {
   const params = useParams();
@@ -19,9 +20,15 @@ export default function BookingDetailPage() {
     enabled: !!bookingId,
   });
 
-  console.log(booking);
+  if (isLoading) {
+    return;
+  }
+
+  const description = `ID: ${booking!.booking_id}`;
 
   return (
-    <BookingDetail booking={booking} isLoading={isLoading} error={error} />
+    <PageLayout title="Booking Details" description={description}>
+      <BookingDetail booking={booking} isLoading={isLoading} error={error} />
+    </PageLayout>
   );
 }

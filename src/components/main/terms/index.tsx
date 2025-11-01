@@ -1,30 +1,10 @@
 "use client";
 
 import React from "react";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "../../ui/button";
-import { useRouter } from "next/navigation";
-import { Separator } from "../../ui/separator";
 
 export default function TermsDetails() {
-  const router = useRouter();
   return (
     <div className="py-6 space-y-10">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft /> Back
-      </Button>
-
-      <div className="space-y-2">
-        <h1 className="text-xl font-bold tracking-tight">
-          Rental Terms & Conditions
-        </h1>
-        <p className="text-muted-foreground">
-          Please read these terms carefully before renting a vehicle with us. By
-          booking a rental, you agree to the following policies and conditions.
-        </p>
-      </div>
-
-      <Separator />
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold">1. General Terms</h2>
         <ul className="list-disc list-inside text-muted-foreground space-y-2">

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import ConfirmationDetails from "@/components/main/confirmation";
 import { getCheckoutSession } from "@/app/(main)/confirmation/action";
-import { getServerSideSession } from "@/hooks/SessionHandler";
 interface ConfirmationPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
@@ -18,10 +17,6 @@ export default async function ConfirmationPage({
 
   const { status, customer_details, amount_total, currency, metadata } =
     session;
-
-  const { user } = await getServerSideSession();
-
-  console.log("User in confirmation page:", user);
 
   if (status === "open") {
     return redirect("/");

@@ -10,6 +10,7 @@ import { useSearchStore } from "@/context/searchStore";
 import { Cars as CarType } from "@/lib/database/table-types";
 import { fetchVehicle } from "./actions";
 import VehicleDetails from "@/components/main/select-vehicle-details";
+import PageLayout from "@/components/common/page-layout";
 
 export default function VehicleDetailPage() {
   const params = useParams();
@@ -53,19 +54,25 @@ export default function VehicleDetailPage() {
 
   return (
     <>
-      <VehicleDetails
-        car={Car}
-        onRentNow={() => {
-          useSearchStore.getState().setSelectedCar(Car);
-          if (Car.fuel_type === "Electric") {
-            router.push(`/checkout`);
-            return;
-          }
+      <PageLayout
+        title="Rent Now"
+        description="
+        Rent your perfect vehicle easily and quickly with our seamless booking process.
+      "
+      >
+        <VehicleDetails
+          car={Car}
+          onRentNow={() => {
+            useSearchStore.getState().setSelectedCar(Car);
+            if (Car.fuel_type === "Electric") {
+              router.push(`/checkout`);
+              return;
+            }
 
-          setDialogOpen(true);
-        }}
-        onBack={() => router.back()}
-      />
+            setDialogOpen(true);
+          }}
+        />
+      </PageLayout>
 
       <EVPromotionDialog
         open={dialogOpen}

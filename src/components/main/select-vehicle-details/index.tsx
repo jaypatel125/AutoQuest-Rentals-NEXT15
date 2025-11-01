@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, Fuel, CarFront, ArrowLeft, ArrowRight } from "lucide-react";
+import { Users, Fuel, CarFront, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { Cars as CarType } from "@/lib/database/table-types";
 import { formatPrice } from "@/lib/utils";
@@ -10,16 +10,11 @@ import { formatPrice } from "@/lib/utils";
 type Props = {
   car: CarType;
   onRentNow: () => void;
-  onBack: () => void;
 };
 
-export default function VehicleDetails({ car, onRentNow, onBack }: Props) {
+export default function VehicleDetails({ car, onRentNow }: Props) {
   return (
     <div className="space-y-6 my-6">
-      <Button variant="ghost" onClick={onBack}>
-        <ArrowLeft /> Back
-      </Button>
-
       <div className="grid md:grid-cols-2 gap-10 items-start">
         <Image
           src={car.image || "/car-placeholder.png"}
@@ -30,9 +25,9 @@ export default function VehicleDetails({ car, onRentNow, onBack }: Props) {
         />
 
         <div className=" space-y-8">
-          <h1 className="text-3xl font-bold">
+          <h3 className="text-2xl font-bold">
             {car.brand} {car.model}
-          </h1>
+          </h3>
 
           <div>
             <span className="font-semibold text-lg">
