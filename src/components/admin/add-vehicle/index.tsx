@@ -1,7 +1,7 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter, useParams } from "next/navigation";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -13,97 +13,71 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
   body_type,
-  Branches,
   fuel_type,
   passenger_capacity,
   transmission_type,
 } from "@/lib/database/table-types";
 import Image from "next/image";
-import {
-  CarWithBranchDetails,
-  replaceVehiclePhoto,
-  updateVehicle,
-} from "@/app/(admin)/admin/manage-vehicles/[vehicleId]/actions";
-import { ArrowLeft, Check, Loader2, Trash2 } from "lucide-react";
+import { createVehicle } from "@/app/(admin)/admin/add-vehicle/actions";
+import { Loader2, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { fetchBranches } from "@/app/actions";
+import { addVehicleSchema } from "@/lib/zod";
 
-type formDataType = {
+export type CarsInput = {
+  branch_id: string;
   brand: string;
   model: string;
-  branch_id: string;
-  price_per_day: number;
-  carbon_emissions: number;
-  body_type: body_type;
-  passenger_capacity: number;
-  fuel_type: fuel_type;
   transmission: transmission_type;
+  fuel_type: fuel_type;
+  passenger_capacity: number;
+  body_type: body_type;
+  carbon_emissions: number;
+  price_per_day: number;
   available: boolean;
-  image_url: string;
+  image: File | undefined;
+  imageUrl: string;
 };
 
-export default function VehicleManage({
-  vehicle,
-  branches,
-}: {
-  vehicle: CarWithBranchDetails;
-  branches: Branches[];
-}) {
+export default function AddVehicleForm() {
   const router = useRouter();
-  const params = useParams();
-  const vehicleId = params["vehicleId"] as string;
   const queryClient = useQueryClient();
 
-  const mutation = useMutation({
-    mutationFn: (formData: formDataType) => updateVehicle(vehicleId, formData),
+  const [formData, setFormData] = useState<CarsInput>({
+    brand: "",
+    model: "",
+    branch_id: "",
+    price_per_day: 0,
+    carbon_emissions: 0,
+    body_type: "Sedan",
+    passenger_capacity: 4,
+    fuel_type: "Petrol",
+    transmission: "Automatic",
+    available: true,
+    image: undefined,
+    imageUrl: "",
+  });
+
+  const { data: branches = [] } = useQuery({
+    queryKey: ["branches"],
+    queryFn: fetchBranches,
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: CarsInput) => createVehicle(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["vehicle", vehicleId] });
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       router.push("/admin/manage-vehicles");
     },
   });
 
-  const replacePhotoMutation = useMutation({
-    mutationFn: (file: File) =>
-      replaceVehiclePhoto(vehicleId, file, vehicle.image),
-    onSuccess: (data) => {
-      setFormData((prev) => ({ ...prev, image_url: data.image }));
-      queryClient.invalidateQueries({ queryKey: ["vehicles", vehicleId] });
-      alert("Photo replaced successfully");
-    },
-    onError: (error: unknown) => {
-      console.error(error);
-      alert("Error replacing photo. See console for details.");
-    },
-  });
-
-  const [formData, setFormData] = useState<formDataType>({
-    brand: vehicle.brand,
-    model: vehicle.model,
-    branch_id: vehicle.branch_id?.toString(),
-    price_per_day: vehicle.price_per_day,
-    carbon_emissions: vehicle.carbon_emissions,
-    body_type: vehicle.body_type as body_type,
-    passenger_capacity: vehicle.passenger_capacity,
-    fuel_type: vehicle.fuel_type as fuel_type,
-    transmission: vehicle.transmission as transmission_type,
-    available: vehicle.available,
-    image_url: vehicle.image,
-  });
-
   const fuelTypes: fuel_type[] = ["Diesel", "Electric", "Hybrid", "Petrol"];
-  const passengerCapacity: passenger_capacity[] = [2, 4, 6, 7, 8];
-
+  const passengerCapacity: passenger_capacity[] = [2, 4, 5, 6, 7, 8];
   const bodyTypes: body_type[] = [
     "Convertible",
     "Coupe",
@@ -129,9 +103,16 @@ export default function VehicleManage({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate({
+
+    const parsed = addVehicleSchema.safeParse(formData);
+
+    if (!parsed.success) {
+      console.error(parsed.error.flatten().fieldErrors);
+      return;
+    }
+
+    createMutation.mutate({
       ...formData,
-      branch_id: formData.branch_id,
       price_per_day: Number(formData.price_per_day),
       passenger_capacity: Number(formData.passenger_capacity),
       carbon_emissions: Number(formData.carbon_emissions),
@@ -140,16 +121,10 @@ export default function VehicleManage({
 
   return (
     <div className="py-6 space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft /> Back
-      </Button>
-
       <div className="space-y-2">
-        <h1 className="text-xl font-bold tracking-tight">
-          Manage Vehicle - {vehicle.brand} {vehicle.model}
-        </h1>
+        <h1 className="text-xl font-bold tracking-tight">Add New Vehicle</h1>
         <p className="text-muted-foreground">
-          Update vehicle details and specifications
+          Fill in vehicle details and upload an image
         </p>
       </div>
 
@@ -157,7 +132,7 @@ export default function VehicleManage({
 
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* Left Column - Image & Basic Info */}
+          {/* Left Column - Image */}
           <div className="xl:col-span-1 space-y-6">
             <Card className="border-0 shadow-sm">
               <CardHeader>
@@ -166,64 +141,44 @@ export default function VehicleManage({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
-                    {" "}
-                    <Image
-                      src={formData.image_url || "/placeholder-car.png"}
-                      alt={formData.model}
-                      fill
-                      className="object-cover"
-                    />{" "}
-                  </div>{" "}
-                  <Label htmlFor="file" className="text-sm font-medium">
-                    Replace Photo
-                  </Label>
-                  <input
-                    id="file"
-                    type="file"
-                    accept="image/png, image/jpeg, image/jpg, image/webp"
-                    className="text-sm border border-input rounded-md p-2 w-full"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const previewUrl = URL.createObjectURL(file);
-                        setFormData((prev) => ({
-                          ...prev,
-                          image_url: previewUrl,
-                        }));
-                      }
-                    }}
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+                  <Image
+                    src={formData.imageUrl || "/placeholder-car.png"}
+                    alt={formData.model || "Vehicle"}
+                    fill
+                    className="object-cover"
                   />
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    disabled={replacePhotoMutation.isPending}
-                    onClick={() => {
-                      const fileInput = document.getElementById(
-                        "file"
-                      ) as HTMLInputElement;
-                      const file = fileInput?.files?.[0];
-                      if (!file) return alert("Please select a file first");
-                      replacePhotoMutation.mutate(file);
-                    }}
-                    className="w-full"
-                  >
-                    {replacePhotoMutation.isPending
-                      ? "Replacing..."
-                      : "Replace Photo"}
-                  </Button>
                 </div>
+
+                <Label htmlFor="file" className="text-sm font-medium">
+                  Upload Photo
+                </Label>
+                <Input
+                  id="file"
+                  type="file"
+                  accept="image/png, image/jpeg, image/jpg, image/webp"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const previewUrl = URL.createObjectURL(file);
+                      setFormData((prev) => ({
+                        ...prev,
+                        image: file,
+                        imageUrl: previewUrl,
+                      }));
+                    }
+                  }}
+                />
               </CardContent>
             </Card>
 
             <Card className="border-0 shadow-sm">
-              <CardHeader className="pb-0">
+              <CardHeader>
                 <CardTitle className="text-lg font-semibold">
                   Availability & Branch
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent>
                 <div className="space-y-3">
                   <Label htmlFor="branch_id" className="text-sm font-medium">
                     Assigned Branch
@@ -245,7 +200,6 @@ export default function VehicleManage({
                         <SelectItem
                           key={branch.id}
                           value={branch.id.toString()}
-                          className="text-sm"
                         >
                           {branch.name} - {branch.city}
                         </SelectItem>
@@ -254,11 +208,11 @@ export default function VehicleManage({
                   </Select>
                 </div>
 
-                <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-3 mt-4">
                   <Switch
                     id="available"
                     checked={formData.available}
-                    onCheckedChange={(checked: boolean) =>
+                    onCheckedChange={(checked) =>
                       setFormData((prev) => ({ ...prev, available: checked }))
                     }
                   />
@@ -270,17 +224,17 @@ export default function VehicleManage({
             </Card>
           </div>
 
-          {/* Right Column - Specifications */}
+          {/* Right Column - Vehicle Info */}
           <div className="xl:col-span-2 space-y-6 mb-6">
             <Card className="border-0 shadow-sm">
-              <CardHeader className="pb-4">
+              <CardHeader>
                 <CardTitle className="text-lg font-semibold">
-                  Basic Information
+                  Vehicle Details
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex w-full gap-4">
-                  <div className="space-y-3 w-full">
+                <div className="flex gap-4">
+                  <div className="w-full">
                     <Label htmlFor="brand" className="text-sm font-medium">
                       Brand
                     </Label>
@@ -293,7 +247,7 @@ export default function VehicleManage({
                       className="h-9"
                     />
                   </div>
-                  <div className="space-y-3 w-full">
+                  <div className="w-full">
                     <Label htmlFor="model" className="text-sm font-medium">
                       Model
                     </Label>
@@ -308,8 +262,8 @@ export default function VehicleManage({
                   </div>
                 </div>
 
-                <div className="flex w-full gap-4">
-                  <div className="space-y-3 w-full">
+                <div className="flex gap-4 mt-2">
+                  <div className="w-full">
                     <Label
                       htmlFor="price_per_day"
                       className="text-sm font-medium"
@@ -322,11 +276,10 @@ export default function VehicleManage({
                       type="number"
                       value={formData.price_per_day}
                       onChange={handleChange}
-                      placeholder="0.00"
                       className="h-9"
                     />
                   </div>
-                  <div className="space-y-3 w-full">
+                  <div className="w-full">
                     <Label
                       htmlFor="carbon_emissions"
                       className="text-sm font-medium"
@@ -339,27 +292,23 @@ export default function VehicleManage({
                       type="number"
                       value={formData.carbon_emissions}
                       onChange={handleChange}
-                      placeholder="0"
                       className="h-9"
                     />
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            {/* Specifications */}
             <Card className="border-0 shadow-sm">
-              <CardHeader className="pb-4">
-                <div className="space-y-2">
-                  <CardTitle className="text-lg font-semibold">
-                    Vehicle Specifications
-                  </CardTitle>
-                  <CardDescription className="text-sm">
-                    Configure the technical details and availability
-                  </CardDescription>
-                </div>
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold">
+                  Specifications
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Vehicle Class */}
-                <div className="space-y-4">
+                {/* Body Type */}
+                <div>
                   <Label className="text-sm font-medium">Vehicle Class</Label>
                   <RadioGroup
                     value={formData.body_type}
@@ -369,7 +318,7 @@ export default function VehicleManage({
                         body_type: val as body_type,
                       }))
                     }
-                    className="grid grid-cols-2 md:grid-cols-4 gap-3"
+                    className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2"
                   >
                     {bodyTypes.map((type) => (
                       <div key={type} className="flex items-center space-x-2">
@@ -392,7 +341,7 @@ export default function VehicleManage({
                 <Separator />
 
                 {/* Passenger Capacity */}
-                <div className="space-y-4">
+                <div>
                   <Label className="text-sm font-medium">
                     Passenger Capacity
                   </Label>
@@ -404,23 +353,20 @@ export default function VehicleManage({
                         passenger_capacity: Number(val),
                       }))
                     }
-                    className="grid grid-cols-5 gap-3"
+                    className="grid grid-cols-5 gap-3 mt-2"
                   >
-                    {passengerCapacity.map((capacity) => (
-                      <div
-                        key={capacity}
-                        className="flex items-center space-x-2"
-                      >
+                    {passengerCapacity.map((cap) => (
+                      <div key={cap} className="flex items-center space-x-2">
                         <RadioGroupItem
-                          value={capacity.toString()}
-                          id={`capacity-${capacity}`}
+                          value={cap.toString()}
+                          id={`cap-${cap}`}
                           className="h-4 w-4"
                         />
                         <Label
-                          htmlFor={`capacity-${capacity}`}
+                          htmlFor={`cap-${cap}`}
                           className="text-sm font-normal cursor-pointer"
                         >
-                          {capacity} Seats
+                          {cap} Seats
                         </Label>
                       </div>
                     ))}
@@ -429,8 +375,8 @@ export default function VehicleManage({
 
                 <Separator />
 
-                {/* Fuel Type & Transmission */}
-                <div className="space-y-4">
+                {/* Fuel Type */}
+                <div>
                   <Label className="text-sm font-medium">Fuel Type</Label>
                   <RadioGroup
                     value={formData.fuel_type}
@@ -440,7 +386,7 @@ export default function VehicleManage({
                         fuel_type: val as fuel_type,
                       }))
                     }
-                    className="grid grid-cols-5 gap-3"
+                    className="grid grid-cols-5 gap-3 mt-2"
                   >
                     {fuelTypes.map((fuel) => (
                       <div key={fuel} className="flex items-center space-x-2">
@@ -462,7 +408,8 @@ export default function VehicleManage({
 
                 <Separator />
 
-                <div className="space-y-4">
+                {/* Transmission */}
+                <div>
                   <Label className="text-sm font-medium">Transmission</Label>
                   <RadioGroup
                     value={formData.transmission}
@@ -472,20 +419,20 @@ export default function VehicleManage({
                         transmission: val as transmission_type,
                       }))
                     }
-                    className="grid grid-cols-5 gap-3"
+                    className="grid grid-cols-5 gap-3 mt-2"
                   >
-                    {transmissionTypes.map((trans) => (
-                      <div key={trans} className="flex items-center space-x-2">
+                    {transmissionTypes.map((t) => (
+                      <div key={t} className="flex items-center space-x-2">
                         <RadioGroupItem
-                          value={trans}
-                          id={`trans-${trans}`}
+                          value={t}
+                          id={`trans-${t}`}
                           className="h-4 w-4"
                         />
                         <Label
-                          htmlFor={`trans-${trans}`}
+                          htmlFor={`trans-${t}`}
                           className="text-sm font-normal cursor-pointer"
                         >
-                          {trans}
+                          {t}
                         </Label>
                       </div>
                     ))}
@@ -494,48 +441,28 @@ export default function VehicleManage({
               </CardContent>
             </Card>
 
-            {/* Action Buttons */}
-
-            <div className="flex flex-col sm:flex-row gap-3 justify-end">
+            {/* Submit */}
+            <div className="flex justify-end gap-3 mt-4">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => router.push("/admin/manage-vehicles")}
-                className="sm:w-auto w-full order-2 sm:order-1"
               >
                 Cancel
               </Button>
-              <div className="flex gap-3 order-1 sm:order-2 sm:w-auto w-full">
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => {
-                    // Add delete functionality here
-                    console.log("Delete vehicle", vehicleId);
-                  }}
-                  className="flex-1 sm:flex-none"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={mutation.isPending}
-                  className="flex-1 sm:flex-none min-w-32"
-                >
-                  {mutation.isPending ? (
-                    <>
-                      <Loader2 className="spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      Update Vehicle
-                    </>
-                  )}
-                </Button>
-              </div>
+              <Button type="submit" disabled={createMutation.isPending}>
+                {createMutation.isPending ? (
+                  <>
+                    <Loader2 className="animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 mr-2" />
+                    Add Vehicle
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </div>

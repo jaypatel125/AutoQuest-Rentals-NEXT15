@@ -1,4 +1,4 @@
-import { object, string } from "zod";
+import { object, string, z } from "zod";
 
 export const getPasswordSchema = (type: "password" | "confirmPassword") =>
   string()
@@ -28,4 +28,34 @@ export const signUpSchema = object({
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
+});
+
+export const addVehicleSchema = z.object({
+  branch_id: z.string().min(1, { message: "Branch is required" }),
+  brand: z.string().min(1, { message: "Brand is required" }),
+  model: z.string().min(1, { message: "Model is required" }),
+  transmission: z.string().min(1, { message: "Transmission type is required" }),
+  fuel_type: z.string().min(1, { message: "Fuel type is required" }),
+  passenger_capacity: z
+    .union([
+      z.string().min(1, { message: "Passenger capacity is required" }),
+      z.number().min(1, { message: "Passenger capacity is required" }),
+    ])
+    .transform((val) => Number(val)),
+  body_type: z.string().min(1, { message: "Body type is required" }),
+  carbon_emissions: z
+    .union([
+      z.string().min(1, { message: "Carbon emissions are required" }),
+      z.number().min(1, { message: "Carbon emissions are required" }),
+    ])
+    .transform((val) => Number(val)),
+  price_per_day: z
+    .union([
+      z.string().min(1, { message: "Price per day is required" }),
+      z.number().min(1, { message: "Price per day is required" }),
+    ])
+    .transform((val) => Number(val)),
+  available: z.boolean(),
+  image: z.union([z.instanceof(File), z.string()]).optional(),
+  imageUrl: z.string().optional(),
 });
