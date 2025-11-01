@@ -4,8 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { fetchVehicle } from "./actions";
 import Loader from "@/components/utility/Loader";
-import VehicleManage from "@/components/admin/manage-vehicles/vehicleManage";
+import VehicleManage from "@/components/admin/edit-vehicle";
 import { fetchBranches } from "@/app/actions";
+import PageLayout from "@/components/common/page-layout";
 
 export default function EditVehiclePage() {
   const params = useParams();
@@ -43,5 +44,14 @@ export default function EditVehiclePage() {
       </div>
     );
 
-  return <VehicleManage branches={branches} vehicle={vehicle} />;
+  const title = `Manage Vehicle - ${vehicle.brand} ${vehicle.model}`;
+
+  return (
+    <PageLayout
+      title={title}
+      description="Update vehicle details and specifications"
+    >
+      <VehicleManage branches={branches} vehicle={vehicle} />
+    </PageLayout>
+  );
 }

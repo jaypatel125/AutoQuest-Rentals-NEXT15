@@ -37,6 +37,7 @@ import {
 } from "@/app/(admin)/admin/manage-vehicles/[vehicleId]/actions";
 import { ArrowLeft, Check, Loader2, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import PageLayout from "@/components/common/page-layout";
 
 type formDataType = {
   brand: string;
@@ -139,22 +140,7 @@ export default function VehicleManage({
   };
 
   return (
-    <div className="py-6 space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft /> Back
-      </Button>
-
-      <div className="space-y-2">
-        <h1 className="text-xl font-bold tracking-tight">
-          Manage Vehicle - {vehicle.brand} {vehicle.model}
-        </h1>
-        <p className="text-muted-foreground">
-          Update vehicle details and specifications
-        </p>
-      </div>
-
-      <Separator />
-
+    <div>
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           {/* Left Column - Image & Basic Info */}

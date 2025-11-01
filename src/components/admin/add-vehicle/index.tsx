@@ -28,6 +28,7 @@ import { Loader2, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { fetchBranches } from "@/app/actions";
 import { addVehicleSchema } from "@/lib/zod";
+import PageLayout from "@/components/common/page-layout";
 
 export type CarsInput = {
   branch_id: string;
@@ -120,16 +121,7 @@ export default function AddVehicleForm() {
   };
 
   return (
-    <div className="py-6 space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-xl font-bold tracking-tight">Add New Vehicle</h1>
-        <p className="text-muted-foreground">
-          Fill in vehicle details and upload an image
-        </p>
-      </div>
-
-      <Separator />
-
+    <div>
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           {/* Left Column - Image */}
@@ -466,7 +458,7 @@ export default function AddVehicleForm() {
             </div>
           </div>
         </div>
-      </form>
+      </form>{" "}
     </div>
   );
 }

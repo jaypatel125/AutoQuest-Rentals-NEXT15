@@ -34,7 +34,7 @@ export interface Booking {
 }
 
 export default async function getBooking(bookingId: string): Promise<Booking> {
-  const res = await fetch(`/api/get-bookings/${bookingId}`);
+  const res = await fetch(`/api/bookings/${bookingId}`);
   if (!res.ok) throw new Error("Failed to fetch booking");
   return res.json();
 }

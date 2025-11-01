@@ -34,7 +34,11 @@ import { useRouter } from "next/navigation";
 import { useUserBanMutations } from "@/hooks/use-ban-user";
 import { CustomersItem } from "@/app/api/admin/all-users/route";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { adminCustomersKeys, adminSafeDeleteUser } from "../actions";
+import {
+  adminCustomersKeys,
+  adminSafeDeleteUser,
+} from "../../../app/(admin)/admin/manage-users/actions";
+import Loader from "@/components/utility/Loader";
 
 export function CustomersTable({
   rows,
@@ -198,7 +202,7 @@ export function CustomersTable({
         accessorKey: "role",
         header: "Role",
         cell: ({ row }) => (
-          <div className=" font-medium">{row.original.role}</div>
+          <div className="font-medium">{row.original.role}</div>
         ),
       },
       {
@@ -211,13 +215,15 @@ export function CustomersTable({
 
           return (
             <DropdownMenu>
-              {!isSelf && (
+              {!isSelf ? (
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0">
                     <span className="sr-only">Open menu</span>
                     <MoreHorizontal />
                   </Button>
                 </DropdownMenuTrigger>
+              ) : (
+                <div className="h-8 w-8 p-0"></div>
               )}
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
@@ -330,6 +336,18 @@ export function CustomersTable({
   });
 
   const visibleCols = table.getVisibleLeafColumns().length;
+
+  if (loading) {
+    return (
+      <div className="w-full mt-24 flex justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader />
+          <h3 className="font-semibold text-xl">Loading bookings...</h3>
+          <p>This won’t take long!</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">

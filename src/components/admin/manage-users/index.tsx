@@ -6,23 +6,17 @@ import {
   adminCustomersKeys,
   type CustomersPage,
   fetchAdminCustomersPage,
-} from "../actions";
+} from "../../../app/(admin)/admin/manage-users/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CustomersTable } from "./customers";
+import { CustomersTable } from "@/components/admin/manage-users/customers-table";
 import { useUserRoleMutations } from "@/hooks/use-toggle-role";
-import { IUser } from "../../../../../../auth-client";
+import { IUser } from "../../../../auth-client";
 import { CustomersItem } from "@/app/api/admin/all-users/route";
-import { Separator } from "@/components/ui/separator";
-import { ArrowLeft } from "lucide-react";
-import { useRouter } from "next/navigation";
 
 export default function CustomersOverview({ user }: { user: IUser }) {
   const [q, setQ] = React.useState<string>("");
   const { setUserRole } = useUserRoleMutations();
-
-  const router = useRouter();
-
   const {
     data,
     isLoading,
@@ -68,49 +62,39 @@ export default function CustomersOverview({ user }: { user: IUser }) {
   );
 
   return (
-    <div className="py-6 space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft /> Back
-      </Button>
-
-      <div className="space-y-2">
-        <h1 className="text-xl font-bold tracking-tight">Manage Users</h1>
-        <p className="text-muted-foreground">
-          View and manage all users registered on the platform.
-        </p>
-      </div>
-
-      <Separator />
-      <div className="flex items-center gap-2">
-        <Input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search name, username, or email…"
-          className="w-full max-w-sm"
-        />
-        <Button onClick={() => refetch()} variant="outline">
-          Search
-        </Button>
-      </div>
-
-      {isError && (
-        <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
-          {(error as Error)?.message ?? "Failed to load customers."}
+    <div>
+      <div className="space-y-8">
+        <div className="flex items-center gap-2">
+          <Input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search name, username, or email…"
+            className="w-full max-w-sm"
+          />
+          <Button onClick={() => refetch()} variant="outline">
+            Search
+          </Button>
         </div>
-      )}
-      <CustomersTable
-        rows={customers}
-        loading={isLoading || isFetchingNextPage}
-        hasNextPage={!!hasNextPage}
-        onLoadMore={() => fetchNextPage()}
-        onToggleAdmin={async (id, makeAdmin) => {
-          await setUserRole({
-            userId: id,
-            role: makeAdmin ? "admin" : "user",
-          });
-        }}
-        currentUserId={user.id}
-      />
+
+        {isError && (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
+            {(error as Error)?.message ?? "Failed to load customers."}
+          </div>
+        )}
+        <CustomersTable
+          rows={customers}
+          loading={isLoading || isFetchingNextPage}
+          hasNextPage={!!hasNextPage}
+          onLoadMore={() => fetchNextPage()}
+          onToggleAdmin={async (id, makeAdmin) => {
+            await setUserRole({
+              userId: id,
+              role: makeAdmin ? "admin" : "user",
+            });
+          }}
+          currentUserId={user.id}
+        />
+      </div>
     </div>
   );
 }

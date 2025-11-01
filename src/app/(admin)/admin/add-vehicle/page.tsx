@@ -1,9 +1,13 @@
 import AddVehicleForm from "@/components/admin/add-vehicle";
+import PageLayout from "@/components/common/page-layout";
 
 export default function AddVehiclePage() {
   return (
-    <section className="container mx-auto px-4 py-6">
+    <PageLayout
+      title="Add New Vehicle"
+      description="Fill in vehicle details and upload an image"
+    >
       <AddVehicleForm />
-    </section>
+    </PageLayout>
   );
 }

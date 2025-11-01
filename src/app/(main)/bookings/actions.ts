@@ -25,9 +25,7 @@ export type Booking = {
 };
 
 export async function getAllBookingsByUserId(): Promise<Booking[]> {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/get-bookings`
-  );
+  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/bookings`);
 
   if (!res.ok) {
     throw new Error("Failed to fetch bookings");

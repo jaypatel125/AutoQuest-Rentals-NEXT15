@@ -1,9 +1,15 @@
-import React from 'react'
+"use client";
 
-const ManageBookings = () => {
+import BookingsOverview from "@/components/admin/manage-bookings";
+import PageLayout from "@/components/common/page-layout";
+
+export default function Page() {
   return (
-    <div>ManageBookings</div>
-  )
+    <PageLayout
+      title="Manage Bookings"
+      description="View and manage all bookings made on the platform."
+    >
+      <BookingsOverview />
+    </PageLayout>
+  );
 }
-
-export default ManageBookings
