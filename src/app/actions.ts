@@ -1,4 +1,5 @@
 "use server";
+import { Branches } from "@/lib/database/table-types";
 import { neon } from "@neondatabase/serverless";
 
 export async function getData() {
@@ -20,4 +21,12 @@ export async function fetchCarBodyTypes() {
   );
   const data = await response.json();
   return data;
+}
+
+export async function fetchBranches(): Promise<Branches[]> {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/branch`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch cities");
+  }
+  return response.json();
 }

@@ -2,9 +2,10 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import { fetchBranches, fetchVehicle } from "./actions";
+import { fetchVehicle } from "./actions";
 import Loader from "@/components/utility/Loader";
 import VehicleManage from "@/components/admin/manage-vehicles/vehicleManage";
+import { fetchBranches } from "@/app/actions";
 
 export default function EditVehiclePage() {
   const params = useParams();

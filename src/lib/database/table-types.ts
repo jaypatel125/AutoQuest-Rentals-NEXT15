@@ -185,17 +185,17 @@ export interface Cars {
 }
 export interface CarsInput {
   id?: string;
-  branch_id?: string | null;
+  branch_id?: string;
   brand: string;
   model: string;
-  transmission?: transmission_type | null;
-  fuel_type?: fuel_type | null;
-  passenger_capacity?: number | null;
-  body_type?: body_type | null;
-  carbon_emissions?: number | null;
+  transmission?: transmission_type;
+  fuel_type?: fuel_type;
+  passenger_capacity: number;
+  body_type?: body_type;
+  carbon_emissions?: number;
   price_per_day: number;
   available?: boolean;
-  image?: string | null;
+  image?: string;
   created_at?: Date;
   updated_at?: Date;
 }

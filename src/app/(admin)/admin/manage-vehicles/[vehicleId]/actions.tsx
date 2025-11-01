@@ -51,13 +51,7 @@ export async function updateVehicle(vehicleId: string, data: any) {
   }
 }
 
-export async function fetchBranches(): Promise<Branches[]> {
-  const response = await fetch("/api/branch");
-  if (!response.ok) {
-    throw new Error("Failed to fetch cities");
-  }
-  return response.json();
-}
+
 
 export async function replaceVehiclePhoto(
   vehicleId: string,

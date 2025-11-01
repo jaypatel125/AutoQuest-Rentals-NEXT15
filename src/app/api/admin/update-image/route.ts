@@ -117,7 +117,7 @@ export async function POST(request: Request) {
       const sanitized = file.name
         .replace(/\s+/g, "_")
         .replace(/[^a-zA-Z0-9._-]/g, "");
-      keyToUse = `cropped_images/${sanitized}-${Date.now()}${ext}`;
+      keyToUse = `vehicles/${sanitized}-${Date.now()}${ext}`;
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());

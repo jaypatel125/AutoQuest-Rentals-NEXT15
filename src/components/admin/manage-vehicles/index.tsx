@@ -223,7 +223,7 @@ export default function ManageVehicleTable({
                 ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Link href="/admin/manage-vehicles/add-vehicle">
+          <Link href="/admin/add-vehicle">
             <Button>Add Vehicle</Button>
           </Link>
         </div>
