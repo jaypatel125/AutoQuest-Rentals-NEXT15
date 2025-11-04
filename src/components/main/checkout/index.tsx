@@ -12,7 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ArrowLeft, ArrowRight, Info } from "lucide-react";
+import { ArrowRight, Info } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { handleCheckout } from "@/app/(main)/checkout/actions";
 import { IUser } from "../../../../auth-client";

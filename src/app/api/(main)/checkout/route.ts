@@ -80,6 +80,7 @@ export async function POST(req: Request) {
         startDate,
         endDate,
         branch: branch?.id,
+        subtotal: rentalCharge.toFixed(2).toString(),
         total: amountDue.toFixed(2).toString(),
       },
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/confirmation?session_id={CHECKOUT_SESSION_ID}`,

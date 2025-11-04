@@ -24,6 +24,7 @@ export async function POST(req: Request) {
       const carId = metadata.carId!;
       const startDate = new Date(metadata.startDate!);
       const endDate = new Date(metadata.endDate!);
+      const subtotal = Number(metadata.subtotal!);
       const totalPrice = Number(metadata.total!);
       const branchId = metadata.branch;
       const redeemedPoints = Number(metadata.redeemedPoints!);
@@ -31,10 +32,10 @@ export async function POST(req: Request) {
       // Create booking record
       const bookingQuery = `
     INSERT INTO bookings (
-      user_id, car_id, start_date, end_date,
+      user_id, car_id, start_date, end_date, sub_total
       total_price, status, created_at, updated_at
     )
-    VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+    VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
     RETURNING id;
   `;
       const result = await pool.query(bookingQuery, [
@@ -42,6 +43,7 @@ export async function POST(req: Request) {
         carId,
         startDate,
         endDate,
+        subtotal,
         totalPrice,
         "Confirmed",
       ]);
