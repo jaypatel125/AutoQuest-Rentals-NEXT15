@@ -20,6 +20,7 @@ export async function POST(req: Request) {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       const metadata = session.metadata!;
+      console.log(metadata);
       const userId = metadata.userId!;
       const carId = metadata.carId!;
       const startDate = new Date(metadata.startDate!);
@@ -31,13 +32,21 @@ export async function POST(req: Request) {
 
       // Create booking record
       const bookingQuery = `
-    INSERT INTO bookings (
-      user_id, car_id, start_date, end_date, sub_total
-      total_price, status, created_at, updated_at
-    )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
-    RETURNING id;
-  `;
+      INSERT INTO bookings (
+        user_id,
+        car_id,
+        start_date,
+        end_date,
+        sub_total,
+        total_price,
+        status,
+        created_at,
+        updated_at
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW(), NOW())
+      RETURNING id;
+    `;
+
       const result = await pool.query(bookingQuery, [
         userId,
         carId,
