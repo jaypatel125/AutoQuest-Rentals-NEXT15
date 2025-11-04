@@ -26,7 +26,7 @@ export async function updateBranch(
       throw new Error("branchId is required");
     }
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/all-branches/${branchId}`,
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/update-branch/${branchId}`,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },

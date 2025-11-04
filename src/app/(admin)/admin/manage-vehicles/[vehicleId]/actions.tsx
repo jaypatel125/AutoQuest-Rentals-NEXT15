@@ -32,7 +32,7 @@ export async function fetchVehicle(
 export async function updateVehicle(vehicleId: string, data: any) {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/all-vehicles/${vehicleId}`,
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/update-vehicle/${vehicleId}`,
       {
         method: "PUT",
         headers: { "Content-Type": "application/json" },

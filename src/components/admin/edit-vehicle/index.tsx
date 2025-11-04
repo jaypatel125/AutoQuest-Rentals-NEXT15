@@ -79,11 +79,9 @@ export default function VehicleManage({
     onSuccess: (data) => {
       setFormData((prev) => ({ ...prev, image_url: data.image }));
       queryClient.invalidateQueries({ queryKey: ["vehicles", vehicleId] });
-      alert("Photo replaced successfully");
     },
     onError: (error: unknown) => {
       console.error(error);
-      alert("Error replacing photo. See console for details.");
     },
   });
 
