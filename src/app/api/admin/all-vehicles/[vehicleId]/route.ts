@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { z } from "zod";
+import { getServerSideSession } from "@/hooks/SessionHandler";
 
 const vehicleSchema = z.object({
   brand: z.string().min(1).optional(),
@@ -22,6 +23,15 @@ export async function GET(
 ) {
   try {
     const { vehicleId } = await params;
+    const session = await getServerSideSession();
+
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (session.user?.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     const query = `
       SELECT 
@@ -58,6 +68,16 @@ export async function PUT(
     const { vehicleId } = await params;
     const body = await req.json();
     const parsed = vehicleSchema.safeParse(body);
+
+    const session = await getServerSideSession();
+
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (session.user?.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     if (!parsed.success) {
       return NextResponse.json(

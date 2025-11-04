@@ -22,9 +22,12 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       <Button variant="ghost" onClick={() => router.back()} className="gap-2">
         <ArrowLeft /> Back
       </Button>
-      <div className="space-y-2">
-        <h1 className="text-xl font-bold tracking-tight">{title}</h1>
-        <p className="text-muted-foreground">{description}</p>
+      <div className="flex gap-4">
+        <div className="w-2 h-15 bg-gray-600 rounded-full"></div>
+        <div className="space-y-2 ">
+          <h1 className="text-xl font-bold tracking-tight">{title}</h1>
+          <p className="text-muted-foreground">{description}</p>
+        </div>
       </div>
       <Separator />
       {children}

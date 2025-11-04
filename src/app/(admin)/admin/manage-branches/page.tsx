@@ -1,12 +1,14 @@
-import { getAllBranches } from "./actions";
+"use client";
+import ManageBranchesTable from "@/components/admin/manage-branches/branches";
+import PageLayout from "@/components/common/page-layout";
 
-export default async function ManageBranchesPage() {
-  const branches = await getAllBranches();
-
+export default function ManageBranchesPage() {
   return (
-    <main className="p-6 space-y-4">
-      <h1 className="text-2xl font-semibold">Manage Branches</h1>
-      <ManageBranchesTable branches={branches} />
-    </main>
+    <PageLayout
+      title="Manage Branches"
+      description="Manage the branches of the organization from this admin panel."
+    >
+      <ManageBranchesTable />
+    </PageLayout>
   );
 }

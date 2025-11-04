@@ -15,7 +15,6 @@ import {
 } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 import Link from "next/link";
-import { Branch } from "./actions";
 import {
   Table,
   TableHeader,
@@ -32,15 +31,24 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useQuery } from "@tanstack/react-query";
+import Loader from "@/components/utility/Loader";
+import {
+  Branches,
+  fetchAllBranches,
+} from "@/app/(admin)/admin/manage-branches/actions";
 
-interface ManageBranchesTableProps {
-  branches: Branch[];
-}
+export default function ManageBranchesTable() {
+  const {
+    data: branches = [],
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["branches"],
+    queryFn: fetchAllBranches,
+  });
 
-export default function ManageBranchesTable({
-  branches,
-}: ManageBranchesTableProps) {
-  const columns: ColumnDef<Branch>[] = [
+  const columns: ColumnDef<Branches>[] = [
     {
       accessorKey: "name",
       header: ({ column }) => (
@@ -52,6 +60,11 @@ export default function ManageBranchesTable({
         </Button>
       ),
       cell: ({ row }) => <div>{row.getValue("name")}</div>,
+    },
+    {
+      accessorKey: "address",
+      header: "Address",
+      cell: ({ row }) => <div>{row.getValue("address")}</div>,
     },
     {
       accessorKey: "city",
@@ -66,20 +79,16 @@ export default function ManageBranchesTable({
       cell: ({ row }) => <div>{row.getValue("city")}</div>,
     },
     {
-      accessorKey: "address",
-      header: "Address",
-      cell: ({ row }) => <div>{row.getValue("address")}</div>,
+      accessorKey: "province",
+      header: "Province",
+      cell: ({ row }) => <div>{row.getValue("province")}</div>,
     },
     {
-      accessorKey: "phone",
-      header: "Phone",
-      cell: ({ row }) => <div>{row.getValue("phone")}</div>,
+      accessorKey: "vehicle_count",
+      header: "Number of Vehicles",
+      cell: ({ row }) => <div>{row.getValue("vehicle_count")}</div>,
     },
-    {
-      accessorKey: "email",
-      header: "Email",
-      cell: ({ row }) => <div>{row.getValue("email")}</div>,
-    },
+
     {
       id: "actions",
       header: "Actions",
@@ -118,11 +127,24 @@ export default function ManageBranchesTable({
     getFilteredRowModel: getFilteredRowModel(),
   });
 
+  if (isLoading)
+    return (
+      <div className="w-full mt-24 flex justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader />
+          <h3 className="font-semibold text-xl">Loading branches...</h3>
+          <p>Please wait while we fetch data.</p>
+        </div>
+      </div>
+    );
+
+  if (isError) return <div>Error loading branches.</div>;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between py-4">
         <Input
-          placeholder="Search by name, city, or email..."
+          placeholder="Search branches..."
           value={globalFilter ?? ""}
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="max-w-sm"

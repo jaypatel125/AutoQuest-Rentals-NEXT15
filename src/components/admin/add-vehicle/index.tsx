@@ -28,7 +28,6 @@ import { Loader2, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { fetchBranches } from "@/app/actions";
 import { addVehicleSchema } from "@/lib/zod";
-import PageLayout from "@/components/common/page-layout";
 
 export type CarsInput = {
   branch_id: string;

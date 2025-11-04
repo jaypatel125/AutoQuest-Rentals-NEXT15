@@ -35,9 +35,8 @@ import {
   replaceVehiclePhoto,
   updateVehicle,
 } from "@/app/(admin)/admin/manage-vehicles/[vehicleId]/actions";
-import { ArrowLeft, Check, Loader2, Trash2 } from "lucide-react";
+import { Check, Loader2, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
-import PageLayout from "@/components/common/page-layout";
 
 type formDataType = {
   brand: string;

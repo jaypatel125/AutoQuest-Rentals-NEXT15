@@ -1,0 +1,212 @@
+"use client";
+
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import Loader from "@/components/utility/Loader";
+import {
+  getBranchById,
+  updateBranch,
+} from "@/app/(admin)/admin/manage-branches/[branchId]/actions";
+import {
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  Select,
+} from "@/components/ui/select";
+
+const provinces = [
+  "Alberta",
+  "British Columbia",
+  "Manitoba",
+  "New Brunswick",
+  "Newfoundland and Labrador",
+  "Nova Scotia",
+  "Ontario",
+  "Prince Edward Island",
+  "Quebec",
+  "Saskatchewan",
+];
+
+export default function EditBranchPage() {
+  const { branchId } = useParams<{ branchId: string }>();
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
+  const { data: branch, isLoading } = useQuery({
+    queryKey: ["branch", branchId],
+    queryFn: () => getBranchById(branchId),
+    enabled: !!branchId,
+  });
+
+  const [form, setForm] = useState({
+    name: "",
+    address: "",
+    city: "",
+    province: "",
+    postal_code: "",
+  });
+
+  useEffect(() => {
+    if (branch) {
+      setForm({
+        name: branch.name || "",
+        address: branch.address || "",
+        city: branch.city || "",
+        province: branch.province || "",
+        postal_code: branch.postal_code || "",
+      });
+    }
+  }, [branch]);
+
+  const mutation = useMutation({
+    mutationFn: (updated: typeof form) => updateBranch(branchId, updated),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["branch", branchId] });
+      queryClient.invalidateQueries({ queryKey: ["branches"] });
+      router.push("/admin/manage-branches");
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="w-full mt-24 flex justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <Loader />
+          <h3 className="font-semibold text-xl">Loading branch details...</h3>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-10">
+      {/* Form */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Name */}
+        <div className="flex flex-col space-y-1">
+          <label className="text-sm font-semibold text-gray-700">Name</label>
+          <Input
+            value={form.name}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, name: e.target.value }))
+            }
+            placeholder="Enter branch name"
+          />
+        </div>
+
+        {/* Address */}
+        <div className="flex flex-col space-y-1">
+          <label className="text-sm font-semibold text-gray-700">Address</label>
+          <Input
+            value={form.address}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, address: e.target.value }))
+            }
+            placeholder="Enter address"
+          />
+        </div>
+
+        {/* City */}
+        <div className="flex flex-col space-y-1">
+          <label className="text-sm font-semibold text-gray-700">City</label>
+          <Input
+            value={form.city}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, city: e.target.value }))
+            }
+            placeholder="Enter city"
+          />
+        </div>
+
+        {/* Province (Select dropdown) */}
+        <div className="flex flex-col space-y-1">
+          <label className="text-sm font-semibold text-gray-700">
+            Province
+          </label>
+          <Select
+            value={form.province}
+            onValueChange={(value) =>
+              setForm((prev) => ({ ...prev, province: value }))
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select province" />
+            </SelectTrigger>
+            <SelectContent>
+              {provinces.map((province) => (
+                <SelectItem key={province} value={province}>
+                  {province}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Postal Code */}
+        <div className="flex flex-col space-y-1">
+          <label className="text-sm font-semibold text-gray-700">
+            Postal Code
+          </label>
+          <Input
+            value={form.postal_code}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, postal_code: e.target.value }))
+            }
+            placeholder="Enter postal code"
+          />
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t border-gray-200">
+        <Button
+          variant="outline"
+          onClick={() =>
+            router.push(`/admin/manage-vehicles?branchId=${branchId}`)
+          }
+        >
+          View Vehicles
+        </Button>
+
+        <div className="flex gap-3 w-full sm:w-auto">
+          <Button
+            variant="outline"
+            onClick={() =>
+              branch &&
+              setForm({
+                name: branch.name || "",
+                address: branch.address || "",
+                city: branch.city || "",
+                province: branch.province || "",
+                postal_code: branch.postal_code || "",
+              })
+            }
+            className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200"
+          >
+            Reset
+          </Button>
+
+          <Button
+            onClick={() => mutation.mutate(form)}
+            disabled={mutation.isPending}
+          >
+            {mutation.isPending ? "Updating..." : "Save Changes"}
+          </Button>
+        </div>
+      </div>
+
+      {/* Status Feedback */}
+      {mutation.isError && (
+        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700 text-sm font-medium">
+            Error updating branch. Please try again.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Users, Fuel, Car, CarFront, FilterX, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { SearchBar } from "@/components/main/Seachbar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -25,6 +24,7 @@ import {
   SheetTrigger,
 } from "../../ui/sheet";
 import { formatPrice } from "@/lib/utils";
+import { SearchBar } from "../searchbar";
 function safeToDate(
   date: string | number | Date | undefined
 ): Date | undefined {

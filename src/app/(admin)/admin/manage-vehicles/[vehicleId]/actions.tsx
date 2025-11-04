@@ -1,6 +1,6 @@
 "use client";
 
-import { Branches, Cars } from "@/lib/database/table-types";
+import { Cars } from "@/lib/database/table-types";
 
 export interface CarWithBranchDetails extends Cars {
   branch_name: string;
@@ -50,8 +50,6 @@ export async function updateVehicle(vehicleId: string, data: any) {
     throw error;
   }
 }
-
-
 
 export async function replaceVehiclePhoto(
   vehicleId: string,

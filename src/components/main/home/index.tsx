@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { Car, CalendarIcon, MapPin } from "lucide-react";
-import { SearchBar } from "@/components/main/Seachbar";
 import { fetchCarBodyTypes, fetchCarBrands } from "@/app/actions";
 import { useQuery } from "@tanstack/react-query";
 import Loader from "../../utility/Loader";
 import { useRouter } from "next/navigation";
+import { SearchBar } from "../searchbar";
 
 const HomePage = () => {
   const {
