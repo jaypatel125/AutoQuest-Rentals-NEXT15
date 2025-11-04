@@ -38,27 +38,30 @@ export default function SignupForm() {
   });
 
   const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/sign-up", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
+    const { name, email, password } = values;
 
-      const data = await res.json();
+    await authClient.signUp.email(
+      { name, email, password },
+      {
+        onRequest: () => {
+          setLoading(true);
+        },
+        onSuccess: () => {
+          toast({
+            title: "Account created successfully",
+            description: "Please verify your email to continue.",
+          });
 
-      if (!res.ok) {
-        console.error("Signup failed:", data.status);
-        setLoading(false);
-        return;
+          router.push("/verification");
+        },
+        onError: (error) => {
+          toast({
+            title: "Something went wrong",
+            description: error.error.message ?? "Something went wrong.",
+          });
+        },
       }
-
-      router.push("/verification");
-      router.refresh();
-    } catch (error) {
-      console.error("Something went wrong:", error);
-    }
+    );
     setLoading(false);
   };
 

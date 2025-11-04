@@ -24,7 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function SigninForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
+  const [pending, setPending] = useState(false);
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -35,29 +35,29 @@ export default function SigninForm() {
   });
 
   const onSubmit = async (values: z.infer<typeof signInSchema>) => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/sign-in/email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-        credentials: "include",
-      });
+    const { email, password } = values;
+    await authClient.signIn.email(
+      { email, password },
+      {
+        onRequest: () => {
+          setPending(true);
+        },
+        onSuccess: () => {
+          toast({
+            title: "Signed in successfully",
+          });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Sign-in failed");
-
-      router.push("/");
-      router.refresh();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error("Sign-in error:", error);
-      toast({
-        title: "Something went wrong",
-        description: error.message ?? "Something went wrong.",
-      });
-    }
-    setLoading(false);
+          router.push("/");
+        },
+        onError: (error) => {
+          toast({
+            title: "Something went wrong",
+            description: error.error.message ?? "Something went wrong.",
+          });
+        },
+      }
+    );
+    setPending(false);
   };
 
   async function handleSiginInWithGoogle() {
@@ -124,8 +124,8 @@ export default function SigninForm() {
             </a>
           </div>
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
+          <Button type="submit" className="w-full" disabled={pending}>
+            {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
           </Button>
 
           <div className="flex items-center">

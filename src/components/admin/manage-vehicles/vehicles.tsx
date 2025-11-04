@@ -14,6 +14,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
+import { IoClose } from "react-icons/io5";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -33,13 +34,16 @@ import {
 } from "@/components/ui/table";
 import Link from "next/link";
 import { CarWithBranch } from "@/app/(admin)/admin/manage-vehicles/actions";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 interface VehicleOverviewTableProps {
   vehicles: CarWithBranch[];
+  branchId: string;
 }
 
 export default function VehicleOverviewTable({
   vehicles,
+  branchId,
 }: VehicleOverviewTableProps) {
   const columns: ColumnDef<CarWithBranch>[] = [
     {
@@ -124,7 +128,9 @@ export default function VehicleOverviewTable({
       },
     },
   ];
-
+  const params = useSearchParams();
+  const pathName = usePathname();
+  const router = useRouter();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -133,6 +139,12 @@ export default function VehicleOverviewTable({
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [globalFilter, setGlobalFilter] = React.useState("");
+
+  const handleClearFilter = () => {
+    const newParams = new URLSearchParams(params.toString());
+    newParams.delete("branchId");
+    router.push(`${pathName}?${newParams.toString()}`);
+  };
 
   const table = useReactTable({
     data: vehicles || [],
@@ -158,12 +170,19 @@ export default function VehicleOverviewTable({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between py-4">
-        <Input
-          placeholder="Search by brand, model, branch, or city..."
-          value={globalFilter ?? ""}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          className="max-w-sm"
-        />
+        <div className="flex gap-4">
+          <Input
+            placeholder="Search by brand, model, branch, or city..."
+            value={globalFilter ?? ""}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="max-w-sm"
+          />
+          {branchId && (
+            <Button variant="outline" onClick={handleClearFilter}>
+              <IoClose /> Clear Filter
+            </Button>
+          )}
+        </div>
         <div className="flex gap-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

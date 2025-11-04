@@ -7,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { authClient } from "../../../../auth-client";
+import { ErrorContext } from "better-auth/react";
 
 export default function ResetPasswordForm() {
   const router = useRouter();
@@ -14,14 +16,14 @@ export default function ResetPasswordForm() {
   const token = searchParams.get("token");
   const { toast } = useToast();
 
-  const [loading, setLoading] = useState(false);
+  const [pending, setPending] = useState(false);
   const [passwordsMatch, setPasswordsMatch] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setLoading(true);
+    setPending(true);
     setError(null);
 
     const formData = new FormData(e.currentTarget);
@@ -30,14 +32,14 @@ export default function ResetPasswordForm() {
 
     if (password !== confirmPassword) {
       setPasswordsMatch(false);
-      setLoading(false);
+      setPending(false);
       return;
     }
     setPasswordsMatch(true);
 
     if (!token) {
       setError("Invalid or missing reset token.");
-      setLoading(false);
+      setPending(false);
       toast({
         title: "Error",
         description: "Invalid or missing reset token.",
@@ -45,35 +47,33 @@ export default function ResetPasswordForm() {
       return;
     }
 
-    try {
-      const res = await fetch("/api/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ newPassword: password, token }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Something went wrong.");
-        toast({
-          title: "Error",
-          description: data.error || "Something went wrong.",
-        });
-      } else {
-        setSuccess(true);
-        setTimeout(() => router.push("/signin"), 2000);
+    await authClient.resetPassword(
+      {
+        token,
+        newPassword: password,
+      },
+      {
+        onRequest: () => {
+          setPending(true);
+        },
+        onSuccess: async () => {
+          toast({
+            title: "Password Reset Successful",
+            description: "Your password has been reset successfully.",
+          });
+          setSuccess(true);
+          router.push("/signin");
+        },
+        onError: (ctx: ErrorContext) => {
+          toast({
+            title: "Something went wrong",
+            description: ctx.error.message ?? "Something went wrong.",
+            variant: "destructive",
+          });
+        },
       }
-    } catch (err) {
-      console.error("Reset password error:", err);
-      setError("Something went wrong.");
-      toast({
-        title: "Error",
-        description: "Something went wrong.",
-      });
-    }
-
-    setLoading(false);
+    );
+    setPending(false);
   };
 
   return (
@@ -102,8 +102,8 @@ export default function ResetPasswordForm() {
             <p className="text-sm text-red-600">Passwords do not match.</p>
           )}
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? (
+          <Button type="submit" className="w-full" disabled={pending}>
+            {pending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
               "Reset Password"
