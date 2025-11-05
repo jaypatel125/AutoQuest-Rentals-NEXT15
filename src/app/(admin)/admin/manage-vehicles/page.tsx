@@ -2,6 +2,7 @@
 
 import PageLayout from "@/components/common/page-layout";
 import Vehicles from "@/components/admin/manage-vehicles";
+import { Suspense } from "react";
 
 export default function ManageVehiclesPage() {
   return (
@@ -9,7 +10,9 @@ export default function ManageVehiclesPage() {
       title="Manage Vehicles"
       description="View, edit, and manage all vehicles listed in the system."
     >
-      <Vehicles />
+      <Suspense fallback={<div>Loading Vehicles...</div>}>
+        <Vehicles />
+      </Suspense>
     </PageLayout>
   );
 }

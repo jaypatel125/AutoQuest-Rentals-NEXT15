@@ -2,6 +2,7 @@
 
 import BookingsOverview from "@/components/admin/manage-bookings";
 import PageLayout from "@/components/common/page-layout";
+import { Suspense } from "react";
 
 export default function Page() {
   return (
@@ -9,7 +10,9 @@ export default function Page() {
       title="Manage Bookings"
       description="View and manage all bookings made on the platform."
     >
-      <BookingsOverview />
+      <Suspense fallback={<div>Loading bookings...</div>}>
+        <BookingsOverview />
+      </Suspense>
     </PageLayout>
   );
 }

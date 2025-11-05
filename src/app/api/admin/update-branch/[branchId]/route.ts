@@ -4,7 +4,7 @@ import { getServerSideSession } from "@/hooks/SessionHandler";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { branchId: string } }
+  { params }: { params: Promise<{ branchId: string }> }
 ) {
   try {
     const session = await getServerSideSession();
@@ -16,7 +16,7 @@ export async function PATCH(
     if (session.user?.role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const awaitedParams = await params;
+    const { branchId } = await params;
     const updates = await request.json();
 
     // Dynamically build update query only for provided fields
@@ -37,7 +37,7 @@ export async function PATCH(
       RETURNING *;
     `;
 
-    const result = await pool.query(query, [...values, awaitedParams.branchId]);
+    const result = await pool.query(query, [...values, branchId]);
 
     if (result.rowCount === 0) {
       return NextResponse.json({ error: "Branch not found" }, { status: 404 });
