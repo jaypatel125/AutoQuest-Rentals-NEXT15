@@ -1,5 +1,5 @@
 import Footer from "@/components/Footer";
-import UserNavbarWrapper from "@/components/main/navigation/UseNavbarWrapper";
+import UserNavbarWrapper from "@/components/common/navigation/UseNavbarWrapper";
 import { Toaster } from "@/components/ui/toaster";
 import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
 

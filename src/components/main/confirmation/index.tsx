@@ -40,7 +40,6 @@ export default function ConfirmationDetails({
   status,
   customerEmail,
   amountTotal,
-  currency,
   metadata,
 }: ConfirmationDetailsProps) {
   const { branch } = useSearchStore();

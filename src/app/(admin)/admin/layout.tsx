@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import UserNavbarWrapper from "@/components/admin/navigation/UseNavbarWrapper";
+import UserNavbarWrapper from "@/components/common/navigation/UseNavbarWrapper";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
