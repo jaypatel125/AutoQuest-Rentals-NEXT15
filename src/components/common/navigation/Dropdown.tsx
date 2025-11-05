@@ -15,6 +15,7 @@ import {
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 import { authClient, IUser } from "../../../../auth-client";
+import { Separator } from "@/components/ui/separator";
 
 export function Dropdown({ user }: { user: IUser }) {
   const router = useRouter();
@@ -49,7 +50,6 @@ export function Dropdown({ user }: { user: IUser }) {
             <DropdownMenuItem onClick={() => router.push("/account")}>
               Profile
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleSignOut}>Log out</DropdownMenuItem>
           </DropdownMenuGroup>
 
           <DropdownMenuSeparator />
@@ -101,6 +101,8 @@ export function Dropdown({ user }: { user: IUser }) {
               Branch
             </DropdownMenuItem>
           </DropdownMenuGroup>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleSignOut}>Log out</DropdownMenuItem>
         </DropdownMenuContent>
       ) : (
         <DropdownMenuContent className="w-60" align="end">

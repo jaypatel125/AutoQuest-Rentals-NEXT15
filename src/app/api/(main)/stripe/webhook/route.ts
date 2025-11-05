@@ -20,7 +20,6 @@ export async function POST(req: Request) {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       const metadata = session.metadata!;
-      console.log(metadata);
       const userId = metadata.userId!;
       const carId = metadata.carId!;
       const startDate = new Date(metadata.startDate!);
@@ -96,8 +95,6 @@ export async function POST(req: Request) {
      VALUES (gen_random_uuid(), $1, $2, $3, 'Earned')`,
         [userId, bookingId, pointsEarned]
       );
-
-      console.log(`User ${userId} earned ${pointsEarned} points.`);
 
       // 5. Fetch user info for email
       const userRes = await pool.query(
