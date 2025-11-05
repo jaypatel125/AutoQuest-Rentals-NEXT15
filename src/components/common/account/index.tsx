@@ -12,19 +12,16 @@ export default function SettingsProfilePage({ user }: { user: IUser }) {
 
   const handleDeleteAccount = async () => {
     if (user) {
-      const confirm = window.confirm(
-        "Are you sure you want to delete your account?"
-      );
-      if (confirm) {
-        await authClient.deleteUser({
-          callbackURL: "/signin",
-        });
-        setTimeout(() => {
-          router.push("/signin");
-        }, 1000);
-      }
+      await authClient.deleteUser({
+        callbackURL: "/signin",
+      });
+      setTimeout(() => {
+        router.push("/signin");
+      }, 1000);
     }
   };
+
+  const lastloginMethod = authClient.getLastUsedLoginMethod();
 
   return (
     <div className="space-y-8">
@@ -32,7 +29,16 @@ export default function SettingsProfilePage({ user }: { user: IUser }) {
       <Separator />
       <ProfileEmail currentUser={user} />
       <Separator />
-      <ProfilePassword />
+      {lastloginMethod === "email" ? (
+        <ProfilePassword />
+      ) : (
+        <div className="text-muted-foreground text-sm">
+          If you have signed in using a social provider (google), you cannot
+          change your password here. Use forgot password option on the signin
+          page
+        </div>
+      )}
+
       <Separator />
 
       <div className="space-y-4">

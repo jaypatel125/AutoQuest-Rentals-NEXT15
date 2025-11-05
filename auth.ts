@@ -1,6 +1,6 @@
 import { sendEmail } from "@/lib/email";
 import { betterAuth, BetterAuthOptions } from "better-auth";
-import { openAPI } from "better-auth/plugins";
+import { lastLoginMethod, openAPI } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
 import { Pool } from "pg";
 
@@ -30,6 +30,7 @@ export const auth = betterAuth({
   plugins: [
     openAPI(),
     admin({ impersonationSessionDuration: 60 * 60 * 24 * 7 }),
+    lastLoginMethod(),
   ],
   trustedOrigins: [
     process.env.NEXT_PUBLIC_APP_URL || "https://jay-capstone.vercel.app",
