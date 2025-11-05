@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAllBookings } from "@/app/(admin)/admin/manage-bookings/actions";
 import Loader from "@/components/utility/Loader";
@@ -25,8 +25,14 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import BookingsTable from "@/components/admin/manage-bookings/bookings-table";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { IoClose } from "react-icons/io5";
 
 export default function BookingsOverview() {
+  const params = useSearchParams();
+  const pathName = usePathname();
+  const userId = params.get("userId") || "";
+  const router = useRouter();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -42,8 +48,19 @@ export default function BookingsOverview() {
     retryDelay: 500,
   });
 
+  const filteredData = useMemo(() => {
+    if (!data) return [];
+    return data.filter((booking) => booking.user_id === userId);
+  }, [data, userId]);
+
+  const handleClearFilter = () => {
+    const newParams = new URLSearchParams(params.toString());
+    newParams.delete("userId");
+    router.push(`${pathName}?${newParams.toString()}`);
+  };
+
   const table = useReactTable({
-    data: data?.bookings || [],
+    data: (userId ? filteredData : data) || [],
     columns: BookingsTable.columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -73,14 +90,23 @@ export default function BookingsOverview() {
   return (
     <>
       <div className="flex items-center py-4">
-        <Input
-          placeholder="Filter by email..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
-          onChange={(e) =>
-            table.getColumn("email")?.setFilterValue(e.target.value)
-          }
-          className="max-w-sm"
-        />
+        <div className="flex gap-4">
+          {" "}
+          <Input
+            placeholder="Filter by email..."
+            value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+            onChange={(e) =>
+              table.getColumn("email")?.setFilterValue(e.target.value)
+            }
+            className="max-w-sm"
+          />
+          {userId && (
+            <Button variant="outline" onClick={handleClearFilter}>
+              <IoClose /> Clear Filter
+            </Button>
+          )}
+        </div>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">

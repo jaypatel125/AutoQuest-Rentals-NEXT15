@@ -1,6 +1,21 @@
 "use client";
 
-export async function getAllBookings() {
+export interface AdminBooking {
+  id: string;
+  user_id: string;
+  car_id: string;
+  start_date: string; // ISO date string
+  end_date: string; // ISO date string
+  total_price: number;
+  status: string;
+  created_at: string; // ISO date string
+  name: string;
+  email: string;
+  vehicle_brand: string;
+  vehicle_model: string;
+}
+
+export async function getAllBookings(): Promise<AdminBooking[]> {
   try {
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/all-bookings`,

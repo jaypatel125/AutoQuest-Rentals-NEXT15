@@ -44,9 +44,7 @@ export async function GET() {
 
       const bookings = result.rows;
 
-      return NextResponse.json({
-        bookings,
-      });
+      return NextResponse.json(bookings);
     } finally {
       client.release();
     }
