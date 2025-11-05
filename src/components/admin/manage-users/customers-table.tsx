@@ -263,7 +263,7 @@ export function CustomersTable({
                     router.push(
                       `/admin/manage-bookings?userId=${encodeURIComponent(
                         customer.id
-                      )}&userName=${encodeURIComponent(customer.name)}`
+                      )}`
                     )
                   }
                 >

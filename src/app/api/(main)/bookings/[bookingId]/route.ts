@@ -96,3 +96,38 @@ export async function GET(
     );
   }
 }
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ bookingId: string }> }
+) {
+  const { bookingId } = await params;
+
+  try {
+    const existing = await pool.query(
+      `SELECT id, status FROM bookings WHERE id = $1`,
+      [bookingId]
+    );
+    if (existing.rowCount === 0) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    await pool.query(
+      `UPDATE bookings 
+       SET status = 'Cancelled' 
+       WHERE id = $1`,
+      [bookingId]
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: "Booking cancelled successfully",
+    });
+  } catch (err) {
+    console.error("Error cancelling booking:", err);
+    return NextResponse.json(
+      { error: "Failed to cancel booking" },
+      { status: 500 }
+    );
+  }
+}

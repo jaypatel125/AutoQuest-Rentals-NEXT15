@@ -7,8 +7,13 @@ import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/utility/Loader";
-import { Booking } from "@/app/(main)/bookings/[bookingId]/actions";
+import {
+  Booking,
+  cancelBooking,
+} from "@/app/(main)/bookings/[bookingId]/actions";
 import { formatPrice } from "@/lib/utils";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 interface Props {
   booking?: Booking;
@@ -18,6 +23,26 @@ interface Props {
 
 export default function BookingDetail({ booking, isLoading, error }: Props) {
   const router = useRouter();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { mutate: cancelBookingMutate, isPending } = useMutation({
+    mutationFn: () => cancelBooking(booking!.booking_id),
+    onSuccess: () => {
+      toast({
+        title: "Booking Cancelled",
+        description: "The booking has been successfully cancelled.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["get-bookings"] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   if (isLoading) {
     return (
@@ -249,8 +274,9 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
             <Button
               variant="outline"
               className="w-full text-destructive border-destructive hover:bg-destructive hover:text-white"
+              onClick={() => cancelBookingMutate()}
             >
-              Cancel Booking
+              {isPending ? "Cancelling..." : " Cancel Booking"}
             </Button>
           )}
         </section>

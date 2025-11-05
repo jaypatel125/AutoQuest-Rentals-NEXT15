@@ -38,3 +38,21 @@ export default async function getBooking(bookingId: string): Promise<Booking> {
   if (!res.ok) throw new Error("Failed to fetch booking");
   return res.json();
 }
+
+export async function cancelBooking(bookingId: string) {
+  try {
+    const res = await fetch(`/api/bookings/${bookingId}`, {
+      method: "PATCH",
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error?.error || "Failed to cancel booking");
+    }
+
+    return await res.json();
+  } catch (err) {
+    console.error("Error cancelling booking:", err);
+    throw err;
+  }
+}
