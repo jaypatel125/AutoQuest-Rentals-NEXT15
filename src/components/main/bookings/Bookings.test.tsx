@@ -94,28 +94,14 @@ describe("Bookings Component", () => {
   });
 
   test("should render loading state", () => {
-    render(
-      <Bookings
-        isLoading={true}
-        isError={false}
-        data={[]}
-        router={mockRouter}
-      />
-    );
+    render(<Bookings isLoading={true} isError={false} data={[]} />);
 
     expect(screen.getByTestId("loader")).toBeInTheDocument();
     expect(screen.getByText("Fetching your bookings...")).toBeInTheDocument();
   });
 
   test("should render error state", () => {
-    render(
-      <Bookings
-        isLoading={false}
-        isError={true}
-        data={[]}
-        router={mockRouter}
-      />
-    );
+    render(<Bookings isLoading={false} isError={true} data={[]} />);
 
     expect(
       screen.getByText("Something went wrong. Please try again.")
@@ -123,14 +109,7 @@ describe("Bookings Component", () => {
   });
 
   test("should render empty state and handle 'Browse Cars' click", () => {
-    render(
-      <Bookings
-        isLoading={false}
-        isError={false}
-        data={[]}
-        router={mockRouter}
-      />
-    );
+    render(<Bookings isLoading={false} isError={false} data={[]} />);
 
     // Check for empty state text
     expect(screen.getByText("No bookings found")).toBeInTheDocument();
@@ -147,14 +126,7 @@ describe("Bookings Component", () => {
   });
 
   test("should render booking list and handle 'View Details' click", () => {
-    render(
-      <Bookings
-        isLoading={false}
-        isError={false}
-        data={[mockBooking]}
-        router={mockRouter}
-      />
-    );
+    render(<Bookings isLoading={false} isError={false} data={[mockBooking]} />);
 
     // Check that booking details are rendered
     expect(screen.getByText("Toyota Camry")).toBeInTheDocument();

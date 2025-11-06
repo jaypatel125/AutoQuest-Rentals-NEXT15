@@ -15,7 +15,6 @@ import {
 import { RiArrowDropDownLine } from "react-icons/ri";
 import { useRouter } from "next/navigation";
 import { authClient, IUser } from "../../../../auth-client";
-import { Separator } from "@/components/ui/separator";
 
 export function Dropdown({ user }: { user: IUser }) {
   const router = useRouter();
