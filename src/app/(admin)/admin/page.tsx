@@ -1,7 +1,14 @@
-import React from "react";
+import { AdminDashboard } from "@/components/admin/dashboard";
+import PageLayout from "@/components/common/page-layout";
 
-const AdminPage = () => {
-  return <div>AdminPage</div>;
-};
-
-export default AdminPage;
+export default function AdminDashboardPage() {
+  return (
+    <PageLayout
+      title="Admin Dashboard"
+      description="Comprehensive overview of your car rental business performance and analytics"
+      goBack={false}
+    >
+      <AdminDashboard />
+    </PageLayout>
+  );
+}
