@@ -8,20 +8,24 @@ import React from "react";
 interface PageLayoutProps {
   title: string;
   description: string;
+  goBack?: boolean;
   children: React.ReactNode;
 }
 
 const PageLayout: React.FC<PageLayoutProps> = ({
   title,
   description,
+  goBack = true,
   children,
 }) => {
   const router = useRouter();
   return (
     <div className="py-6 space-y-6">
-      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-        <ArrowLeft /> Back
-      </Button>
+      {goBack && (
+        <Button variant="ghost" onClick={() => router.back()} className="gap-2">
+          <ArrowLeft /> Back
+        </Button>
+      )}
       <div className="flex gap-4">
         <div className="w-2 h-15 bg-gray-600 rounded-full"></div>
         <div className="space-y-2 ">

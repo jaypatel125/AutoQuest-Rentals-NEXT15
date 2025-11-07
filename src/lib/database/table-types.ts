@@ -82,6 +82,7 @@ export interface Bookings {
   car_id: string;
   start_date: Date;
   end_date: Date;
+  sub_total: number;
   total_price: number;
   status: booking_status_type;
   created_at: Date;
