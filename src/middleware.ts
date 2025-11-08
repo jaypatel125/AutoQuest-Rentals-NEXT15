@@ -6,12 +6,7 @@ const authRoutes = ["/signin", "/signup"];
 const passwordRoutes = ["/reset-password", "/forgot-password"];
 
 // Admin-only sections
-const adminRoutes = [
-  "/admin",
-  "/manage-vehicles",
-  "/manage-bookings",
-  "/manage-users",
-];
+const adminRoutes = ["/admin"];
 
 // Regular user-only protected routes
 const protectedRoutes = [

@@ -5,7 +5,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   AreaChart,
   Area,
@@ -21,6 +20,7 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
+import { formatPrice } from "@/lib/utils";
 
 const COLORS = [
   "#0088FE",
@@ -50,13 +50,6 @@ interface OverviewTabProps {
   };
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
-};
-
 export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
   return (
     <div className="space-y-4">
@@ -79,16 +72,19 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
                   yAxisId="left"
                   type="monotone"
                   dataKey="rentals"
-                  stroke="#8884d8"
-                  fill="#8884d8"
+                  stroke="#8884D8"
+                  strokeWidth={2}
+                  fill="#8884D8"
+                  fillOpacity={0}
                   name="Rentals"
                 />
                 <Area
                   yAxisId="right"
                   type="monotone"
                   dataKey="revenue"
-                  stroke="#82ca9d"
-                  fill="#82ca9d"
+                  stroke="#00C49F"
+                  strokeWidth={2}
+                  fillOpacity={0}
                   name="Revenue"
                 />
               </AreaChart>
@@ -139,18 +135,21 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
               <BarChart data={data.topVehicles}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="model" />
-                <YAxis />
+                <YAxis yAxisId="left" />
+                <YAxis yAxisId="right" orientation="right" />
                 <Tooltip />
                 <Legend />
                 <Bar
+                  yAxisId="left"
                   dataKey="rental_count"
                   name="Rental Count"
-                  fill="#8884d8"
+                  fill="#0088FE"
                 />
                 <Bar
+                  yAxisId="right"
                   dataKey="total_revenue"
                   name="Total Revenue"
-                  fill="#82ca9d"
+                  fill="#00C49F"
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -177,7 +176,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
                   </div>
                   <div className="text-right">
                     <div className="font-bold">
-                      {formatCurrency(branch.total_revenue)}
+                      {formatPrice(branch.total_revenue)}
                     </div>
                     <div className="text-sm text-muted-foreground">
                       {branch.total_bookings} bookings

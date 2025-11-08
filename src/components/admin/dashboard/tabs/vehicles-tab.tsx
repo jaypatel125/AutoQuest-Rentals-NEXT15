@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { formatPrice } from "@/lib/utils";
 
 const COLORS = [
   "#0088FE",
@@ -29,13 +30,6 @@ interface VehiclesTabProps {
     fuelTypePerformance: Array<{ fuel_type: string; total_revenue: number }>;
   };
 }
-
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
-};
 
 export const VehiclesTab: React.FC<VehiclesTabProps> = ({ data }) => {
   return (
@@ -99,7 +93,7 @@ export const VehiclesTab: React.FC<VehiclesTabProps> = ({ data }) => {
                     />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+                <Tooltip formatter={(value) => formatPrice(Number(value))} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>

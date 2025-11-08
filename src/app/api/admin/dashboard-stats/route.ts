@@ -386,7 +386,9 @@ export async function GET(request: NextRequest) {
         month: formatDate(new Date(r.month)),
         total_carbon_emissions: Number(r.total_carbon_emissions ?? 0),
         booking_count: Number(r.booking_count ?? 0),
-        avg_carbon_per_booking: Number(r.avg_carbon_per_booking ?? 0),
+        avg_carbon_per_booking: Number(r.avg_carbon_per_booking ?? 0).toFixed(
+          2
+        ),
       })),
 
       fuelTypePerformance: fuelTypeRes.rows.map((r) => ({
@@ -394,19 +396,19 @@ export async function GET(request: NextRequest) {
         rental_count: Number(r.rental_count ?? 0),
         total_revenue: Number(r.total_revenue ?? 0),
         avg_carbon_emissions: Number(r.avg_carbon_emissions ?? 0),
-        avg_booking_value: Number(r.avg_booking_value ?? 0),
+        avg_booking_value: Number(r.avg_booking_value ?? 0).toFixed(2),
       })),
 
       bookingStatus: bookingStatusRes.rows.map((r) => ({
         status: r.status,
         count: Number(r.count ?? 0),
-        percentage: Number(r.percentage ?? 0),
+        percentage: Number(r.percentage ?? 0).toFixed(2),
       })),
 
       carbonByBodyType: carbonByBodyTypeRes.rows.map((r) => ({
         body_type: r.body_type,
         rental_count: Number(r.rental_count ?? 0),
-        avg_carbon_emissions: Number(r.avg_carbon_emissions ?? 0),
+        avg_carbon_emissions: Number(r.avg_carbon_emissions ?? 0).toFixed(2),
         total_carbon_emitted: Number(r.total_carbon_emitted ?? 0),
       })),
 

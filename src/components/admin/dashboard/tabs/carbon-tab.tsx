@@ -5,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import {
   LineChart,
   Line,
@@ -16,16 +17,11 @@ import {
   YAxis,
   Tooltip,
   Legend,
+  RadarChart,
+  PolarAngleAxis,
+  PolarGrid,
+  Radar,
 } from "recharts";
-
-const CARBON_COLORS = [
-  "#4CAF50",
-  "#8BC34A",
-  "#CDDC39",
-  "#FFC107",
-  "#FF9800",
-  "#F44336",
-];
 
 interface CarbonTabProps {
   data: {
@@ -53,13 +49,6 @@ interface CarbonTabProps {
   };
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
-};
-
 export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
   return (
     <div className="space-y-4">
@@ -76,20 +65,25 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
               <LineChart data={data.carbonEmissions}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
-                <YAxis />
+                <YAxis yAxisId="left" />
+                <YAxis yAxisId="right" orientation="right" />
                 <Tooltip />
                 <Legend />
                 <Line
+                  yAxisId="left"
                   type="monotone"
                   dataKey="total_carbon_emissions"
-                  stroke="#0088FE" // Changed from orange to blue
+                  stroke="#0088FE"
                   name="Total Carbon Emissions"
+                  strokeWidth={2}
                 />
                 <Line
+                  yAxisId="right"
                   type="monotone"
                   dataKey="avg_carbon_per_booking"
-                  stroke="#00C49F" // Changed to green
+                  stroke="#00C49F"
                   name="Avg Carbon per Booking"
+                  strokeWidth={2}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -104,26 +98,44 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data.fuelTypePerformance}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="fuel_type" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Bar
-                  dataKey="avg_carbon_emissions"
-                  name="Avg Carbon Emissions"
-                  fill="#0088FE"
-                />{" "}
-                {/* Changed from orange */}
-                <Bar
-                  dataKey="rental_count"
-                  name="Rental Count"
-                  fill="#00C49F"
-                />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-sm font-medium mb-2 text-center">
+                  Avg Carbon Emissions by Fuel Type
+                </h4>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={data.fuelTypePerformance}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="fuel_type" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar
+                      dataKey="avg_carbon_emissions"
+                      fill="#0088FE"
+                      name="Avg Carbon Emissions"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium mb-2 text-center">
+                  Rental Count by Fuel Type
+                </h4>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={data.fuelTypePerformance}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="fuel_type" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar
+                      dataKey="rental_count"
+                      fill="#00C49F"
+                      name="Rental Count"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -136,18 +148,23 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data.carbonByBodyType}>
+              <BarChart
+                data={data.carbonByBodyType.map((item) => ({
+                  ...item,
+                  carbon_per_rental:
+                    item.total_carbon_emitted / item.rental_count,
+                }))}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="body_type" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
                 <Bar
-                  dataKey="total_carbon_emitted"
-                  name="Total Carbon Emitted"
+                  dataKey="carbon_per_rental"
+                  name="Carbon per Rental"
                   fill="#0088FE"
-                />{" "}
-                {/* Changed from orange */}
+                />
                 <Bar
                   dataKey="rental_count"
                   name="Rental Count"
