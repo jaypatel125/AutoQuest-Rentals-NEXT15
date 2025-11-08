@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatPrice } from "@/lib/utils";
 import { DollarSign, Car, Users, XCircle } from "lucide-react";
 
 interface SummaryCardsProps {
@@ -22,13 +23,6 @@ interface SummaryCardsProps {
   };
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount);
-};
-
 const formatNumber = (num: number) => {
   return new Intl.NumberFormat("en-US").format(num);
 };
@@ -43,7 +37,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({ data }) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">
-            {formatCurrency(data.summary.total_revenue)}
+            {formatPrice(data.summary.total_revenue)}
           </div>
           <p className="text-xs text-muted-foreground">
             {data.summary.total_completed_rentals} completed rentals

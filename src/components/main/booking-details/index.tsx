@@ -14,6 +14,7 @@ import {
 import { formatPrice } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import Error from "@/components/utility/Error";
 
 interface Props {
   booking?: Booking;
@@ -45,41 +46,11 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
   });
 
   if (isLoading) {
-    return (
-      <div className="w-full h-[80vh] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader />
-          <h3 className="font-semibold text-xl">Fetching your bookings...</h3>
-          <p>This won&apos;t take too long!</p>
-        </div>
-      </div>
-    );
+    return <Loader title="Fetching your bookings" />;
   }
 
   if (error || !booking) {
-    return (
-      <div className="py-6 space-y-6">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="gap-2 px-0"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
-        <div className="text-center space-y-4 py-16">
-          <h1 className="text-2xl font-bold text-destructive">
-            Booking Not Found
-          </h1>
-          <p className="text-muted-foreground">
-            We couldn&apos;t find the booking you&apos;re looking for.
-          </p>
-          <Button onClick={() => router.push("/bookings")}>
-            View All Bookings
-          </Button>
-        </div>
-      </div>
-    );
+    return <Error error="Failed to load booking details. Please try again." />;
   }
 
   return (

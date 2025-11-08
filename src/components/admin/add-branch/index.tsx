@@ -154,7 +154,6 @@ export default function AddBranchPage() {
         </Button>
       </div>
 
-      {/* Status Feedback */}
       {mutation.isError && (
         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-red-700 text-sm font-medium">

@@ -13,6 +13,7 @@ import { CustomersTable } from "@/components/admin/manage-users/customers-table"
 import { useUserRoleMutations } from "@/hooks/use-toggle-role";
 import { IUser } from "../../../../auth-client";
 import { CustomersItem } from "@/app/api/admin/all-users/route";
+import Error from "@/components/utility/Error";
 
 export default function CustomersOverview({ user }: { user: IUser }) {
   const [q, setQ] = React.useState<string>("");
@@ -21,7 +22,6 @@ export default function CustomersOverview({ user }: { user: IUser }) {
     data,
     isLoading,
     isError,
-    error,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -61,6 +61,10 @@ export default function CustomersOverview({ user }: { user: IUser }) {
     [data]
   );
 
+  if (isError) {
+    return <Error error="An error occurred while fetching customers." />;
+  }
+
   return (
     <div>
       <div className="space-y-8">
@@ -76,11 +80,6 @@ export default function CustomersOverview({ user }: { user: IUser }) {
           </Button>
         </div>
 
-        {isError && (
-          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
-            {(error as Error)?.message ?? "Failed to load customers."}
-          </div>
-        )}
         <CustomersTable
           rows={customers}
           loading={isLoading || isFetchingNextPage}

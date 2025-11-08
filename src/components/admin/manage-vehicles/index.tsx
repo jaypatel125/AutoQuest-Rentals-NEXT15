@@ -6,6 +6,7 @@ import VehicleOverviewTable from "@/components/admin/manage-vehicles/vehicles";
 import { fetchAllVehicles } from "@/app/(admin)/admin/manage-vehicles/actions";
 import { useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import Error from "@/components/utility/Error";
 
 export default function Vehicles() {
   const params = useSearchParams();
@@ -21,19 +22,9 @@ export default function Vehicles() {
     return data.filter((vehicle) => vehicle.branch_id === branchId);
   }, [data, branchId]);
 
-  if (isLoading)
-    return (
-      <div className="w-full mt-24 flex justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader />
-          <h3 className="font-semibold text-xl">Loading vehicles...</h3>
-          <p>Please wait while we fetch data.</p>
-        </div>
-      </div>
-    );
+  if (isLoading) return <Loader title="Loading vehicles" />;
 
-  if (isError) return <div>Error loading vehicles.</div>;
-
+  if (isError) return <Error error="Failed to load vehicles." />;
   return (
     <VehicleOverviewTable
       branchId={branchId}

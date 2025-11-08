@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import Loader from "../../utility/Loader";
 import { useRouter } from "next/navigation";
 import { SearchBar } from "../searchbar";
+import Error from "@/components/utility/Error";
 
 const HomePage = () => {
   const {
@@ -32,26 +33,11 @@ const HomePage = () => {
   const router = useRouter();
 
   if (isLoading || bodyTypesLoading) {
-    return (
-      <div className="w-full h-[80vh] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader />
-          <h3 className="font-semibold text-xl">Fetching vehicle details...</h3>
-          <p>This won&apos;t take too long!</p>
-        </div>
-      </div>
-    );
+    return <Loader title="Loading vehicle details" />;
   }
 
   if (error || bodyTypesError) {
-    return (
-      <div className="text-center py-20">
-        <h2 className="text-2xl font-bold">Vehicle details not found</h2>
-        <p className="text-muted-foreground mt-2">
-          Try refreshing the page or come back later.
-        </p>
-      </div>
-    );
+    return <Error error="Failed to load details. Please try again." />;
   }
 
   return (

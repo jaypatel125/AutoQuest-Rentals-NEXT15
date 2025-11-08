@@ -344,15 +344,7 @@ export function CustomersTable({
   const visibleCols = table.getVisibleLeafColumns().length;
 
   if (loading) {
-    return (
-      <div className="w-full mt-24 flex justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader />
-          <h3 className="font-semibold text-xl">Loading bookings...</h3>
-          <p>This won’t take long!</p>
-        </div>
-      </div>
-    );
+    return <Loader title="Loading customers" />;
   }
 
   return (

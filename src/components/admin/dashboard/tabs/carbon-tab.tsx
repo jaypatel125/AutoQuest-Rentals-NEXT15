@@ -5,7 +5,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import {
   LineChart,
   Line,
@@ -17,10 +16,6 @@ import {
   YAxis,
   Tooltip,
   Legend,
-  RadarChart,
-  PolarAngleAxis,
-  PolarGrid,
-  Radar,
 } from "recharts";
 
 interface CarbonTabProps {

@@ -11,6 +11,7 @@ import { Cars as CarType } from "@/lib/database/table-types";
 import { fetchVehicle } from "./actions";
 import VehicleDetails from "@/components/main/select-vehicle-details";
 import PageLayout from "@/components/common/page-layout";
+import Error from "@/components/utility/Error";
 
 export default function VehicleDetailPage() {
   const params = useParams();
@@ -30,26 +31,11 @@ export default function VehicleDetailPage() {
   });
 
   if (isLoading) {
-    return (
-      <div className="w-full h-[80vh] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader />
-          <h3 className="font-semibold text-xl">Fetching vehicle details...</h3>
-          <p>This won&apos;t take too long!</p>
-        </div>
-      </div>
-    );
+    return <Loader title="Fetching vehicle details" />;
   }
 
   if (error || !Car) {
-    return (
-      <div className="text-center py-20">
-        <h2 className="text-2xl font-bold">Vehicle not found</h2>
-        <p className="text-muted-foreground mt-2">
-          Try going back and selecting a different vehicle.
-        </p>
-      </div>
-    );
+    return <Error error="Vehicle not found" />;
   }
 
   return (

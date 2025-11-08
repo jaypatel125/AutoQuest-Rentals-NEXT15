@@ -37,6 +37,7 @@ import {
   Branches,
   fetchAllBranches,
 } from "@/app/(admin)/admin/manage-branches/actions";
+import Error from "@/components/utility/Error";
 
 export default function ManageBranchesTable() {
   const {
@@ -127,18 +128,10 @@ export default function ManageBranchesTable() {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  if (isLoading)
-    return (
-      <div className="w-full mt-24 flex justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader />
-          <h3 className="font-semibold text-xl">Loading branches...</h3>
-          <p>Please wait while we fetch data.</p>
-        </div>
-      </div>
-    );
+  if (isLoading) return <Loader title="Loading branches..." />;
 
-  if (isError) return <div>Error loading branches.</div>;
+  if (isError)
+    return <Error error="Failed to load branches. Please try again." />;
 
   return (
     <div className="space-y-4">

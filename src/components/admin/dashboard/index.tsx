@@ -17,6 +17,7 @@ import { CustomersTab } from "./tabs/customers-tab";
 import { OverviewTab } from "./tabs/overview-tab";
 import { VehiclesTab } from "./tabs/vehicles-tab";
 import Loader from "@/components/utility/Loader";
+import Error from "@/components/utility/Error";
 
 export const AdminDashboard: React.FC = () => {
   const [timeRange, setTimeRange] = useState("30d");
@@ -28,23 +29,10 @@ export const AdminDashboard: React.FC = () => {
     refetchInterval: 60000,
   });
 
-  if (isLoading)
-    return (
-      <div className="w-full mt-24 flex justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader />
-          <h3 className="font-semibold text-xl">Loading dashboard data...</h3>
-          <p>Please wait while we fetch the latest statistics.</p>
-        </div>
-      </div>
-    );
+  if (isLoading) return <Loader title="Fetching latetst dashboard data" />;
 
   if (error || !data) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-lg text-red-500">Error loading dashboard data</div>
-      </div>
-    );
+    return <Error />;
   }
 
   return (

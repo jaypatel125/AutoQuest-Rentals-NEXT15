@@ -136,9 +136,7 @@ export default function ConfirmationDetails({
 
       {/* Car Details */}
       {isLoading ? (
-        <div className="w-full h-40 flex items-center justify-center">
-          <Loader />
-        </div>
+        <Loader />
       ) : error ? (
         <div className="text-center py-10">
           <h2 className="text-xl font-bold">Vehicle not found</h2>

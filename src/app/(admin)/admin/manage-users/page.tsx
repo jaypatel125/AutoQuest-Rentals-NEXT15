@@ -2,6 +2,7 @@ import React from "react";
 import CustomersOverview from "@/components/admin/manage-users";
 import { getServerSideSession } from "@/hooks/SessionHandler";
 import PageLayout from "@/components/common/page-layout";
+import Loader from "@/components/utility/Loader";
 
 const CustomersPage = async () => {
   const { user } = await getServerSideSession();
@@ -13,7 +14,7 @@ const CustomersPage = async () => {
       <CustomersOverview user={user} />
     </PageLayout>
   ) : (
-    <div>Loading...</div>
+    <Loader title="Checking authentication" />
   );
 };
 

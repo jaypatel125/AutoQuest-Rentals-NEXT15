@@ -18,6 +18,7 @@ import {
   Select,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import Error from "@/components/utility/Error";
 
 const provinces = [
   "Alberta",
@@ -38,7 +39,11 @@ export default function EditBranchPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: branch, isLoading } = useQuery({
+  const {
+    data: branch,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["branch", branchId],
     queryFn: () => getBranchById(branchId),
     enabled: !!branchId,
@@ -78,14 +83,11 @@ export default function EditBranchPage() {
   });
 
   if (isLoading) {
-    return (
-      <div className="w-full mt-24 flex justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader />
-          <h3 className="font-semibold text-xl">Loading branch details...</h3>
-        </div>
-      </div>
-    );
+    return <Loader title="Loading branch details" />;
+  }
+
+  if (isError) {
+    return <Error error="Failed to load branch details. Please try again." />;
   }
 
   return (

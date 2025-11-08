@@ -402,15 +402,7 @@ export default function SelectVehiclePage() {
             {/* Cars Grid */}
             <div className="md:w-4/5">
               {isLoading ? (
-                <div className="w-full h-[60vh] flex items-center justify-center">
-                  <div className="flex flex-col items-center gap-2">
-                    <Loader />
-                    <h3 className="font-semibold text-xl">
-                      Fetching available vehicles...
-                    </h3>
-                    <p>This won&apos;t take too long!</p>
-                  </div>
-                </div>
+                <Loader title=" Fetching available vehicles" />
               ) : filteredCars.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredCars.map((car) => (

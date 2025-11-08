@@ -8,6 +8,7 @@ import { Separator } from "../../ui/separator";
 import { Calendar } from "lucide-react";
 import { formatDate, formatPrice } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import Error from "@/components/utility/Error";
 
 type Props = {
   data?: Booking[];
@@ -18,23 +19,11 @@ type Props = {
 export default function Bookings({ data, isLoading, isError }: Props) {
   const router = useRouter();
   if (isLoading) {
-    return (
-      <div className="w-full h-[80vh] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader />
-          <h3 className="font-semibold text-xl">Fetching your bookings...</h3>
-          <p>This won&apos;t take too long!</p>
-        </div>
-      </div>
-    );
+    return <Loader title="Fetching your bookings" />;
   }
 
   if (isError) {
-    return (
-      <div className="w-full h-[80vh] flex items-center justify-center">
-        <p className="text-red-500">Something went wrong. Please try again.</p>
-      </div>
-    );
+    return <Error error="Failed to load bookings. Please try again." />;
   }
 
   return (

@@ -175,7 +175,7 @@ export default function VehicleOverviewTable({
             placeholder="Search by brand, model, branch, or city..."
             value={globalFilter ?? ""}
             onChange={(e) => setGlobalFilter(e.target.value)}
-            className="max-w-sm"
+            className="md:min-w-md"
           />
           {branchId && (
             <Button variant="outline" onClick={handleClearFilter}>

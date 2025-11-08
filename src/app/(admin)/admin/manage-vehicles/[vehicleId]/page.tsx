@@ -7,6 +7,7 @@ import Loader from "@/components/utility/Loader";
 import VehicleManage from "@/components/admin/edit-vehicle";
 import { fetchBranches } from "@/app/actions";
 import PageLayout from "@/components/common/page-layout";
+import Error from "@/components/utility/Error";
 
 export default function EditVehiclePage() {
   const params = useParams();
@@ -26,23 +27,9 @@ export default function EditVehiclePage() {
     queryFn: fetchBranches,
   });
 
-  if (isLoading)
-    return (
-      <div className="w-full h-[80vh] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <Loader />
-          <h3 className="font-semibold text-xl">Fetching vehicle details...</h3>
-          <p>This won&apos;t take too long!</p>
-        </div>
-      </div>
-    );
+  if (isLoading) return <Loader title="Fetching vehicle details" />;
 
-  if (isError || !vehicle)
-    return (
-      <div className="w-full h-[80vh] flex items-center justify-center text-red-500">
-        Something went wrong. Please try again.
-      </div>
-    );
+  if (isError || !vehicle) return <Error />;
 
   const title = `Manage Vehicle - ${vehicle.brand} ${vehicle.model}`;
 
