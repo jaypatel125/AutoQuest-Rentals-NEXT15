@@ -232,8 +232,9 @@ export function SearchBar() {
         disabled={
           !localStartDate || !localEndDate || !localCity || !localBranch
         }
+        loading={isLoading}
       >
-        Find
+        {isLoading ? "Searching..." : "Search Vehicles"}
       </Button>
     </section>
   );

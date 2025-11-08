@@ -65,12 +65,13 @@ export default function ForgotPasswordForm() {
             <Label htmlFor="email">Email address</Label>
             <Input id="email" name="email" type="email" required />
           </div>
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "Send Reset Link"
-            )}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={pending}
+            loading={pending}
+          >
+            {pending ? "Sending reset link..." : " Send Reset Link"}
           </Button>
         </form>
       )}

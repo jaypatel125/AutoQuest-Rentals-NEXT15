@@ -124,8 +124,13 @@ export default function SigninForm() {
             </a>
           </div>
 
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={pending}
+            loading={pending}
+          >
+            {pending ? "Signing In... " : "Sign In"}
           </Button>
 
           <div className="flex items-center">

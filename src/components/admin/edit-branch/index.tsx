@@ -17,6 +17,7 @@ import {
   SelectItem,
   Select,
 } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
 const provinces = [
   "Alberta",
@@ -34,6 +35,7 @@ const provinces = [
 export default function EditBranchPage() {
   const { branchId } = useParams<{ branchId: string }>();
   const router = useRouter();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: branch, isLoading } = useQuery({
@@ -65,6 +67,10 @@ export default function EditBranchPage() {
   const mutation = useMutation({
     mutationFn: (updated: typeof form) => updateBranch(branchId, updated),
     onSuccess: () => {
+      toast({
+        title: "Branch Updated",
+        description: "The branch details have been updated successfully.",
+      });
       queryClient.invalidateQueries({ queryKey: ["branch", branchId] });
       queryClient.invalidateQueries({ queryKey: ["branches"] });
       router.push("/admin/manage-branches");
@@ -193,6 +199,7 @@ export default function EditBranchPage() {
           <Button
             onClick={() => mutation.mutate(form)}
             disabled={mutation.isPending}
+            loading={mutation.isPending}
           >
             {mutation.isPending ? "Updating..." : "Save Changes"}
           </Button>

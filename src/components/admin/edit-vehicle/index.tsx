@@ -35,8 +35,8 @@ import {
   replaceVehiclePhoto,
   updateVehicle,
 } from "@/app/(admin)/admin/manage-vehicles/[vehicleId]/actions";
-import { Check, Loader2, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
 
 type formDataType = {
   brand: string;
@@ -63,10 +63,15 @@ export default function VehicleManage({
   const params = useParams();
   const vehicleId = params["vehicleId"] as string;
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const mutation = useMutation({
     mutationFn: (formData: formDataType) => updateVehicle(vehicleId, formData),
     onSuccess: () => {
+      toast({
+        title: "Vehicle Updated",
+        description: "The vehicle details have been updated successfully.",
+      });
       queryClient.invalidateQueries({ queryKey: ["vehicle", vehicleId] });
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       router.push("/admin/manage-vehicles");
@@ -77,6 +82,10 @@ export default function VehicleManage({
     mutationFn: (file: File) =>
       replaceVehiclePhoto(vehicleId, file, vehicle.image),
     onSuccess: (data) => {
+      toast({
+        title: "Photo Replaced",
+        description: "The vehicle photo has been replaced successfully.",
+      });
       setFormData((prev) => ({ ...prev, image_url: data.image }));
       queryClient.invalidateQueries({ queryKey: ["vehicles", vehicleId] });
     },
@@ -100,7 +109,7 @@ export default function VehicleManage({
   });
 
   const fuelTypes: fuel_type[] = ["Diesel", "Electric", "Hybrid", "Petrol"];
-  const passengerCapacity: passenger_capacity[] = [2, 4, 6, 7, 8];
+  const passengerCapacity: passenger_capacity[] = [2, 4, 5, 6, 7, 8];
 
   const bodyTypes: body_type[] = [
     "Convertible",
@@ -182,6 +191,7 @@ export default function VehicleManage({
                     type="button"
                     variant="secondary"
                     disabled={replacePhotoMutation.isPending}
+                    loading={replacePhotoMutation.isPending}
                     onClick={() => {
                       const fileInput = document.getElementById(
                         "file"
@@ -387,7 +397,7 @@ export default function VehicleManage({
                         passenger_capacity: Number(val),
                       }))
                     }
-                    className="grid grid-cols-5 gap-3"
+                    className="grid grid-cols-6 gap-2"
                   >
                     {passengerCapacity.map((capacity) => (
                       <div
@@ -490,33 +500,12 @@ export default function VehicleManage({
               </Button>
               <div className="flex gap-3 order-1 sm:order-2 sm:w-auto w-full">
                 <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => {
-                    // Add delete functionality here
-                    console.log("Delete vehicle", vehicleId);
-                  }}
-                  className="flex-1 sm:flex-none"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </Button>
-                <Button
                   type="submit"
                   disabled={mutation.isPending}
                   className="flex-1 sm:flex-none min-w-32"
+                  loading={mutation.isPending}
                 >
-                  {mutation.isPending ? (
-                    <>
-                      <Loader2 className="spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      Update Vehicle
-                    </>
-                  )}
+                  {mutation.isPending ? "Updating..." : "Update Vehicle"}
                 </Button>
               </div>
             </div>

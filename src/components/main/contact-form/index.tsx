@@ -78,7 +78,12 @@ export default function ContactForm() {
                 onChange={handleChange}
                 required
               />
-              <Button type="submit" disabled={isSubmitting} className="w-full">
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full"
+                loading={isSubmitting}
+              >
                 {isSubmitting ? "Sending..." : "Send Message"}
               </Button>
             </form>

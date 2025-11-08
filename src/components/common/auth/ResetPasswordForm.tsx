@@ -102,12 +102,13 @@ export default function ResetPasswordForm() {
             <p className="text-sm text-red-600">Passwords do not match.</p>
           )}
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <Button type="submit" className="w-full" disabled={pending}>
-            {pending ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              "Reset Password"
-            )}
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={pending}
+            loading={pending}
+          >
+            {pending ? "Resetting Password..." : " Reset Password"}
           </Button>
         </form>
       )}

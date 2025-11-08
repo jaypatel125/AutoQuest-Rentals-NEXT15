@@ -13,6 +13,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { addBranch } from "@/app/(admin)/admin/add-branch/actions";
+import { useToast } from "@/hooks/use-toast";
 
 const provinces = [
   "Ontario",
@@ -33,6 +34,7 @@ const provinces = [
 export default function AddBranchPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const [form, setForm] = useState({
     name: "",
@@ -45,6 +47,10 @@ export default function AddBranchPage() {
   const mutation = useMutation({
     mutationFn: addBranch,
     onSuccess: () => {
+      toast({
+        title: "Branch Added",
+        description: "The new branch has been added successfully.",
+      });
       queryClient.invalidateQueries({ queryKey: ["branches"] });
       router.push("/admin/manage-branches");
     },
@@ -142,6 +148,7 @@ export default function AddBranchPage() {
         <Button
           onClick={() => mutation.mutate(form)}
           disabled={mutation.isPending}
+          loading={mutation.isPending}
         >
           {mutation.isPending ? "Adding..." : "Add Branch"}
         </Button>

@@ -95,7 +95,7 @@ export async function adminSafeDeleteUser({
 }): Promise<AdminSafeDeleteResponse> {
   try {
     const res = await fetchWithTimeout(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/delete`,
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/delete-user`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

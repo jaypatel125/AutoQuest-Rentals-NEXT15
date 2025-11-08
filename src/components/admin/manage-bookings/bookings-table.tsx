@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatDate } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 export type Booking = {
   id: string;
@@ -52,11 +53,16 @@ function BookingStatusCell({
   currentStatus: string;
 }) {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const { mutate, isPending } = useMutation({
     mutationFn: (newStatus: string) =>
       updateBookingStatus(bookingId, newStatus),
     onSuccess: () => {
+      toast({
+        title: "Status Updated",
+        description: "The booking status has been updated successfully.",
+      });
       queryClient.invalidateQueries({ queryKey: ["get-bookings"] });
     },
   });

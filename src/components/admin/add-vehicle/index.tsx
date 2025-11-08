@@ -24,10 +24,10 @@ import {
 } from "@/lib/database/table-types";
 import Image from "next/image";
 import { createVehicle } from "@/app/(admin)/admin/add-vehicle/actions";
-import { Loader2, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { fetchBranches } from "@/app/actions";
 import { addVehicleSchema } from "@/lib/zod";
+import { useToast } from "@/hooks/use-toast";
 
 export type CarsInput = {
   branch_id: string;
@@ -47,6 +47,7 @@ export type CarsInput = {
 export default function AddVehicleForm() {
   const router = useRouter();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState<CarsInput>({
     brand: "",
@@ -71,6 +72,10 @@ export default function AddVehicleForm() {
   const createMutation = useMutation({
     mutationFn: (data: CarsInput) => createVehicle(data),
     onSuccess: () => {
+      toast({
+        title: "Vehicle Added",
+        description: "The new vehicle has been added successfully.",
+      });
       queryClient.invalidateQueries({ queryKey: ["vehicles"] });
       router.push("/admin/manage-vehicles");
     },
@@ -441,18 +446,12 @@ export default function AddVehicleForm() {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createMutation.isPending}>
-                {createMutation.isPending ? (
-                  <>
-                    <Loader2 className="animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  <>
-                    <Check className="w-4 h-4 mr-2" />
-                    Add Vehicle
-                  </>
-                )}
+              <Button
+                type="submit"
+                disabled={createMutation.isPending}
+                loading={createMutation.isPending}
+              >
+                {createMutation.isPending ? "Adding Vehicle..." : "Add Vehicle"}
               </Button>
             </div>
           </div>

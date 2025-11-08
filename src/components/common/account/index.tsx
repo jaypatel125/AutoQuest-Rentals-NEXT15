@@ -27,7 +27,14 @@ export default function SettingsProfilePage({ user }: { user: IUser }) {
     <div className="space-y-8">
       <ProfileName currentUser={user} />
       <Separator />
-      <ProfileEmail currentUser={user} />
+      {lastloginMethod === "email" ? (
+        <ProfileEmail currentUser={user} />
+      ) : (
+        <div className="text-muted-foreground text-sm">
+          If you have signed in using a social provider (google), you cannot
+          change your email.
+        </div>
+      )}
       <Separator />
       {lastloginMethod === "email" ? (
         <ProfilePassword />

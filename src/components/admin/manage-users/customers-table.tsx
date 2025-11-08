@@ -39,6 +39,7 @@ import {
   adminSafeDeleteUser,
 } from "../../../app/(admin)/admin/manage-users/actions";
 import Loader from "@/components/utility/Loader";
+import { useToast } from "@/hooks/use-toast";
 
 export function CustomersTable({
   rows,
@@ -56,6 +57,7 @@ export function CustomersTable({
   currentUserId: string;
 }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -68,6 +70,10 @@ export function CustomersTable({
     mutationFn: ({ userId }: { userId: string }) =>
       adminSafeDeleteUser({ userId }),
     onSuccess: () => {
+      toast({
+        title: "User deleted",
+        description: "The user has been successfully deleted.",
+      });
       qc.invalidateQueries({ queryKey: adminCustomersKeys.all });
     },
   });
