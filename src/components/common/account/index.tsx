@@ -58,6 +58,7 @@ export default function SettingsProfilePage({ user }: { user: IUser }) {
           </p>
         </div>
         <Button
+          iconType="delete"
           variant="outline"
           className="text-destructive border-destructive hover:bg-destructive hover:text-white"
           onClick={handleDeleteAccount}

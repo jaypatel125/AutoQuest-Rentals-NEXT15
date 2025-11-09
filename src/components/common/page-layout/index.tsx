@@ -22,8 +22,8 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   return (
     <div className="py-6 space-y-6">
       {goBack && (
-        <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-          <ArrowLeft /> Back
+        <Button iconType="left-arrow" variant="ghost" onClick={() => router.back()} className="gap-2">
+          Back
         </Button>
       )}
       <div className="flex gap-4">

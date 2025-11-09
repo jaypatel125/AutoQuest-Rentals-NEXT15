@@ -172,6 +172,7 @@ export default function EditBranchPage() {
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t border-gray-200">
         <Button
+          iconType="view"
           variant="outline"
           onClick={() =>
             router.push(`/admin/manage-vehicles?branchId=${branchId}`)
@@ -183,6 +184,7 @@ export default function EditBranchPage() {
         <div className="flex gap-3 w-full sm:w-auto">
           <Button
             variant="outline"
+            iconType="reset"
             onClick={() =>
               branch &&
               setForm({
@@ -202,6 +204,7 @@ export default function EditBranchPage() {
             onClick={() => mutation.mutate(form)}
             disabled={mutation.isPending}
             loading={mutation.isPending}
+            iconType="submit"
           >
             {mutation.isPending ? "Updating..." : "Save Changes"}
           </Button>

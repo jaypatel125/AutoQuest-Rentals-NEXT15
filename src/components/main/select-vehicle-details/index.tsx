@@ -68,8 +68,12 @@ export default function VehicleDetails({ car, onRentNow }: Props) {
             </CardContent>
           </Card>
 
-          <Button className="whitespace-nowrap flex-1" onClick={onRentNow}>
-            Rent Now <ArrowRight />
+          <Button
+            iconType="right-arrow"
+            className="whitespace-nowrap flex-1"
+            onClick={onRentNow}
+          >
+            Rent Now
           </Button>
         </div>
       </div>

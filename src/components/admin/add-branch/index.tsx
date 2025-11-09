@@ -140,6 +140,7 @@ export default function AddBranchPage() {
         <Button
           variant="outline"
           onClick={() => router.push("/admin/manage-branches")}
+          iconType="close"
           className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200"
         >
           Cancel
@@ -149,6 +150,7 @@ export default function AddBranchPage() {
           onClick={() => mutation.mutate(form)}
           disabled={mutation.isPending}
           loading={mutation.isPending}
+          iconType="add"
         >
           {mutation.isPending ? "Adding..." : "Add Branch"}
         </Button>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Disclosure } from "@headlessui/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { MdOutlineCancel } from "react-icons/md";
 
 type AccountInfoProps = {
   label: string;
@@ -53,7 +54,7 @@ const AccountInfo = ({
         <div>
           <Button
             variant="outline"
-            className="w-20 min-h-8"
+            iconType={isOpen ? "close" : "edit"}
             onClick={handleToggle}
             type={isOpen ? "reset" : "button"}
             data-testid="edit-button"
@@ -79,6 +80,7 @@ const AccountInfo = ({
           <div className="py-4 space-y-4">
             <div className="w-full">{children}</div>
             <Button
+              iconType="submit"
               className="w-full sm:w-auto"
               variant="default"
               type="submit"

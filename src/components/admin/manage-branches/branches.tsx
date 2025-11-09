@@ -97,7 +97,7 @@ export default function ManageBranchesTable() {
         const branchId = row.original.id;
         return (
           <Link href={`/admin/manage-branches/${branchId}`}>
-            <Button variant="outline" size="sm">
+            <Button iconType="edit" variant="outline" size="sm">
               Edit
             </Button>
           </Link>
@@ -165,7 +165,7 @@ export default function ManageBranchesTable() {
             </DropdownMenuContent>
           </DropdownMenu>
           <Link href="/admin/add-branch">
-            <Button>Add Branch</Button>
+            <Button iconType="add">Add Branch</Button>
           </Link>
         </div>
       </div>
@@ -220,7 +220,7 @@ export default function ManageBranchesTable() {
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
-          size="sm"
+          iconType="left-arrow"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
@@ -228,7 +228,7 @@ export default function ManageBranchesTable() {
         </Button>
         <Button
           variant="outline"
-          size="sm"
+          iconType="right-arrow"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >

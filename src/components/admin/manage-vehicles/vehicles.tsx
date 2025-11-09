@@ -120,7 +120,7 @@ export default function VehicleOverviewTable({
         const vehicleId = row.original.id;
         return (
           <Link href={`/admin/manage-vehicles/${vehicleId}`}>
-            <Button variant="outline" size="sm">
+            <Button iconType="edit" variant="outline" size="sm">
               Edit
             </Button>
           </Link>
@@ -208,9 +208,15 @@ export default function VehicleOverviewTable({
                 ))}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Link href="/admin/add-vehicle">
-            <Button>Add Vehicle</Button>
-          </Link>
+
+          <Button
+            iconType="add"
+            onClick={() => {
+              router.push("/admin/add-vehicle");
+            }}
+          >
+            Add Vehicle
+          </Button>
         </div>
       </div>
 
@@ -268,8 +274,8 @@ export default function VehicleOverviewTable({
         </div>
         <div className="space-x-2">
           <Button
+            iconType="left-arrow"
             variant="outline"
-            size="sm"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
@@ -277,7 +283,7 @@ export default function VehicleOverviewTable({
           </Button>
           <Button
             variant="outline"
-            size="sm"
+            iconType="right-arrow"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >

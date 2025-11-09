@@ -95,8 +95,12 @@ export default function BookingsOverview() {
             className="max-w-sm"
           />
           {userId && (
-            <Button variant="outline" onClick={handleClearFilter}>
-              <IoClose /> Clear Filter
+            <Button
+              iconType="close"
+              variant="outline"
+              onClick={handleClearFilter}
+            >
+              Clear Filter
             </Button>
           )}
         </div>

@@ -247,8 +247,9 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
               className="w-full text-destructive border-destructive hover:bg-destructive hover:text-white"
               onClick={() => cancelBookingMutate()}
               loading={isPending}
+              iconType="close"
             >
-              {isPending ? "Cancelling..." : " Cancel Booking"}
+              {isPending ? "Cancelling..." : "Cancel Booking"}
             </Button>
           )}
         </section>

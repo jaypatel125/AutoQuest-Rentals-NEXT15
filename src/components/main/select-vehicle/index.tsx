@@ -244,11 +244,11 @@ export default function SelectVehiclePage() {
                 <div className="px-6 py-4 space-y-2 bg-muted rounded-lg">
                   <h3 className="font-semibold my-2">Search Results For:</h3>
                   <Button
+                    iconType="filter"
                     variant="ghost"
                     onClick={clearAllFilters}
                     className="flex items-center gap-1 text-sm"
                   >
-                    <FilterX size={14} />
                     Clear Filters
                   </Button>
                   <div className="flex flex-wrap gap-2">
@@ -448,6 +448,7 @@ export default function SelectVehiclePage() {
                             <Button
                               variant="outline"
                               size="sm"
+                              iconType="right-arrow"
                               className="whitespace-nowrap"
                               onClick={(e) => {
                                 e.preventDefault();
@@ -460,7 +461,7 @@ export default function SelectVehiclePage() {
                                 setDialogOpen(true);
                               }}
                             >
-                              Rent Now <ArrowRight className="ml-1" />
+                              Rent Now
                             </Button>
                           </div>
                         </CardContent>

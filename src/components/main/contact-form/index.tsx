@@ -50,7 +50,11 @@ export default function ContactForm() {
               <p className="text-green-600 font-medium">
                 Your message has been sent successfully!
               </p>
-              <Button variant="outline" onClick={() => setIsSuccess(false)}>
+              <Button
+                iconType="right-arrow"
+                variant="outline"
+                onClick={() => setIsSuccess(false)}
+              >
                 Send another message
               </Button>
             </div>
@@ -81,6 +85,7 @@ export default function ContactForm() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
+                iconType="send"
                 className="w-full"
                 loading={isSubmitting}
               >

@@ -18,7 +18,7 @@ export default async function ConfirmationPage({
   const { status, customer_details, amount_total, currency, metadata } =
     session;
 
-  if (status === "complete") {
+  if (status !== "complete") {
     return redirect("/");
   }
 

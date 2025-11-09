@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { handleCheckout } from "@/app/(main)/checkout/actions";
 import { IUser } from "../../../../auth-client";
 import { formatPrice } from "@/lib/utils";
+import { MdOutlineCancel } from "react-icons/md";
 
 export default function Checkout({ user }: { user: IUser }) {
   const router = useRouter();
@@ -308,11 +309,15 @@ export default function Checkout({ user }: { user: IUser }) {
 
           {/* Actions */}
           <div className="flex gap-4">
-            <Button variant="outline" className="flex-1">
+            <Button iconType="close" variant="outline" className="flex-1">
               Cancel
             </Button>
-            <Button className="flex-1" onClick={onPayNow}>
-              Pay Now <ArrowRight className="ml-1" />
+            <Button
+              iconType="right-arrow"
+              className="flex-1"
+              onClick={onPayNow}
+            >
+              Pay Now
             </Button>
           </div>
         </div>

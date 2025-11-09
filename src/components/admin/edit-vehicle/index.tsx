@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
+import { MdOutlineCancel } from "react-icons/md";
 import {
   Select,
   SelectContent,
@@ -189,6 +190,7 @@ export default function VehicleManage({
                   />
                   <Button
                     type="button"
+                    iconType="upload"
                     variant="secondary"
                     disabled={replacePhotoMutation.isPending}
                     loading={replacePhotoMutation.isPending}
@@ -492,6 +494,7 @@ export default function VehicleManage({
             <div className="flex flex-col sm:flex-row gap-3 justify-end">
               <Button
                 type="button"
+                iconType="close"
                 variant="outline"
                 onClick={() => router.push("/admin/manage-vehicles")}
                 className="sm:w-auto w-full order-2 sm:order-1"
@@ -500,6 +503,7 @@ export default function VehicleManage({
               </Button>
               <div className="flex gap-3 order-1 sm:order-2 sm:w-auto w-full">
                 <Button
+                  iconType="submit"
                   type="submit"
                   disabled={mutation.isPending}
                   className="flex-1 sm:flex-none min-w-32"

@@ -164,13 +164,13 @@ export function SearchBar() {
         <Popover>
           <PopoverTrigger asChild>
             <Button
+              iconType="calendar"
               variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
                 !localStartDate && "text-muted-foreground"
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
               {localStartDate ? (
                 format(localStartDate, "PPP")
               ) : (
@@ -197,13 +197,13 @@ export function SearchBar() {
         <Popover>
           <PopoverTrigger asChild>
             <Button
+              iconType="calendar"
               variant="outline"
               className={cn(
                 "w-full justify-start text-left font-normal",
                 !localEndDate && "text-muted-foreground"
               )}
             >
-              <CalendarIcon className="mr-2 h-4 w-4" />
               {localEndDate ? (
                 format(localEndDate, "PPP")
               ) : (
@@ -228,6 +228,7 @@ export function SearchBar() {
       {/* Search Button */}
       <Button
         className="w-full"
+        iconType="search"
         onClick={handleSearch}
         disabled={
           !localStartDate || !localEndDate || !localCity || !localBranch

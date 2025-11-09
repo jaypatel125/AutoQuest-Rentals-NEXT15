@@ -1,7 +1,6 @@
 import React from "react";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
-import { ReloadIcon } from "@radix-ui/react-icons";
 
 interface LoaderProps {
   error?: string;
@@ -15,8 +14,7 @@ const Error: React.FC<LoaderProps> = ({ error }) => {
         <div className="text-lg text-red-500 font-medium">
           {error ? error : "Something went wrong. Please try again."}
         </div>
-        <Button onClick={() => router.refresh()}>
-          <ReloadIcon />
+        <Button iconType="reload" onClick={() => router.refresh()}>
           Retry
         </Button>
       </div>

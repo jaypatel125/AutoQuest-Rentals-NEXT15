@@ -37,8 +37,8 @@ export function Dropdown({ user }: { user: IUser }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline">
-          Hi, {user?.name} <RiArrowDropDownLine />
+        <Button variant="outline" iconType="down-arrow">
+          Hi, {user?.name}
         </Button>
       </DropdownMenuTrigger>
       {user.role === "admin" ? (

@@ -67,10 +67,12 @@ export function EVPromotionDialog({
         </div>
 
         <DialogFooter className="flex justify-between gap-2">
-          <Button variant="outline" onClick={onContinue}>
+          <Button variant="outline" iconType="right-arrow" onClick={onContinue}>
             Continue Booking
           </Button>
-          <Button onClick={onCheckoutEV}>Checkout EVs</Button>
+          <Button iconType="view" onClick={onCheckoutEV}>
+            Checkout EVs
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

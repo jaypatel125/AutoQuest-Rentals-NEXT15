@@ -102,6 +102,7 @@ export default function ResetPasswordForm() {
           )}
           {error && <p className="text-sm text-red-600">{error}</p>}
           <Button
+            iconType="submit"
             type="submit"
             className="w-full"
             disabled={pending}

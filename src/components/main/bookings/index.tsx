@@ -164,6 +164,7 @@ export default function Bookings({ data, isLoading, isError }: Props) {
                           <Button
                             variant="outline"
                             size="sm"
+                            iconType="view"
                             onClick={() =>
                               router.push(`/bookings/${booking.booking_id}`)
                             }
@@ -189,7 +190,11 @@ export default function Bookings({ data, isLoading, isError }: Props) {
             You haven&apos;t made any bookings yet. Start exploring our
             available cars.
           </p>
-          <Button onClick={() => router.push("/")} className="mt-2">
+          <Button
+            iconType="list"
+            onClick={() => router.push("/")}
+            className="mt-2"
+          >
             Browse Cars
           </Button>
         </div>

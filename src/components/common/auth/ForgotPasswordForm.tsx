@@ -65,6 +65,7 @@ export default function ForgotPasswordForm() {
             <Input id="email" name="email" type="email" required />
           </div>
           <Button
+            iconType="submit"
             type="submit"
             className="w-full"
             disabled={pending}

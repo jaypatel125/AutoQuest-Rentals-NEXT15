@@ -298,16 +298,16 @@ export default function ConfirmationDetails({
         <Button
           onClick={() => router.push("/bookings")}
           className="flex items-center gap-2"
+          iconType="list"
         >
-          <ListChecks className="h-4 w-4" />
           View My Bookings
         </Button>
         <Button
           onClick={() => router.push("/")}
           variant="outline"
           className="flex items-center gap-2"
+          iconType="home"
         >
-          <Home className="h-4 w-4" />
           Back to Home
         </Button>
       </div>

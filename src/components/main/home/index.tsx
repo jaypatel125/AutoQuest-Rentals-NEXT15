@@ -111,7 +111,9 @@ const HomePage = () => {
           Earn <span className="font-semibold">2x points</span> when renting
           electric vehicles. Redeem your points for discounts on future rides.
         </p>
-        <Button onClick={() => router.push("/rewards")}>Learn More</Button>
+        <Button iconType="right-arrow" onClick={() => router.push("/rewards")}>
+          Learn More
+        </Button>
       </section>
 
       {/* How It Works */}
