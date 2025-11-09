@@ -8,7 +8,7 @@ import { z } from "zod";
 import { signInSchema } from "@/lib/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2 } from "lucide-react";
+
 import {
   Form,
   FormField,

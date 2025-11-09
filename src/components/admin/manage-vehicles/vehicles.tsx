@@ -14,7 +14,6 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
-import { IoClose } from "react-icons/io5";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -178,8 +177,12 @@ export default function VehicleOverviewTable({
             className="md:min-w-md"
           />
           {branchId && (
-            <Button variant="outline" onClick={handleClearFilter}>
-              <IoClose /> Clear Filter
+            <Button
+              iconType="close"
+              variant="outline"
+              onClick={handleClearFilter}
+            >
+              Clear Filter
             </Button>
           )}
         </div>

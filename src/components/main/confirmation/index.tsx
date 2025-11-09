@@ -7,14 +7,7 @@ import { useSearchStore } from "@/context/searchStore";
 import { Button } from "../../ui/button";
 import { useRouter } from "next/navigation";
 import { Label, Separator } from "@radix-ui/react-dropdown-menu";
-import {
-  CheckCircle,
-  Calendar,
-  CalendarDays,
-  ListChecks,
-  Home,
-  CarIcon,
-} from "lucide-react";
+import { CheckCircle, Calendar, CalendarDays, CarIcon } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../../ui/card";
 import Loader from "../../utility/Loader";
 import { useEffect } from "react";

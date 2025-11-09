@@ -26,7 +26,7 @@ import {
 } from "@tanstack/react-table";
 import BookingsTable from "@/components/admin/manage-bookings/bookings-table";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { IoClose } from "react-icons/io5";
+
 import Error from "@/components/utility/Error";
 
 export default function BookingsOverview() {

@@ -23,7 +23,7 @@ import {
   PopoverContent as CommandPopoverContent,
   PopoverTrigger as CommandPopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon, ChevronsUpDown, Check } from "lucide-react";
+import { ChevronsUpDown, Check } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useSearchStore } from "@/context/searchStore";

@@ -12,7 +12,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { RiArrowDropDownLine } from "react-icons/ri";
+
 import { useRouter } from "next/navigation";
 import { authClient, IUser } from "../../../../auth-client";
 

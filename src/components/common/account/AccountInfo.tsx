@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Disclosure } from "@headlessui/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MdOutlineCancel } from "react-icons/md";
 
 type AccountInfoProps = {
   label: string;

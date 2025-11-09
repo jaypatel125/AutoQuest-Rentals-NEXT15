@@ -3,9 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import Loader from "@/components/utility/Loader";
 import {
   Booking,
@@ -23,7 +21,6 @@ interface Props {
 }
 
 export default function BookingDetail({ booking, isLoading, error }: Props) {
-  const router = useRouter();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

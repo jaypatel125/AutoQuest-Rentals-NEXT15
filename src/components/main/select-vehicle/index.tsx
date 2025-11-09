@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Fuel, Car, CarFront, FilterX, ArrowRight } from "lucide-react";
+import { Users, Fuel, Car, CarFront } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";

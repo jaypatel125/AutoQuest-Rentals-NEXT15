@@ -12,12 +12,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ArrowRight, Info } from "lucide-react";
+import { Info } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { handleCheckout } from "@/app/(main)/checkout/actions";
 import { IUser } from "../../../../auth-client";
 import { formatPrice } from "@/lib/utils";
-import { MdOutlineCancel } from "react-icons/md";
 
 export default function Checkout({ user }: { user: IUser }) {
   const router = useRouter();

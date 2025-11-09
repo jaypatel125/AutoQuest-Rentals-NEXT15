@@ -1,7 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 
@@ -22,7 +21,12 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   return (
     <div className="py-6 space-y-6">
       {goBack && (
-        <Button iconType="left-arrow" variant="ghost" onClick={() => router.back()} className="gap-2">
+        <Button
+          iconType="left-arrow"
+          variant="ghost"
+          onClick={() => router.back()}
+          className="gap-2"
+        >
           Back
         </Button>
       )}

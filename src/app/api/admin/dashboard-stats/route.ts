@@ -8,13 +8,13 @@ function formatDate(d: Date) {
 }
 
 export async function GET(request: NextRequest) {
-  // const session = await getServerSideSession();
-  // if (!session) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // }
-  // if (session.user?.role !== "admin") {
-  //   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  // }
+  const session = await getServerSideSession();
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (session.user?.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   // Parse date range from query params, fallback to last 30 days
   const params = request.nextUrl.searchParams;
