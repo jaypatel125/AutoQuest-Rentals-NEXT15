@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Button } from "../../ui/button";
 import { Dropdown } from "./Dropdown";
 import { isAuthRoutes } from "@/lib/utils";
+import Image from "next/image";
 
 const Navbar = ({
   user,
@@ -35,9 +36,12 @@ const Navbar = ({
                 <div className="flex items-center gap-4">
                   <div className="flex items-center h-full">
                     <Link href="/">
-                      <p className="text-3xl font-extrabold tracking-tight text-primary underline">
-                        Auto<span className="text-blue-600">Quest</span>
-                      </p>
+                      <Image
+                        src="/logo-2.png"
+                        width={160}
+                        height={60}
+                        alt="AutoQuest logo"
+                      />
                     </Link>
                   </div>
                 </div>
