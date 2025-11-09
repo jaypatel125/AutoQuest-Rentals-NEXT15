@@ -437,7 +437,7 @@ export default function SelectVehiclePage() {
                               {car.fuel_type}
                             </li>
                             <li>
-                              <CarFront className="inline h-4 w-4 mr-2" />{" "}
+                              <CarFront className="inline h-4 w-4 mr-1" />{" "}
                               {car.body_type}
                             </li>
                           </ul>
