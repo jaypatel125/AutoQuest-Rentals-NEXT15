@@ -11,7 +11,9 @@ export default function VerificationPage() {
         We’ve sent a verification link to this email. Please check your inbox.
       </p>
       <Link href="/signin">
-        <Button>Back to Sign In</Button>
+        <Button className="w-full" iconType="right-arrow">
+          Go to Sign In
+        </Button>
       </Link>
     </div>
   );

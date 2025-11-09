@@ -9,6 +9,7 @@ import {
   IoArrowForward,
   IoArrowBack,
   IoSearch,
+  IoLogInOutline,
   IoTrash,
   IoCalendarOutline,
   IoPencil,
@@ -17,7 +18,7 @@ import {
   IoList,
   IoCheckmarkDone,
   IoRefreshOutline,
-  IoEye,
+  IoEyeOutline,
   IoChevronDown,
   IoCloudUploadOutline,
   IoRepeat,
@@ -67,6 +68,7 @@ interface ButtonProps
     | "search"
     | "close"
     | "down-arrow"
+    | "sign-in"
     | "list"
     | "calendar"
     | "right-arrow"
@@ -120,6 +122,8 @@ function Button({
         return <IoArrowForward />;
       case "left-arrow":
         return <IoArrowBack />;
+      case "sign-in":
+        return <IoLogInOutline />;
       case "reset":
         return <IoRepeat />;
       case "send":
@@ -127,7 +131,7 @@ function Button({
       case "home":
         return <IoHomeOutline />;
       case "view":
-        return <IoEye />;
+        return <IoEyeOutline />;
       case "upload":
         return <IoCloudUploadOutline />;
       case "submit":

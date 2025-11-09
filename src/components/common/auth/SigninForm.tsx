@@ -8,6 +8,7 @@ import { z } from "zod";
 import { signInSchema } from "@/lib/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
 import {
   Form,
@@ -25,6 +26,7 @@ export default function SigninForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [pending, setPending] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -108,7 +110,25 @@ export default function SigninForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input placeholder="••••••••" type="password" {...field} />
+                  <div className="relative">
+                    <Input
+                      placeholder="••••••••"
+                      type={showPassword ? "text" : "password"}
+                      {...field}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <IoEyeOffOutline size={18} />
+                      ) : (
+                        <IoEyeOutline size={18} />
+                      )}
+                    </button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -126,6 +146,7 @@ export default function SigninForm() {
 
           <Button
             type="submit"
+            iconType="sign-in"
             className="w-full"
             disabled={pending}
             loading={pending}

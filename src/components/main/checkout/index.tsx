@@ -308,7 +308,14 @@ export default function Checkout({ user }: { user: IUser }) {
 
           {/* Actions */}
           <div className="flex gap-4">
-            <Button iconType="close" variant="outline" className="flex-1">
+            <Button
+              onClick={() => {
+                router.push("/select-vehicle");
+              }}
+              iconType="close"
+              variant="outline"
+              className="flex-1"
+            >
               Cancel
             </Button>
             <Button

@@ -9,6 +9,7 @@ import { authClient } from "../../../../auth-client";
 import { signUpSchema } from "@/lib/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
 
 import Image from "next/image";
 
@@ -25,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function SignupForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof signUpSchema>>({
@@ -127,13 +129,29 @@ export default function SignupForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
+                  <div className="relative">
+                    <Input
+                      placeholder="Enter your password"
+                      type={showPassword ? "text" : "password"}
+                      {...field}
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-3 flex items-center text-gray-500"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <IoEyeOffOutline size={20} />
+                      ) : (
+                        <IoEyeOutline size={20} />
+                      )}
+                    </button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-
           <FormField
             control={form.control}
             name="confirmPassword"
@@ -141,7 +159,13 @@ export default function SignupForm() {
               <FormItem>
                 <FormLabel>Confirm Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
+                  <div className="relative">
+                    <Input
+                      placeholder="Confirm your password"
+                      type={showPassword ? "text" : "password"}
+                      {...field}
+                    />
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -152,6 +176,7 @@ export default function SignupForm() {
             type="submit"
             className="w-full"
             disabled={loading}
+            iconType="sign-in"
             loading={loading}
           >
             {loading ? "Signing Up..." : "Sign Up"}

@@ -52,8 +52,8 @@ const Navbar = ({
                     <div>
                       <Button
                         variant="outline"
+                        iconType="sign-in"
                         onClick={() => router.push("/signin")}
-                        className="text-sm hover:text-muted-foreground cursor-pointer"
                       >
                         Sign In
                       </Button>

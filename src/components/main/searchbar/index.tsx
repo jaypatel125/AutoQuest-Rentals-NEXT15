@@ -49,6 +49,7 @@ export function SearchBar() {
   } = useSearchStore();
 
   const [open, setOpen] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
   const [localCity, setLocalCity] = useState(branch?.city || "");
   const [localStartDate, setLocalStartDate] = useState<Date | null>(
     storeStartDate || null
@@ -85,10 +86,19 @@ export function SearchBar() {
     queryFn: fetchBranches,
   });
 
-  const handleSearch = () => {
-    setDates(localStartDate || undefined, localEndDate || undefined);
-    setBranch(localBranch!);
-    router.push(`/select-vehicle`);
+  const handleSearch = async () => {
+    if (!localBranch || !localStartDate || !localEndDate) return;
+
+    setLocalLoading(true);
+    setDates(localStartDate, localEndDate);
+    setBranch(localBranch);
+
+    try {
+      await router.push("/select-vehicle");
+    } finally {
+      // optional small delay to make loader visible briefly
+      setTimeout(() => setLocalLoading(false), 300);
+    }
   };
 
   const handleStartDateSelect = (date: Date | undefined) => {
@@ -233,9 +243,9 @@ export function SearchBar() {
         disabled={
           !localStartDate || !localEndDate || !localCity || !localBranch
         }
-        loading={isLoading}
+        loading={localLoading}
       >
-        {isLoading ? "Searching..." : "Search Vehicles"}
+        {localLoading ? "Searching..." : "Search Vehicles"}
       </Button>
     </section>
   );
