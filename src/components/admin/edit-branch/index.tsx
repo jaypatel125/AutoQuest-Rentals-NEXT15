@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Loader from "@/components/utility/Loader";
 import {
+  deleteBranch,
   getBranchById,
   updateBranch,
 } from "@/app/(admin)/admin/manage-branches/[branchId]/actions";
@@ -77,6 +78,18 @@ export default function EditBranchPage() {
         description: "The branch details have been updated successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ["branch", branchId] });
+      queryClient.invalidateQueries({ queryKey: ["branches"] });
+      router.push("/admin/manage-branches");
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (branchId: string) => deleteBranch(branchId),
+    onSuccess: () => {
+      toast({
+        title: "Branch Deleted",
+        description: "The branch has been deleted successfully.",
+      });
       queryClient.invalidateQueries({ queryKey: ["branches"] });
       router.push("/admin/manage-branches");
     },
@@ -171,15 +184,24 @@ export default function EditBranchPage() {
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t border-gray-200">
-        <Button
-          iconType="view"
-          variant="outline"
-          onClick={() =>
-            router.push(`/admin/manage-vehicles?branchId=${branchId}`)
-          }
-        >
-          View Vehicles
-        </Button>
+        <div className="flex gap-3 w-full sm:w-auto">
+          <Button
+            iconType="view"
+            variant="outline"
+            onClick={() =>
+              router.push(`/admin/manage-vehicles?branchId=${branchId}`)
+            }
+          >
+            View Vehicles
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => deleteMutation.mutate(branchId)}
+            iconType="delete"
+          >
+            Delete Branch
+          </Button>
+        </div>
 
         <div className="flex gap-3 w-full sm:w-auto">
           <Button

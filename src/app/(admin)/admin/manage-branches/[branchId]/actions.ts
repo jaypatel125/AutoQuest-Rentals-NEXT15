@@ -41,3 +41,28 @@ export async function updateBranch(
     throw error;
   }
 }
+
+export async function deleteBranch(branchId: string) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/all-branches/${branchId}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+      }
+    );
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || "Failed to delete branch");
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting branch:", error);
+    throw error;
+  }
+}

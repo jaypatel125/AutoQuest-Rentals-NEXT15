@@ -128,7 +128,7 @@ export default function ManageBranchesTable() {
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  if (isLoading) return <Loader title="Loading branches..." />;
+  if (isLoading) return <Loader title="Loading branches" />;
 
   if (isError)
     return <Error error="Failed to load branches. Please try again." />;

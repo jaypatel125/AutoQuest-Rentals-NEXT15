@@ -31,6 +31,9 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
         title: "Booking Cancelled",
         description: "The booking has been successfully cancelled.",
       });
+      queryClient.invalidateQueries({
+        queryKey: ["booking", booking?.booking_id],
+      });
       queryClient.invalidateQueries({ queryKey: ["get-bookings"] });
     },
     onError: (error: Error) => {

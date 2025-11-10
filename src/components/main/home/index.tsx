@@ -77,7 +77,7 @@ const HomePage = () => {
         </div>
         <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
           {brands.map((brand, i) => (
-            <Card key={i} className="hover:shadow-md cursor-pointer">
+            <Card key={i}>
               <CardContent className="flex items-center justify-center h-20">
                 <span className="font-medium">{brand}</span>
               </CardContent>
@@ -93,7 +93,7 @@ const HomePage = () => {
         </div>
         <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
           {bodyTypes.map((type, i) => (
-            <Card key={i} className="hover:shadow-md cursor-pointer">
+            <Card key={i}>
               <CardContent className="flex items-center justify-center h-20">
                 <span className="font-medium">{type}</span>
               </CardContent>

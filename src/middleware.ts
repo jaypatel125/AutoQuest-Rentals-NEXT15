@@ -13,7 +13,6 @@ const protectedRoutes = [
   "/account",
   "/checkout",
   "/bookings",
-  "/rewards",
   "/select-vehicle",
   "/confirmation",
 ];
