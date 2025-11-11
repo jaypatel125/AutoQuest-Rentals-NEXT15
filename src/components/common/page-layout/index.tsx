@@ -31,7 +31,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         </Button>
       )}
       <div className="flex gap-4">
-        <div className="w-2 h-15 bg-gray-600 rounded-full"></div>
+        <div className="w-2 bg-[#2b2d42] rounded-full"></div>
         <div className="space-y-2 ">
           <h1 className="text-xl font-bold tracking-tight">{title}</h1>
           <p className="text-muted-foreground">{description}</p>
