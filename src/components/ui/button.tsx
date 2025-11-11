@@ -22,6 +22,7 @@ import {
   IoChevronDown,
   IoCloudUploadOutline,
   IoRepeat,
+  IoPersonCircleOutline,
   IoHomeOutline,
 } from "react-icons/io5";
 
@@ -74,6 +75,7 @@ interface ButtonProps
     | "right-arrow"
     | "send"
     | "reload"
+    | "profile"
     | "submit"
     | "reset"
     | "view"
@@ -114,6 +116,8 @@ function Button({
         return <IoSearch />;
       case "close":
         return <IoClose />;
+      case "profile":
+        return <IoPersonCircleOutline />;
       case "calendar":
         return <IoCalendarOutline />;
       case "list":

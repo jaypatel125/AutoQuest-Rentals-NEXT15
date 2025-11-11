@@ -400,7 +400,7 @@ export default function SelectVehiclePage() {
             </aside>
 
             {/* Cars Grid */}
-            <div className="md:w-4/5">
+            <div className="md:w-4/5 mb-6">
               {isLoading ? (
                 <Loader title=" Fetching available vehicles" />
               ) : filteredCars.length > 0 ? (

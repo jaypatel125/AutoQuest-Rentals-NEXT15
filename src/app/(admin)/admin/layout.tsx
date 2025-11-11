@@ -4,6 +4,7 @@ import UserNavbarWrapper from "@/components/common/navigation/UseNavbarWrapper";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
+import { PageWrapper } from "@/components/common/page-wrapper";
 
 export const metadata: Metadata = {
   title: "AutoQuest – Fast & Reliable Vehicle Rentals",
@@ -20,7 +21,9 @@ export default function RootLayout({
     <div className="antialiased">
       <main className="min-h-screen flex flex-col">
         <UserNavbarWrapper />
-        <MaxWidthWrapper className="flex-1">{children}</MaxWidthWrapper>
+        <PageWrapper>
+          <MaxWidthWrapper className="flex-1">{children}</MaxWidthWrapper>
+        </PageWrapper>
         <Footer />
       </main>
 

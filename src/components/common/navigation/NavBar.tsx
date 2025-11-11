@@ -4,10 +4,10 @@ import Link from "next/link";
 import MaxWidthWrapper from "../../utility/MaxWidthWrapper";
 import { ISession, IUser } from "../../../../auth-client";
 import { usePathname, useRouter } from "next/navigation";
-import { Button } from "../../ui/button";
 import { Dropdown } from "./Dropdown";
 import { isAuthRoutes } from "@/lib/utils";
 import Image from "next/image";
+import { Button } from "@/components/ui/button";
 
 const Navbar = ({
   user,
@@ -52,19 +52,20 @@ const Navbar = ({
                       <span>{user.reward_points} pts</span>
                     </div>
                   )}
-                  {!user || !session ? (
-                    <div>
+
+                  <div className="flex gap-3">
+                    {!user && !session && (
                       <Button
                         variant="outline"
                         iconType="sign-in"
+                        className="hidden md:inline-flex border rounded-4xl text-green-600"
                         onClick={() => router.push("/signin")}
                       >
                         Sign In
                       </Button>
-                    </div>
-                  ) : (
-                    <div>{user && <Dropdown user={user} />}</div>
-                  )}
+                    )}
+                    <Dropdown user={user} />
+                  </div>
                 </div>
               </nav>
             </MaxWidthWrapper>

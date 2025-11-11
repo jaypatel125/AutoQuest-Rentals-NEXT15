@@ -9,13 +9,7 @@ const passwordRoutes = ["/reset-password", "/forgot-password"];
 const adminRoutes = ["/admin"];
 
 // Regular user-only protected routes
-const protectedRoutes = [
-  "/account",
-  "/checkout",
-  "/bookings",
-  "/select-vehicle",
-  "/confirmation",
-];
+const protectedRoutes = ["/account", "/checkout", "/bookings", "/confirmation"];
 
 export default async function authMiddleware(request: NextRequest) {
   const pathName = request.nextUrl.pathname;

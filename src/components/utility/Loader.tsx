@@ -7,7 +7,7 @@ interface LoaderProps {
 
 const Loader: React.FC<LoaderProps> = ({ title }) => {
   return (
-    <div className="w-full h-[70vh] flex items-center justify-center">
+    <div className="w-full h-[75vh] flex items-center justify-center">
       <div className="flex flex-col items-center gap-2">
         <HashLoader color="black" size={30} />
         {title && <h3 className="font-semibold text-xl">{title}...</h3>}
