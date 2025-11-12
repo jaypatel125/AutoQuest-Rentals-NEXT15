@@ -74,13 +74,7 @@ describe("VehicleDetails", () => {
   });
 
   it("renders car details correctly", () => {
-    render(
-      <VehicleDetails
-        car={mockCar}
-        onRentNow={mockOnRentNow}
-        onBack={mockOnBack}
-      />
-    );
+    render(<VehicleDetails car={mockCar} onRentNow={mockOnRentNow} />);
 
     // Check main car information
     expect(screen.getByText("Tesla Model 3")).toBeInTheDocument();
@@ -99,13 +93,7 @@ describe("VehicleDetails", () => {
   });
 
   it("calls onBack when back button is clicked", () => {
-    render(
-      <VehicleDetails
-        car={mockCar}
-        onRentNow={mockOnRentNow}
-        onBack={mockOnBack}
-      />
-    );
+    render(<VehicleDetails car={mockCar} onRentNow={mockOnRentNow} />);
 
     const backButton = screen.getByText("Back");
     fireEvent.click(backButton);
@@ -114,13 +102,7 @@ describe("VehicleDetails", () => {
   });
 
   it("calls onRentNow when rent now button is clicked", () => {
-    render(
-      <VehicleDetails
-        car={mockCar}
-        onRentNow={mockOnRentNow}
-        onBack={mockOnBack}
-      />
-    );
+    render(<VehicleDetails car={mockCar} onRentNow={mockOnRentNow} />);
 
     const rentButton = screen.getByText("Rent Now");
     fireEvent.click(rentButton);
@@ -131,13 +113,7 @@ describe("VehicleDetails", () => {
   it("uses placeholder image when car image is not provided", () => {
     const carWithoutImage = { ...mockCar, image: "" };
 
-    render(
-      <VehicleDetails
-        car={carWithoutImage}
-        onRentNow={mockOnRentNow}
-        onBack={mockOnBack}
-      />
-    );
+    render(<VehicleDetails car={carWithoutImage} onRentNow={mockOnRentNow} />);
 
     const image = screen.getByTestId("car-image");
     expect(image).toHaveAttribute("src", "/car-placeholder.png");

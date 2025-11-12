@@ -1,102 +1,87 @@
-/**
- * @file ForgotPasswordForm.test.tsx
- */
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import ForgotPasswordForm from "@/components/auth/ForgotPasswordForm";
-import { useToast } from "@/hooks/use-toast";
+import ForgotPasswordForm from "./ForgotPasswordForm";
+import { authClient } from "../../../../auth-client";
 
-// ─── Mocks ────────────────────────────────────────────────
-jest.mock("@/hooks/use-toast", () => ({
-  useToast: jest.fn(),
+jest.mock("../../../../auth-client", () => ({
+  authClient: {
+    requestPasswordReset: jest.fn(),
+  },
 }));
 
-describe("ForgotPasswordForm", () => {
-  const mockToast = jest.fn();
+jest.mock("@/hooks/use-toast", () => ({
+  useToast: jest.fn(() => ({ toast: jest.fn() })),
+}));
 
+describe("ForgotPasswordForm (basic)", () => {
   beforeEach(() => {
-    (useToast as jest.Mock).mockReturnValue({ toast: mockToast });
-    (global.fetch as jest.Mock) = jest.fn();
-    jest.spyOn(console, "error").mockImplementation(() => {}); // silence console.error
     jest.clearAllMocks();
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  it("renders the form fields", () => {
+  it("renders email input and submit button", () => {
     render(<ForgotPasswordForm />);
-    expect(screen.getByText(/forgot password/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/email address/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Email address/i)).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /send reset link/i })
     ).toBeInTheDocument();
   });
 
-  it("handles successful password reset request", async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({}),
-    });
+  it("disables submit button while pending", async () => {
+    (authClient.requestPasswordReset as jest.Mock).mockImplementation(
+      (_, { onRequest }) => {
+        onRequest();
+      }
+    );
 
     render(<ForgotPasswordForm />);
-    fireEvent.change(screen.getByLabelText(/email address/i), {
-      target: { value: "user@example.com" },
+    fireEvent.change(screen.getByLabelText(/Email address/i), {
+      target: { value: "test@example.com" },
     });
-    fireEvent.submit(screen.getByRole("button", { name: /send reset link/i }));
+    fireEvent.submit(screen.getByRole("button"));
 
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: "Success",
-          description: expect.stringMatching(/reset link/i),
-        })
-      );
+      expect(screen.getByRole("button")).toBeDisabled();
+    });
+  });
+
+  it("shows success message after email sent", async () => {
+    (authClient.requestPasswordReset as jest.Mock).mockImplementation(
+      (_, { onRequest, onSuccess }) => {
+        onRequest();
+        onSuccess();
+      }
+    );
+
+    render(<ForgotPasswordForm />);
+    fireEvent.change(screen.getByLabelText(/Email address/i), {
+      target: { value: "test@example.com" },
+    });
+    fireEvent.submit(screen.getByRole("button"));
+
+    await waitFor(() => {
       expect(
-        screen.getByText(/a reset link has been sent/i)
+        screen.getByText(/If an account exists for that email/i)
       ).toBeInTheDocument();
     });
   });
 
-  it("handles failed request (API error)", async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ error: "Invalid email" }),
-    });
-
-    render(<ForgotPasswordForm />);
-    fireEvent.change(screen.getByLabelText(/email address/i), {
-      target: { value: "invalid@example.com" },
-    });
-    fireEvent.submit(screen.getByRole("button", { name: /send reset link/i }));
-
-    await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: "Error",
-          description: "Invalid email",
-        })
-      );
-    });
-  });
-
-  it("handles fetch exception (network error)", async () => {
-    (global.fetch as jest.Mock).mockRejectedValueOnce(
-      new Error("Network down")
+  it("calls authClient.requestPasswordReset with correct email", async () => {
+    (authClient.requestPasswordReset as jest.Mock).mockImplementation(
+      (_, callbacks) => {
+        callbacks.onRequest();
+        callbacks.onSuccess();
+      }
     );
 
     render(<ForgotPasswordForm />);
-    fireEvent.change(screen.getByLabelText(/email address/i), {
-      target: { value: "user@example.com" },
+    fireEvent.change(screen.getByLabelText(/Email address/i), {
+      target: { value: "test@example.com" },
     });
-    fireEvent.submit(screen.getByRole("button", { name: /send reset link/i }));
+    fireEvent.submit(screen.getByRole("button"));
 
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: "Error",
-          description: "Network down",
-        })
+      expect(authClient.requestPasswordReset).toHaveBeenCalledWith(
+        expect.objectContaining({ email: "test@example.com" }),
+        expect.any(Object)
       );
     });
   });

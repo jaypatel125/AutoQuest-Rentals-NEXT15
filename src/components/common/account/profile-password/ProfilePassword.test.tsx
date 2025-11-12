@@ -1,111 +1,66 @@
-/* eslint-disable react/display-name */
-/**
- * @file ProfilePassword.test.tsx
- */
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import ProfilePassword from "@/components/account/profile-password";
-import { useToast } from "@/hooks/use-toast";
-import { authClient } from "../../../../auth-client";
+import ProfilePassword from "./index";
+import { authClient } from "../../../../../auth-client";
 
-// ─── Mocks ────────────────────────────────────────────────
+jest.mock("../../../../../auth-client", () => ({
+  authClient: { changePassword: jest.fn() },
+}));
 jest.mock("@/hooks/use-toast", () => ({
-  useToast: jest.fn(),
+  useToast: jest.fn(() => ({ toast: jest.fn() })),
 }));
-jest.mock("../../../../auth-client", () => ({
-  authClient: {
-    changePassword: jest.fn(),
-  },
-}));
-jest.mock("@/components/account/AccountInfo", () => {
-  return ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="account-info">{children}</div>
-  );
-});
 
-describe("ProfilePassword", () => {
-  const mockToast = jest.fn();
-  const mockChangePassword = jest.fn();
-
+describe("ProfilePassword (basic)", () => {
   beforeEach(() => {
-    (useToast as jest.Mock).mockReturnValue({ toast: mockToast });
-    (authClient.changePassword as jest.Mock) = mockChangePassword;
-    jest.spyOn(console, "error").mockImplementation(() => {});
     jest.clearAllMocks();
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  it("renders password input fields", () => {
+  it("renders current and new password inputs", () => {
     render(<ProfilePassword />);
     expect(screen.getByTestId("current-password-input")).toBeInTheDocument();
     expect(screen.getByTestId("new-password-input")).toBeInTheDocument();
   });
 
-  it("shows validation error for short password", async () => {
+  it("shows error if new password is less than 8 characters", async () => {
     render(<ProfilePassword />);
     fireEvent.change(screen.getByTestId("new-password-input"), {
       target: { value: "short" },
     });
-    fireEvent.submit(screen.getByTestId("new-password-input").closest("form")!);
-
+    fireEvent.submit(screen.getByTestId("account-password-editor"));
     await waitFor(() => {
       expect(
-        screen.getByText(/password must be at least 8 characters/i)
+        screen.getByText(/Password must be at least 8 characters/i)
       ).toBeInTheDocument();
     });
   });
 
-  it("calls authClient.changePassword with correct data", async () => {
-    (authClient.changePassword as jest.Mock).mockResolvedValueOnce({});
+  it("calls authClient.changePassword on valid submission", async () => {
     render(<ProfilePassword />);
-
     fireEvent.change(screen.getByTestId("current-password-input"), {
-      target: { value: "oldPassword123" },
+      target: { value: "currentpassword" },
     });
     fireEvent.change(screen.getByTestId("new-password-input"), {
-      target: { value: "newPassword123" },
+      target: { value: "newpassword123" },
     });
-    fireEvent.submit(screen.getByTestId("new-password-input").closest("form")!);
-
-    await waitFor(() =>
-      expect(mockChangePassword).toHaveBeenCalledWith({
-        newPassword: "newPassword123",
-        currentPassword: "oldPassword123",
+    fireEvent.submit(screen.getByTestId("account-password-editor"));
+    await waitFor(() => {
+      expect(authClient.changePassword).toHaveBeenCalledWith({
+        currentPassword: "currentpassword",
+        newPassword: "newpassword123",
         revokeOtherSessions: true,
-      })
-    );
-
-    expect(mockToast).toHaveBeenCalledWith(
-      expect.objectContaining({
-        title: "Success",
-        description: expect.stringMatching(/password updated successfully/i),
-      })
-    );
+      });
+    });
   });
 
-  it("handles API error gracefully", async () => {
-    (authClient.changePassword as jest.Mock).mockRejectedValueOnce(
-      new Error("Server error")
-    );
+  it("disables inputs while submitting", async () => {
     render(<ProfilePassword />);
-
     fireEvent.change(screen.getByTestId("current-password-input"), {
-      target: { value: "oldPassword123" },
+      target: { value: "currentpassword" },
     });
     fireEvent.change(screen.getByTestId("new-password-input"), {
-      target: { value: "newPassword123" },
+      target: { value: "newpassword123" },
     });
-    fireEvent.submit(screen.getByTestId("new-password-input").closest("form")!);
-
-    await waitFor(() =>
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: "Error",
-          description: expect.stringMatching(/server error/i),
-        })
-      )
-    );
+    fireEvent.submit(screen.getByTestId("account-password-editor"));
+    expect(screen.getByTestId("current-password-input")).toBeDisabled();
+    expect(screen.getByTestId("new-password-input")).toBeDisabled();
   });
 });

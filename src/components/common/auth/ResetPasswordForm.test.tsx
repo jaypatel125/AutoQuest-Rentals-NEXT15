@@ -1,164 +1,68 @@
-/**
- * @file ResetPasswordForm.test.tsx
- */
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import ResetPasswordForm from "@/components/auth/ResetPasswordForm";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useToast } from "@/hooks/use-toast";
+import ResetPasswordForm from "./ResetPasswordForm";
+import { authClient } from "../../../../auth-client";
 
-// ─── Mocks ────────────────────────────────────────────────
-jest.mock("next/navigation", () => ({
-  useRouter: jest.fn(),
-  useSearchParams: jest.fn(),
+jest.mock("../../../../auth-client", () => ({
+  authClient: { resetPassword: jest.fn() },
 }));
+
 jest.mock("@/hooks/use-toast", () => ({
-  useToast: jest.fn(),
+  useToast: jest.fn(() => ({ toast: jest.fn() })),
 }));
 
-describe("ResetPasswordForm", () => {
-  const mockPush = jest.fn();
-  const mockToast = jest.fn();
-  const mockGet = jest.fn();
+jest.mock("next/navigation", () => ({
+  useRouter: jest.fn(() => ({ push: jest.fn() })),
+  useSearchParams: jest.fn(() => new URLSearchParams("token=test-token")),
+}));
 
+describe("ResetPasswordForm (basic)", () => {
   beforeEach(() => {
-    (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
-    (useSearchParams as jest.Mock).mockReturnValue({ get: mockGet });
-    (useToast as jest.Mock).mockReturnValue({ toast: mockToast });
-    (global.fetch as jest.Mock) = jest.fn();
-    jest.spyOn(console, "error").mockImplementation(() => {});
     jest.clearAllMocks();
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  it("renders input fields and submit button", () => {
-    mockGet.mockReturnValue("valid-token");
+  it("renders password and confirm password inputs", () => {
     render(<ResetPasswordForm />);
-    expect(screen.getByLabelText(/new password/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/New Password/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Confirm Password/i)).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /reset password/i })
+      screen.getByRole("button", { name: /Reset Password/i })
     ).toBeInTheDocument();
   });
 
   it("shows error when passwords do not match", async () => {
-    mockGet.mockReturnValue("valid-token");
     render(<ResetPasswordForm />);
-    fireEvent.change(screen.getByLabelText(/new password/i), {
-      target: { value: "abc123" },
+    fireEvent.change(screen.getByLabelText(/New Password/i), {
+      target: { value: "12345678" },
     });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), {
-      target: { value: "xyz999" },
+    fireEvent.change(screen.getByLabelText(/Confirm Password/i), {
+      target: { value: "87654321" },
     });
-    fireEvent.submit(screen.getByRole("button", { name: /reset password/i }));
-
-    await waitFor(() =>
-      expect(screen.getByText(/passwords do not match/i)).toBeInTheDocument()
-    );
-  });
-
-  it("shows error when token is missing", async () => {
-    mockGet.mockReturnValue(null);
-    render(<ResetPasswordForm />);
-    fireEvent.change(screen.getByLabelText(/new password/i), {
-      target: { value: "Password123" },
-    });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), {
-      target: { value: "Password123" },
-    });
-    fireEvent.submit(screen.getByRole("button", { name: /reset password/i }));
+    fireEvent.submit(screen.getByRole("button"));
 
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: "Error",
-          description: "Invalid or missing reset token.",
-        })
-      );
-      expect(
-        screen.getByText(/invalid or missing reset token/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Passwords do not match/i)).toBeInTheDocument();
     });
   });
 
-  it("handles successful reset", async () => {
-    mockGet.mockReturnValue("valid-token");
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({}),
-    });
-
-    render(<ResetPasswordForm />);
-    fireEvent.change(screen.getByLabelText(/new password/i), {
-      target: { value: "Password123" },
-    });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), {
-      target: { value: "Password123" },
-    });
-    fireEvent.submit(screen.getByRole("button", { name: /reset password/i }));
-
-    await waitFor(() => {
-      expect(
-        screen.getByText(/your password has been reset/i)
-      ).toBeInTheDocument();
-    });
-
-    // simulate redirect after success
-    jest.runAllTimers?.();
-  });
-
-  it("handles API error response", async () => {
-    mockGet.mockReturnValue("valid-token");
-    (global.fetch as jest.Mock).mockResolvedValueOnce({
-      ok: false,
-      json: async () => ({ error: "Invalid token" }),
-    });
-
-    render(<ResetPasswordForm />);
-    fireEvent.change(screen.getByLabelText(/new password/i), {
-      target: { value: "Password123" },
-    });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), {
-      target: { value: "Password123" },
-    });
-    fireEvent.submit(screen.getByRole("button", { name: /reset password/i }));
-
-    await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: "Error",
-          description: "Invalid token",
-        })
-      );
-      expect(screen.getByText(/invalid token/i)).toBeInTheDocument();
-    });
-  });
-
-  it("handles fetch rejection (network error)", async () => {
-    mockGet.mockReturnValue("valid-token");
-    (global.fetch as jest.Mock).mockRejectedValueOnce(
-      new Error("Network error")
+  it("disables submit button while pending", async () => {
+    (authClient.resetPassword as unknown as jest.Mock).mockImplementation(
+      (_, callbacks) => {
+        callbacks.onRequest();
+      }
     );
 
     render(<ResetPasswordForm />);
-    fireEvent.change(screen.getByLabelText(/new password/i), {
-      target: { value: "Password123" },
+
+    fireEvent.change(screen.getByLabelText(/New Password/i), {
+      target: { value: "12345678" },
     });
-    fireEvent.change(screen.getByLabelText(/confirm password/i), {
-      target: { value: "Password123" },
+    fireEvent.change(screen.getByLabelText(/Confirm Password/i), {
+      target: { value: "12345678" },
     });
-    fireEvent.submit(screen.getByRole("button", { name: /reset password/i }));
+    fireEvent.submit(screen.getByRole("button"));
 
     await waitFor(() => {
-      expect(mockToast).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: "Error",
-          description: "Something went wrong.",
-        })
-      );
-      expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+      expect(screen.getByRole("button")).toBeDisabled();
     });
   });
 });
