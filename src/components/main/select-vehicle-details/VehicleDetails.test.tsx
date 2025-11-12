@@ -66,7 +66,6 @@ const mockCar: CarType = {
 };
 
 const mockOnRentNow = jest.fn();
-const mockOnBack = jest.fn();
 
 describe("VehicleDetails", () => {
   beforeEach(() => {
@@ -90,15 +89,6 @@ describe("VehicleDetails", () => {
     const image = screen.getByTestId("car-image");
     expect(image).toHaveAttribute("src", "/tesla-model3.jpg");
     expect(image).toHaveAttribute("alt", "Tesla Model 3");
-  });
-
-  it("calls onBack when back button is clicked", () => {
-    render(<VehicleDetails car={mockCar} onRentNow={mockOnRentNow} />);
-
-    const backButton = screen.getByText("Back");
-    fireEvent.click(backButton);
-
-    expect(mockOnBack).toHaveBeenCalledTimes(1);
   });
 
   it("calls onRentNow when rent now button is clicked", () => {

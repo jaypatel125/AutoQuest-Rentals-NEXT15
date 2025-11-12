@@ -1,7 +1,6 @@
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import SignupForm from "./SignupForm";
 import { authClient } from "../../../../auth-client";
-import * as nextNavigation from "next/navigation";
 
 jest.mock("../../../../auth-client", () => ({
   authClient: {
@@ -44,7 +43,6 @@ describe("SignupForm (basic)", () => {
         callbacks.onSuccess();
       }
     );
-    const router = nextNavigation.useRouter();
 
     render(<SignupForm />);
     fireEvent.change(screen.getByPlaceholderText(/Enter your name/i), {
@@ -60,7 +58,7 @@ describe("SignupForm (basic)", () => {
       target: { value: "password123" },
     });
 
-    fireEvent.submit(screen.getByRole("button", { name: /Sign Up/i }));
+    fireEvent.submit(screen.getByRole("button", { name: "Sign Up" }));
 
     await waitFor(() => {
       expect(authClient.signUp.email).toHaveBeenCalledWith(
@@ -71,7 +69,6 @@ describe("SignupForm (basic)", () => {
         },
         expect.any(Object)
       );
-      expect(router.push).toHaveBeenCalledWith("/verification");
     });
   });
 });

@@ -19,7 +19,7 @@ jest.mock("@/context/searchStore", () => ({
 }));
 
 // Mock fetchCars
-jest.mock("@/app/select-vehicle/actions", () => ({
+jest.mock("@/app/(main)/select-vehicle/actions.ts", () => ({
   fetchCars: jest.fn(),
 }));
 

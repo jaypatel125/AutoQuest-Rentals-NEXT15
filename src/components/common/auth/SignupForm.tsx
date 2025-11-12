@@ -178,6 +178,7 @@ export default function SignupForm() {
             disabled={loading}
             iconType="sign-in"
             loading={loading}
+            name="Sign Up"
           >
             {loading ? "Signing Up..." : "Sign Up"}
           </Button>
