@@ -14,7 +14,7 @@ export default function RootLayout({
       <div className="flex flex-col min-h-screen">
         <UserNavbarWrapper />
         <PageWrapper>
-          <MaxWidthWrapper className="flex">{children}</MaxWidthWrapper>
+          <MaxWidthWrapper className="flex-1">{children}</MaxWidthWrapper>
         </PageWrapper>
         <Footer />
       </div>
