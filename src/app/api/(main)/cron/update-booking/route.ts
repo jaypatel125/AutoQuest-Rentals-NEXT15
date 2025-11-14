@@ -1,7 +1,6 @@
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-// Adjust this import to match your project's mail helper
 import { sendEmail } from "@/lib/email";
 
 export async function GET(request: NextRequest) {
@@ -104,7 +103,6 @@ export async function GET(request: NextRequest) {
             ? row.total_price
             : row.sub_total ?? 0;
 
-        // Prepare email HTML (kept exactly the same styling & formatting — with placeholders replaced)
         const subject = "Your AutoQuest Rental Receipt";
 
         const html = `

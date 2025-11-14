@@ -32,13 +32,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useUserBanMutations } from "@/hooks/use-ban-user";
 import { CustomersItem } from "@/app/api/admin/all-users/route";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  adminCustomersKeys,
-  adminSafeDeleteUser,
-} from "../../../app/(admin)/admin/manage-users/actions";
 import Loader from "@/components/utility/Loader";
-import { useToast } from "@/hooks/use-toast";
 
 export function CustomersTable({
   rows,
@@ -56,25 +50,12 @@ export function CustomersTable({
   currentUserId: string;
 }) {
   const router = useRouter();
-  const { toast } = useToast();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = React.useState({});
   const { banUser, unbanUser, isPending } = useUserBanMutations({
     currentUserId: currentUserId,
-  });
-  const qc = useQueryClient();
-  const deleteMutation = useMutation({
-    mutationFn: ({ userId }: { userId: string }) =>
-      adminSafeDeleteUser({ userId }),
-    onSuccess: () => {
-      toast({
-        title: "User deleted",
-        description: "The user has been successfully deleted.",
-      });
-      qc.invalidateQueries({ queryKey: adminCustomersKeys.all });
-    },
   });
 
   const columns = React.useMemo<ColumnDef<CustomersItem>[]>(
@@ -270,38 +251,13 @@ export function CustomersTable({
                       )}
                     </>
                   )}
-                {!isSelf &&
-                  !customer.banReason?.includes("Admin-initiated") && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        disabled={deleteMutation.isPending}
-                        onClick={() =>
-                          deleteMutation.mutate({
-                            userId: customer.id,
-                          })
-                        }
-                        className="text-red-600"
-                      >
-                        Delete user
-                      </DropdownMenuItem>
-                    </>
-                  )}
               </DropdownMenuContent>
             </DropdownMenu>
           );
         },
       },
     ],
-    [
-      router,
-      currentUserId,
-      onToggleAdmin,
-      banUser,
-      isPending,
-      unbanUser,
-      deleteMutation,
-    ]
+    [router, currentUserId, onToggleAdmin, banUser, isPending, unbanUser]
   );
 
   const table = useReactTable({
