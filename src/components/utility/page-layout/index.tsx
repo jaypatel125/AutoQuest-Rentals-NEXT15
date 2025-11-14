@@ -38,7 +38,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         </div>
       </div>
       <Separator />
-      {children}
+      <div>{children}</div>
     </div>
   );
 };

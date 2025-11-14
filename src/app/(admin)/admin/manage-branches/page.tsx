@@ -1,6 +1,6 @@
 "use client";
 import ManageBranchesTable from "@/components/admin/manage-branches/branches";
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 
 export default function ManageBranchesPage() {
   return (

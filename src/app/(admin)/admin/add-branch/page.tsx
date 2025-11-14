@@ -1,5 +1,5 @@
 import AddBranch from "@/components/admin/add-branch";
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 import React from "react";
 
 const AddBranchPage = () => {

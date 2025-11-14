@@ -1,6 +1,6 @@
 "use client";
 
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 import Vehicles from "@/components/admin/manage-vehicles";
 import { Suspense } from "react";
 

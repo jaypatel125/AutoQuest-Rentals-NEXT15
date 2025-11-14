@@ -1,7 +1,7 @@
 "use client";
 
 import BookingsOverview from "@/components/admin/manage-bookings";
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 import { Suspense } from "react";
 
 export default function Page() {

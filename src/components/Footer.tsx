@@ -13,7 +13,7 @@ export default function Footer() {
     return null;
   }
   return (
-    <footer className="bg-gray-900 text-gray-300 py-8">
+    <footer className=" mt-auto bg-gray-900 text-gray-300 py-8">
       <MaxWidthWrapper className="flex flex-col justify-center items-center ">
         {/* Logo */}
         <Link className="flex-1" href="/">

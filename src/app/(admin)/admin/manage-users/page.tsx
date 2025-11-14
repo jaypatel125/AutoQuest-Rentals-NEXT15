@@ -1,7 +1,7 @@
 import React from "react";
 import CustomersOverview from "@/components/admin/manage-users";
 import { getServerSideSession } from "@/hooks/SessionHandler";
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 import Loader from "@/components/utility/Loader";
 
 const CustomersPage = async () => {

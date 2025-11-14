@@ -1,4 +1,4 @@
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 import RewardsPage from "@/components/main/rewards";
 
 export default async function Rewards() {

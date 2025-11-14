@@ -1,4 +1,4 @@
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 import ContactForm from "@/components/main/contact-form";
 
 export default function ContactPage() {

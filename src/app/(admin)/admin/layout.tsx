@@ -4,7 +4,7 @@ import UserNavbarWrapper from "@/components/common/navigation/UseNavbarWrapper";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
-import { PageWrapper } from "@/components/common/page-wrapper";
+import { PageWrapper } from "@/components/utility/page-wrapper";
 
 export const metadata: Metadata = {
   title: "AutoQuest – Fast & Reliable Vehicle Rentals",

@@ -10,7 +10,7 @@ import { useSearchStore } from "@/context/searchStore";
 import { Cars as CarType } from "@/lib/database/table-types";
 import { fetchVehicle } from "./actions";
 import VehicleDetails from "@/components/main/select-vehicle-details";
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 import Error from "@/components/utility/Error";
 
 export default function VehicleDetailPage() {

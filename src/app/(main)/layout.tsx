@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer";
 import UserNavbarWrapper from "@/components/common/navigation/UseNavbarWrapper";
-import { PageWrapper } from "@/components/common/page-wrapper";
+import { PageWrapper } from "@/components/utility/page-wrapper";
 import { Toaster } from "@/components/ui/toaster";
 import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
 
@@ -11,10 +11,10 @@ export default function RootLayout({
 }>) {
   return (
     <div className="antialiased">
-      <div className="min-h-screen flex flex-col">
+      <div className="flex flex-col min-h-screen">
         <UserNavbarWrapper />
         <PageWrapper>
-          <MaxWidthWrapper className="flex-1">{children}</MaxWidthWrapper>
+          <MaxWidthWrapper className="flex">{children}</MaxWidthWrapper>
         </PageWrapper>
         <Footer />
       </div>

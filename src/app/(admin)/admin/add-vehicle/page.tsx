@@ -1,5 +1,5 @@
 import AddVehicleForm from "@/components/admin/add-vehicle";
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 
 export default function AddVehiclePage() {
   return (

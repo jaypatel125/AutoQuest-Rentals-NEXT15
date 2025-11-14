@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import getBooking, { Booking } from "./actions";
 import BookingDetail from "@/components/main/booking-details";
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 
 export default function BookingDetailPage() {
   const params = useParams();

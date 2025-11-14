@@ -1,5 +1,5 @@
 import EditBranch from "@/components/admin/edit-branch";
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 
 export default function EditBranchPage() {
   return (

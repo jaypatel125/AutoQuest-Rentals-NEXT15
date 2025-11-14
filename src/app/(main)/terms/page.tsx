@@ -1,4 +1,4 @@
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 import TermsDetails from "@/components/main/terms";
 import React from "react";
 

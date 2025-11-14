@@ -1,5 +1,5 @@
 import { AdminDashboard } from "@/components/admin/dashboard";
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 
 export default function AdminDashboardPage() {
   return (

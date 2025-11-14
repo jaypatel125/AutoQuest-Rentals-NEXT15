@@ -1,4 +1,4 @@
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 import Checkout from "@/components/main/checkout";
 import { getServerSideSession } from "@/hooks/SessionHandler";
 import { notFound } from "next/navigation";

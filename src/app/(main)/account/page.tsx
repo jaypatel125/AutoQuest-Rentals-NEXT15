@@ -1,5 +1,5 @@
 import SettingsProfilePage from "@/components/common/account";
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 import { getServerSideSession } from "@/hooks/SessionHandler";
 import { notFound } from "next/navigation";
 import React from "react";

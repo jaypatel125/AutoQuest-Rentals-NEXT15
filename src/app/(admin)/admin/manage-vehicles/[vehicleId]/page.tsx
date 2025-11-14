@@ -6,7 +6,7 @@ import { fetchVehicle } from "./actions";
 import Loader from "@/components/utility/Loader";
 import VehicleManage from "@/components/admin/edit-vehicle";
 import { fetchBranches } from "@/app/actions";
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 import Error from "@/components/utility/Error";
 
 export default function EditVehiclePage() {

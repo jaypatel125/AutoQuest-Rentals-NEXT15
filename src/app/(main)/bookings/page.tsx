@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAllBookingsByUserId } from "./actions";
 import Bookings from "@/components/main/bookings";
-import PageLayout from "@/components/common/page-layout";
+import PageLayout from "@/components/utility/page-layout";
 
 export default function BookingsPage() {
   const { data, isLoading, isError } = useQuery({
