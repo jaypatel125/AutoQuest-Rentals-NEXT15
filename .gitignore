@@ -44,3 +44,11 @@ project_file_tree.txt
 tree.sh
 
 components.json
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
