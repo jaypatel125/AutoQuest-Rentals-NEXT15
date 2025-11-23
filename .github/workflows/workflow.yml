@@ -34,6 +34,12 @@ jobs:
       - name: Run Jest tests
         run: npm test
 
+      - name: Start Next.js (background)
+        run: npm start &
+
+      - name: Wait for Next.js to be reachable
+        run: npx wait-on http://localhost:3000
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
