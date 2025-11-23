@@ -1,4 +1,4 @@
-name: CI
+name: Test
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: ["main"]
 
 jobs:
-  build-test:
+  test:
     runs-on: ubuntu-latest
 
     env:
@@ -37,13 +37,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Start Next.js (background)
-        run: npm start &
-
-      - name: Wait for Next.js to be reachable
-        run: npx wait-on http://localhost:3000
-
-      - name: Run Playwright E2E tests
+      - name: Run Playwright tests
         run: npx playwright test
 
       - name: Upload Playwright report on failure
