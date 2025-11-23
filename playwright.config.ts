@@ -7,7 +7,8 @@ export default defineConfig({
   testDir: "./tests",
   reporter: "html",
   use: {
-    baseURL: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    baseURL:
+      process.env.NEXT_PUBLIC_APP_URL ?? "https://your-vercel-app.vercel.app",
     trace: "on-first-retry",
   },
   projects: [
@@ -23,7 +24,8 @@ export default defineConfig({
   ],
   webServer: {
     command: "npm run start",
-    url: process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+    url:
+      process.env.NEXT_PUBLIC_APP_URL ?? "https://your-vercel-app.vercel.app",
     reuseExistingServer: !process.env.CI,
   },
 });
