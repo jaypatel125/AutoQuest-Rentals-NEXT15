@@ -184,7 +184,7 @@ export function SearchBar() {
               {localStartDate ? (
                 format(localStartDate, "PPP")
               ) : (
-                <span>Pick a date</span>
+                <span>Pick-up date</span>
               )}
             </Button>
           </PopoverTrigger>
@@ -217,7 +217,7 @@ export function SearchBar() {
               {localEndDate ? (
                 format(localEndDate, "PPP")
               ) : (
-                <span>Pick a date</span>
+                <span>Return date</span>
               )}
             </Button>
           </PopoverTrigger>
