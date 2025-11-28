@@ -1,11 +1,29 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import db from "@/lib/db";
-import { stripe } from "@/lib/stripe";
 import { sendEmail } from "@/lib/email";
 import { Branches, Cars } from "@/lib/database/table-types";
 
+function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    return null;
+  }
+
+  return new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2025-08-27.basil",
+  });
+}
+
 export async function POST(req: Request) {
+  const stripe = getStripe();
+
+  if (!stripe) {
+    return NextResponse.json(
+      { error: "Stripe is not configured" },
+      { status: 500 }
+    );
+  }
+
   const sig = req.headers.get("stripe-signature") as string;
   const body = await req.text();
   const pool = db;
