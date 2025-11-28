@@ -127,6 +127,9 @@ describe("Stripe Webhook POST", () => {
 
     // Should not make any database calls for unrelated events
     expect(mockDbQuery).not.toHaveBeenCalled();
-    expect(NextResponse.json).toHaveBeenCalledWith({ received: true });
+    expect(NextResponse.json).toHaveBeenCalledWith(
+      { received: true },
+      undefined
+    );
   });
 });

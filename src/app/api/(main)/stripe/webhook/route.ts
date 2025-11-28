@@ -23,7 +23,6 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-
   const sig = req.headers.get("stripe-signature") as string;
   const body = await req.text();
   const pool = db;
