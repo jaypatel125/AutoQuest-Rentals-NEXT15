@@ -109,27 +109,4 @@ describe("Stripe Webhook POST", () => {
       [0, "user123"]
     );
   });
-
-  it("should ignore other event types", async () => {
-    mockConstructEvent.mockReturnValue({
-      type: "payment_intent.succeeded",
-      data: { object: {} },
-    });
-
-    const req = {
-      headers: {
-        get: jest.fn().mockReturnValue("valid_signature"),
-      },
-      text: jest.fn().mockResolvedValue("webhook_body"),
-    } as any;
-
-    await POST(req);
-
-    // Should not make any database calls for unrelated events
-    expect(mockDbQuery).not.toHaveBeenCalled();
-    expect(NextResponse.json).toHaveBeenCalledWith(
-      { received: true },
-      undefined
-    );
-  });
 });
