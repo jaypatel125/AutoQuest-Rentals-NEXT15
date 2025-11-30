@@ -106,9 +106,6 @@ test("book a vehicle by selecting Hamilton location and dynamic dates", async ({
   // wait for Stripe checkout
   await page.waitForURL(/checkout\.stripe\.com/, { timeout: 20000 });
 
-  // wait until we return to your app
-  await page.waitForLoadState("networkidle", { timeout: 30000 });
-
   // now wait for confirmation UI (doesn't matter what query params are)
   await expect(page.locator("#success")).toContainText("Booking Confirmed", {
     timeout: 20000,
