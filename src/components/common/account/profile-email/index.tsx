@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { Mail } from "lucide-react";
 import { authClient, IUser } from "../../../../../auth-client";
 import AccountInfo from "../AccountInfo";
 import { Input } from "@/components/ui/input";
@@ -67,7 +66,6 @@ const ProfileEmail = ({ currentUser }: { currentUser: IUser }) => {
     >
       <AccountInfo
         label="Email"
-        icon={<Mail className="size-5" />}
         currentInfo={currentUser.email}
         isSuccess={successState}
         isError={!!errorState}

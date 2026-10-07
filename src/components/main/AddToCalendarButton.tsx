@@ -1,6 +1,5 @@
 "use client";
 
-import { CalendarPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { buildRentalIcs, downloadFile } from "@/lib/ics";
 
@@ -18,7 +17,7 @@ export function AddToCalendarButton({
   start: Date | string;
   end: Date | string;
   location: string;
-  variant?: "outline" | "default" | "soft";
+  variant?: "outline" | "default" | "ghost";
   className?: string;
 }) {
   return (
@@ -39,7 +38,7 @@ export function AddToCalendarButton({
         )
       }
     >
-      <CalendarPlus /> Add to calendar
+      Add to calendar
     </Button>
   );
 }

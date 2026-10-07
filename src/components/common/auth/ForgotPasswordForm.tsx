@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,18 +49,15 @@ export default function ForgotPasswordForm() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Forgot Password</h1>
+        <h1 className="text-2xl font-semibold">Forgot Password</h1>
         <p className="text-muted-foreground">
           Enter your email and we&apos;ll send you a link to choose a new
           password.
         </p>
       </div>
       {emailSent ? (
-        <div className="space-y-5 rounded-2xl border bg-card p-6 text-center">
-          <span className="mx-auto inline-flex size-12 items-center justify-center rounded-full bg-accent text-accent-foreground">
-            <MailCheck className="size-6" />
-          </span>
-          <p>
+        <div className="space-y-5 border-y py-8">
+          <p className="text-sm">
             If an account exists for that email, a reset link has been sent.
           </p>
           <Button asChild className="w-full">
@@ -77,15 +73,12 @@ export default function ForgotPasswordForm() {
               name="email"
               type="email"
               autoComplete="email"
-              className="h-11"
               required
             />
           </div>
           <Button
-            iconType="send"
             type="submit"
-            size="lg"
-            className="h-11 w-full"
+            className="w-full"
             disabled={pending}
             loading={pending}
           >
@@ -95,7 +88,7 @@ export default function ForgotPasswordForm() {
             Remembered it?{" "}
             <Link
               href="/signin"
-              className="font-semibold text-primary hover:underline"
+              className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
             >
               Sign in
             </Link>

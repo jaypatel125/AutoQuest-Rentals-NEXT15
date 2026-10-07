@@ -3,12 +3,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Gift, ShieldCheck, Trash2 } from "lucide-react";
 import ProfileName from "@/components/common/account/profile-name";
 import ProfileEmail from "@/components/common/account/profile-email";
 import ProfilePassword from "@/components/common/account/profile-password";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -60,40 +58,41 @@ export default function SettingsProfilePage({ user }: { user: IUser }) {
   const isAdmin = user.role === "admin";
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-      <aside className="h-fit space-y-5 rounded-3xl border bg-card p-6 text-center lg:sticky lg:top-24">
-        <Avatar name={user.name} className="mx-auto size-20 text-2xl" />
+    <div className="grid gap-12 lg:grid-cols-[240px_1fr] lg:gap-16">
+      <aside className="h-fit space-y-4 lg:sticky lg:top-24">
+        <Avatar name={user.name} className="size-14 text-base" />
         <div>
-          <p className="font-display text-xl font-bold">{user.name}</p>
+          <p className="font-medium">{user.name}</p>
           <p className="text-sm text-muted-foreground">{user.email}</p>
         </div>
-        <div className="flex justify-center gap-2">
-          {isAdmin ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-              <ShieldCheck className="size-3.5" /> Administrator
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-              <Gift className="size-3.5" />{" "}
-              {(user.reward_points ?? 0).toLocaleString()} points
-            </span>
-          )}
-        </div>
-        <Separator />
-        <p className="text-xs text-muted-foreground">
-          Member since {format(new Date(user.createdAt), "MMMM yyyy")}
-        </p>
+        <dl className="space-y-1 border-t pt-4 text-sm">
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">
+              {isAdmin ? "Role" : "Points"}
+            </dt>
+            <dd className="tabular-nums">
+              {isAdmin
+                ? "Administrator"
+                : `${(user.reward_points ?? 0).toLocaleString()} points`}
+            </dd>
+          </div>
+          <div className="flex justify-between">
+            <dt className="text-muted-foreground">Member since</dt>
+            <dd>{format(new Date(user.createdAt), "MMM yyyy")}</dd>
+          </div>
+        </dl>
       </aside>
 
-      <div className="space-y-6">
-        <section className="rounded-3xl border bg-card p-6">
-          <h2 className="mb-1 text-lg font-bold">Personal information</h2>
-          <p className="mb-6 text-sm text-muted-foreground">
-            Update your profile information to personalize your experience.
-          </p>
-          <div className="space-y-6">
+      <div className="divide-y">
+        <section className="grid gap-6 pb-12 md:grid-cols-[200px_1fr]">
+          <div>
+            <h2 className="font-medium">Personal information</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Your name and email address.
+            </p>
+          </div>
+          <div className="space-y-8">
             <ProfileName currentUser={user} />
-            <Separator />
             {hasPassword ? (
               <ProfileEmail currentUser={user} />
             ) : (
@@ -105,11 +104,13 @@ export default function SettingsProfilePage({ user }: { user: IUser }) {
           </div>
         </section>
 
-        <section className="rounded-3xl border bg-card p-6">
-          <h2 className="mb-1 text-lg font-bold">Security</h2>
-          <p className="mb-6 text-sm text-muted-foreground">
-            Changing your password signs you out on your other devices.
-          </p>
+        <section className="grid gap-6 py-12 md:grid-cols-[200px_1fr]">
+          <div>
+            <h2 className="font-medium">Security</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Changing your password signs you out on your other devices.
+            </p>
+          </div>
           {hasPassword ? (
             <ProfilePassword />
           ) : (
@@ -121,21 +122,25 @@ export default function SettingsProfilePage({ user }: { user: IUser }) {
         </section>
 
         {!isAdmin && (
-          <section className="rounded-3xl border border-destructive/30 bg-card p-6">
-            <h2 className="mb-1 text-lg font-bold text-destructive">
-              Danger Zone
-            </h2>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Permanently delete your account and all associated data. Cancel
-              any upcoming bookings first.
-            </p>
-            <Button
-              variant="outline"
-              className="border-destructive/40 text-destructive hover:bg-destructive hover:text-white"
-              onClick={() => setConfirmOpen(true)}
-            >
-              <Trash2 /> Delete Account
-            </Button>
+          <section className="grid gap-6 pt-12 md:grid-cols-[200px_1fr]">
+            <div>
+              <h2 className="font-medium">Delete account</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Permanently delete your account and all associated data.
+              </p>
+            </div>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Cancel any upcoming bookings first.
+              </p>
+              <Button
+                variant="outline"
+                className="text-destructive hover:bg-destructive/5 hover:text-destructive"
+                onClick={() => setConfirmOpen(true)}
+              >
+                Delete Account
+              </Button>
+            </div>
           </section>
         )}
       </div>

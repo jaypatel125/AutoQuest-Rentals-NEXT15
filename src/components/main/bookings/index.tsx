@@ -3,13 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { differenceInCalendarDays, format } from "date-fns";
-import {
-  ArrowRight,
-  CalendarDays,
-  CalendarX2,
-  Gift,
-  MapPin,
-} from "lucide-react";
+import { CalendarDays, CalendarX2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Booking } from "@/app/(main)/bookings/actions";
 import { formatPrice, cn } from "@/lib/utils";
@@ -61,12 +55,18 @@ export default function Bookings({ data, isLoading, isError }: Props) {
   if (isLoading) {
     return (
       <div
-        className="space-y-4"
+        className="divide-y border-y"
         role="status"
         aria-label="Fetching your bookings"
       >
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-40 animate-pulse rounded-2xl bg-muted" />
+          <div key={i} className="flex gap-6 py-6">
+            <div className="h-20 w-32 animate-pulse rounded-md bg-muted" />
+            <div className="flex-1 space-y-2 pt-1">
+              <div className="h-4 w-1/3 animate-pulse rounded bg-muted" />
+              <div className="h-3.5 w-1/4 animate-pulse rounded bg-muted" />
+            </div>
+          </div>
         ))}
       </div>
     );
@@ -83,7 +83,7 @@ export default function Bookings({ data, isLoading, isError }: Props) {
         title="No bookings found"
         description="You haven't made any bookings yet. Start exploring our available cars."
         action={
-          <Button asChild>
+          <Button asChild variant="outline">
             <Link href="/select-vehicle">Browse Cars</Link>
           </Button>
         }
@@ -99,11 +99,11 @@ export default function Bookings({ data, isLoading, isError }: Props) {
   const list = groups[active];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       <div
         role="tablist"
         aria-label="Booking status"
-        className="inline-flex rounded-xl bg-muted p-1"
+        className="flex gap-6 border-b"
       >
         {tabs.map(({ key, label }) => (
           <button
@@ -113,12 +113,14 @@ export default function Bookings({ data, isLoading, isError }: Props) {
             aria-selected={active === key}
             onClick={() => setTab(key)}
             className={cn(
-              "inline-flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors",
-              active === key && "bg-card text-foreground shadow-sm"
+              "-mb-px inline-flex cursor-pointer items-center gap-2 border-b py-3 text-sm text-muted-foreground transition-colors hover:text-foreground",
+              active === key
+                ? "border-foreground text-foreground"
+                : "border-transparent"
             )}
           >
             {label}
-            <span className="rounded-full bg-background/70 px-1.5 text-xs">
+            <span className="text-xs text-muted-foreground tabular-nums">
               {groups[key].length}
             </span>
           </button>
@@ -131,107 +133,79 @@ export default function Bookings({ data, isLoading, isError }: Props) {
           title={`No ${active} bookings`}
           description={
             active === "upcoming"
-              ? "Your next adventure is just a search away."
+              ? "Your next trip is just a search away."
               : undefined
           }
           action={
             active === "upcoming" ? (
-              <Button asChild>
+              <Button asChild variant="outline">
                 <Link href="/select-vehicle">Find a car</Link>
               </Button>
             ) : undefined
           }
         />
       ) : (
-        <div className="space-y-4">
+        <ul className="divide-y">
           {list.map((booking) => {
             const start = new Date(booking.start_date);
             const end = new Date(booking.end_date);
             const soon =
               active === "upcoming" ? countdown(start, end, today) : null;
+            const cancelled = booking.status === "Cancelled";
             return (
-              <Link
-                key={booking.booking_id}
-                href={`/bookings/${booking.booking_id}`}
-                className="group grid overflow-hidden rounded-2xl border bg-card transition-all hover:-translate-y-0.5 hover:shadow-lg sm:grid-cols-[220px_1fr]"
-              >
-                <VehicleImage
-                  src={booking.image}
-                  brand={booking.brand}
-                  model={booking.model}
-                  bodyType={booking.body_type}
-                  className={cn(
-                    "h-full sm:aspect-auto",
-                    active === "cancelled" && "opacity-60 grayscale"
-                  )}
-                />
-                <div className="flex flex-col gap-4 p-5">
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-bold">
-                        {booking.brand} {booking.model}
-                      </h3>
-                      <p className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <MapPin className="size-3.5" /> {booking.branch_name},{" "}
-                        {booking.city}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {soon && (
-                        <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                          {soon}
-                        </span>
-                      )}
-                      <StatusBadge status={booking.status} />
-                    </div>
+              <li key={booking.booking_id}>
+                <Link
+                  href={`/bookings/${booking.booking_id}`}
+                  className="group grid gap-5 py-6 sm:grid-cols-[160px_1fr_auto] sm:items-center"
+                >
+                  <VehicleImage
+                    src={booking.image}
+                    brand={booking.brand}
+                    model={booking.model}
+                    bodyType={booking.body_type}
+                    className={cn(
+                      "rounded-md",
+                      cancelled && "opacity-50 grayscale"
+                    )}
+                  />
+                  <div className="min-w-0 space-y-1">
+                    <h3 className="font-medium group-hover:underline group-hover:underline-offset-4">
+                      {booking.brand} {booking.model}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {format(start, "MMM d")} to {format(end, "MMM d, yyyy")}
+                      {" · "}
+                      {booking.branch_name}, {booking.city}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      +{Number(booking.points_earned).toLocaleString()} pts
+                      {Number(booking.points_redeemed) > 0 &&
+                        ` · -${Number(booking.points_redeemed).toLocaleString()} pts used`}
+                    </p>
+                    {soon && <p className="text-sm">{soon}</p>}
                   </div>
-
-                  <div className="grid gap-3 text-sm sm:grid-cols-3">
-                    <div>
-                      <p className="text-muted-foreground">Dates</p>
-                      <p className="font-semibold">
-                        {format(start, "MMM d")} to {format(end, "MMM d, yyyy")}
+                  <div className="flex items-center justify-between gap-6 sm:flex-col sm:items-end sm:gap-2">
+                    <StatusBadge status={booking.status} />
+                    <div className="text-right text-sm">
+                      <p className="text-xs text-muted-foreground">
+                        {cancelled ? "Refunded" : "Total"}
                       </p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">
-                        {booking.status === "Cancelled" ? "Refunded" : "Total"}
-                      </p>
-                      <p className="font-semibold">
+                      <p className="tabular-nums">
                         {formatPrice(
                           Number(
-                            booking.status === "Cancelled"
+                            cancelled
                               ? (booking.refund_amount ?? booking.total_price)
                               : booking.total_price
                           )
                         )}
                       </p>
                     </div>
-                    <div>
-                      <p className="text-muted-foreground">Points</p>
-                      <p className="flex items-center gap-1 font-semibold text-primary">
-                        <Gift className="size-3.5" />+
-                        {Number(booking.points_earned).toLocaleString()}
-                        {Number(booking.points_redeemed) > 0 && (
-                          <span className="text-muted-foreground">
-                            {" "}
-                            / -
-                            {Number(booking.points_redeemed).toLocaleString()}
-                          </span>
-                        )}
-                      </p>
-                    </div>
                   </div>
-
-                  <span className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-primary">
-                    View Details
-                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-                  </span>
-                </div>
-              </Link>
+                </Link>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
     </div>
   );

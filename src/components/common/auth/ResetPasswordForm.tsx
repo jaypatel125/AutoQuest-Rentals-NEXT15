@@ -88,13 +88,13 @@ export default function ResetPasswordForm() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Reset Password</h1>
+        <h1 className="text-2xl font-semibold">Reset Password</h1>
         <p className="text-muted-foreground">
           Choose a new password with at least {PASSWORD_MIN} characters.
         </p>
       </div>
       {success ? (
-        <p className="rounded-2xl bg-accent p-4 text-sm text-accent-foreground">
+        <p className="border-l-2 border-foreground pl-4 text-sm">
           Your password has been reset. Redirecting to sign in...
         </p>
       ) : (
@@ -105,7 +105,6 @@ export default function ResetPasswordForm() {
               id="password"
               name="password"
               autoComplete="new-password"
-              className="h-11"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -118,7 +117,6 @@ export default function ResetPasswordForm() {
               id="confirmPassword"
               name="confirmPassword"
               autoComplete="new-password"
-              className="h-11"
               required
             />
           </div>
@@ -127,10 +125,8 @@ export default function ResetPasswordForm() {
           )}
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Button
-            iconType="submit"
             type="submit"
-            size="lg"
-            className="h-11 w-full"
+            className="w-full"
             disabled={pending}
             loading={pending}
           >
@@ -139,7 +135,7 @@ export default function ResetPasswordForm() {
           <p className="text-center text-sm text-muted-foreground">
             <Link
               href="/signin"
-              className="font-semibold text-primary hover:underline"
+              className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
             >
               Back to sign in
             </Link>

@@ -4,19 +4,18 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueries } from "@tanstack/react-query";
-import { Crown, Scale, X } from "lucide-react";
+import { Scale, X } from "lucide-react";
 import PageLayout from "@/components/utility/page-layout";
 import { EmptyState } from "@/components/utility/EmptyState";
 import { Button } from "@/components/ui/button";
 import { VehicleImage } from "@/components/vehicles/VehicleImage";
-import { FuelBadge, GreenScoreBadge } from "@/components/vehicles/badges";
 import type { CarListing } from "@/components/vehicles/VehicleCard";
 import { useCompareStore } from "@/context/compareStore";
 import { toDate, useSearchStore } from "@/context/searchStore";
 import { buildQuote } from "@/lib/pricing";
-import { DEFAULT_KM_PER_DAY, tripEmissionsKg } from "@/lib/green";
+import { DEFAULT_KM_PER_DAY, greenScore, tripEmissionsKg } from "@/lib/green";
 import { bodyTypeLabel } from "@/lib/vehicles";
-import { cn, formatPrice } from "@/lib/utils";
+import { formatPrice } from "@/lib/utils";
 
 type Detail = CarListing & { branch_address?: string | null };
 
@@ -101,7 +100,7 @@ export default function ComparePage() {
       label: "Green Score",
       render: (c) => (
         <Best active={greenest === Number(c.carbon_emissions)} label="Greenest">
-          <GreenScoreBadge emissions={c.carbon_emissions} />
+          {greenScore(c.carbon_emissions).grade}
         </Best>
       ),
     },
@@ -114,7 +113,7 @@ export default function ComparePage() {
       render: (c) =>
         `${tripEmissionsKg(c.carbon_emissions, days).toFixed(1)} kg`,
     },
-    { label: "Fuel", render: (c) => <FuelBadge fuelType={c.fuel_type} /> },
+    { label: "Fuel", render: (c) => c.fuel_type },
     { label: "Body type", render: (c) => bodyTypeLabel(c.body_type) },
     { label: "Seats", render: (c) => c.passenger_capacity },
     { label: "Transmission", render: (c) => c.transmission },
@@ -134,21 +133,21 @@ export default function ComparePage() {
           : "Add trip dates on the search page to see exact totals."
       }
       actions={
-        <Button variant="outline" onClick={clear}>
+        <Button variant="outline" size="sm" onClick={clear}>
           Clear all
         </Button>
       }
     >
-      <div className="overflow-x-auto rounded-2xl border bg-card">
+      <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] table-fixed text-sm">
           <thead>
             <tr className="border-b align-top">
-              <th className="w-44 p-4 text-left font-medium text-muted-foreground">
+              <th className="w-44 py-4 pr-4 text-left font-normal text-muted-foreground">
                 {loading ? "Loading..." : `${cars.length} vehicles`}
               </th>
               {cars.map((c) => (
                 <th key={c.id} className="p-4 text-left font-normal">
-                  <div className="relative overflow-hidden rounded-xl">
+                  <div className="relative overflow-hidden rounded-md">
                     <VehicleImage
                       src={c.image}
                       brand={c.brand}
@@ -159,12 +158,12 @@ export default function ComparePage() {
                       type="button"
                       aria-label={`Remove ${c.brand} ${c.model}`}
                       onClick={() => remove(c.id)}
-                      className="absolute top-2 right-2 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-card/90 shadow-sm hover:bg-card"
+                      className="absolute top-2 right-2 inline-flex size-7 cursor-pointer items-center justify-center rounded-full border bg-background text-muted-foreground hover:text-foreground"
                     >
-                      <X className="size-4" />
+                      <X className="size-3.5" />
                     </button>
                   </div>
-                  <p className="mt-3 font-display text-base font-bold">
+                  <p className="mt-3 font-medium">
                     {c.brand} {c.model}
                   </p>
                 </th>
@@ -173,15 +172,15 @@ export default function ComparePage() {
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.label} className="border-b last:border-b-0">
+              <tr key={row.label} className="border-b">
                 <th
                   scope="row"
-                  className="p-4 text-left font-medium text-muted-foreground"
+                  className="py-3.5 pr-4 text-left font-normal text-muted-foreground"
                 >
                   {row.label}
                 </th>
                 {cars.map((c) => (
-                  <td key={c.id} className="p-4 font-medium">
+                  <td key={c.id} className="p-4">
                     {row.render(c)}
                   </td>
                 ))}
@@ -229,15 +228,7 @@ function Best({
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
       {children}
-      {active && (
-        <span
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full bg-amber-400/20 px-2 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300"
-          )}
-        >
-          <Crown className="size-3" /> {label}
-        </span>
-      )}
+      {active && <span className="text-xs text-muted-foreground">{label}</span>}
     </span>
   );
 }

@@ -59,10 +59,10 @@ export const AdminDashboard: React.FC = () => {
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}
-        className="space-y-4"
+        className="space-y-8"
       >
         {/* Desktop Tabs */}
-        <TabsList className="hidden md:flex w-full justify-center gap-2">
+        <TabsList className="hidden w-full justify-start md:flex">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="carbon">Carbon Analytics</TabsTrigger>
           <TabsTrigger value="vehicles">Vehicles</TabsTrigger>

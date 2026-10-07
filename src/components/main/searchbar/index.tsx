@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { CalendarDays, Check, MapPin, Search } from "lucide-react";
+import { Check } from "lucide-react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { Calendar } from "@/components/ui/calendar";
@@ -43,11 +43,9 @@ function startOfToday() {
 }
 
 export function SearchBar({
-  variant = "default",
   onSearch,
   className,
 }: {
-  variant?: "default" | "hero";
   onSearch?: () => void;
   className?: string;
 }) {
@@ -127,37 +125,29 @@ export function SearchBar({
     if (next.to) setDatesOpen(false);
   };
 
-  const hero = variant === "hero";
   const field =
-    "group flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50";
-  const label =
-    "block text-xs font-semibold uppercase tracking-wide text-muted-foreground";
+    "group flex w-full cursor-pointer flex-col items-start gap-0.5 px-4 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:bg-muted/60";
+  const label = "block text-xs text-muted-foreground";
 
   return (
     <section
       aria-label="Search vehicles"
       className={cn(
-        "grid gap-1 rounded-2xl border bg-card p-2 text-card-foreground md:grid-cols-[1.1fr_1.6fr_auto] md:items-center",
-        hero
-          ? "shadow-2xl shadow-emerald-950/20 ring-1 ring-black/5"
-          : "shadow-sm",
+        "grid overflow-hidden rounded-lg border bg-background md:grid-cols-[1fr_1.6fr_auto] md:items-stretch",
         className
       )}
     >
       <Popover open={cityOpen} onOpenChange={setCityOpen}>
         <PopoverTrigger asChild>
           <button type="button" className={field}>
-            <MapPin className="size-5 shrink-0 text-primary" />
-            <span className="min-w-0">
-              <span className={label}>Location</span>
-              <span
-                className={cn(
-                  "block truncate font-medium",
-                  !localBranch?.city && "text-muted-foreground"
-                )}
-              >
-                {localBranch?.city || "Where are you going?"}
-              </span>
+            <span className={label}>Location</span>
+            <span
+              className={cn(
+                "block w-full truncate text-sm",
+                !localBranch?.city && "text-muted-foreground"
+              )}
+            >
+              {localBranch?.city || "Where are you going?"}
             </span>
           </button>
         </PopoverTrigger>
@@ -172,7 +162,7 @@ export function SearchBar({
                 <CommandItem disabled>Failed to load cities</CommandItem>
               )}
               <CommandEmpty>No city found.</CommandEmpty>
-              <CommandGroup heading="Cities">
+              <CommandGroup>
                 {cities.map(({ city, branch: b, count }) => (
                   <CommandItem
                     key={city}
@@ -182,11 +172,10 @@ export function SearchBar({
                       setCityOpen(false);
                       if (!from) setDatesOpen(true);
                     }}
-                    className="py-2.5"
+                    className="py-2"
                   >
-                    <MapPin className="text-muted-foreground" />
                     <span className="flex-1">
-                      <span className="block font-medium">{city}</span>
+                      <span className="block">{city}</span>
                       <span className="block text-xs text-muted-foreground">
                         {count > 1 ? `${count} locations` : b.name}
                       </span>
@@ -208,51 +197,43 @@ export function SearchBar({
       <Popover open={datesOpen} onOpenChange={setDatesOpen}>
         <PopoverTrigger asChild>
           <div
-            className="grid grid-cols-2 gap-1 md:border-l md:pl-1"
+            className="grid grid-cols-2 border-t md:border-t-0 md:border-l"
             role="group"
             aria-label="Rental dates"
           >
             <button type="button" className={field}>
-              <CalendarDays className="size-5 shrink-0 text-primary" />
-              <span className="min-w-0">
-                <span className={label}>Pick-up date</span>
-                <span
-                  className={cn(
-                    "block truncate font-medium",
-                    !from && "text-muted-foreground"
-                  )}
-                >
-                  {from ? format(from, "EEE, MMM d") : "Add date"}
-                </span>
+              <span className={label}>Pick-up date</span>
+              <span
+                className={cn(
+                  "block truncate text-sm",
+                  !from && "text-muted-foreground"
+                )}
+              >
+                {from ? format(from, "EEE, MMM d") : "Add date"}
               </span>
             </button>
-            <button
-              type="button"
-              className={cn(field, "border-l md:border-l-0")}
-            >
-              <span className="min-w-0">
-                <span className={label}>Return date</span>
-                <span
-                  className={cn(
-                    "block truncate font-medium",
-                    !to && "text-muted-foreground"
-                  )}
-                >
-                  {to ? format(to, "EEE, MMM d") : "Add date"}
-                </span>
+            <button type="button" className={cn(field, "border-l")}>
+              <span className={label}>
+                Return date
+                {days !== null && (
+                  <span
+                    className={cn(
+                      "ml-2",
+                      tooLong ? "text-destructive" : "text-foreground"
+                    )}
+                  >
+                    {days} day{days === 1 ? "" : "s"}
+                  </span>
+                )}
               </span>
-              {days !== null && (
-                <span
-                  className={cn(
-                    "ml-auto hidden shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold sm:inline",
-                    tooLong
-                      ? "bg-destructive/10 text-destructive"
-                      : "bg-accent text-accent-foreground"
-                  )}
-                >
-                  {days} day{days === 1 ? "" : "s"}
-                </span>
-              )}
+              <span
+                className={cn(
+                  "block truncate text-sm",
+                  !to && "text-muted-foreground"
+                )}
+              >
+                {to ? format(to, "EEE, MMM d") : "Add date"}
+              </span>
             </button>
           </div>
         </PopoverTrigger>
@@ -294,16 +275,16 @@ export function SearchBar({
         </PopoverContent>
       </Popover>
 
-      <Button
-        size="lg"
-        className={cn("h-12 w-full px-6 md:w-auto", hero && "md:px-8")}
-        onClick={handleSearch}
-        disabled={!ready}
-        loading={loading}
-      >
-        {!loading && <Search className="size-4" />}
-        {loading ? "Searching..." : "Search Vehicles"}
-      </Button>
+      <div className="border-t p-2 md:border-t-0 md:border-l">
+        <Button
+          className="h-full min-h-10 w-full px-6"
+          onClick={handleSearch}
+          disabled={!ready}
+          loading={loading}
+        >
+          {loading ? "Searching..." : "Search Vehicles"}
+        </Button>
+      </div>
     </section>
   );
 }

@@ -6,7 +6,6 @@ import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { MailWarning } from "lucide-react";
 import { signInSchema } from "@/lib/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,19 +114,18 @@ export default function SigninForm() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Welcome Back</h1>
+        <h1 className="text-2xl font-semibold">Welcome Back</h1>
         <p className="text-muted-foreground">
           Sign in to manage your trips and rewards.
         </p>
       </div>
 
       {unverifiedEmail && (
-        <div className="flex gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
-          <MailWarning className="mt-0.5 size-5 shrink-0 text-amber-600" />
-          <div className="space-y-2">
+        <div className="border-l-2 border-foreground pl-4 text-sm">
+          <div className="space-y-3">
             <p>
               Please verify your email before signing in. We sent a link to{" "}
-              <strong>{unverifiedEmail}</strong>.
+              <span className="font-medium">{unverifiedEmail}</span>.
             </p>
             <Button
               size="sm"
@@ -157,7 +155,6 @@ export default function SigninForm() {
                     placeholder="you@example.com"
                     type="email"
                     autoComplete="email"
-                    className="h-11"
                     {...field}
                   />
                 </FormControl>
@@ -175,7 +172,7 @@ export default function SigninForm() {
                   <FormLabel>Password</FormLabel>
                   <Link
                     href="/forgot-password"
-                    className="text-sm font-medium text-primary hover:underline"
+                    className="text-sm text-muted-foreground hover:text-foreground"
                   >
                     Forgot Password?
                   </Link>
@@ -184,7 +181,6 @@ export default function SigninForm() {
                   <PasswordInput
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    className="h-11"
                     {...field}
                   />
                 </FormControl>
@@ -195,9 +191,7 @@ export default function SigninForm() {
 
           <Button
             type="submit"
-            size="lg"
-            iconType="sign-in"
-            className="h-11 w-full"
+            className="w-full"
             disabled={pending}
             loading={pending}
           >
@@ -210,7 +204,7 @@ export default function SigninForm() {
         Don’t have an account?{" "}
         <Link
           href="/signup"
-          className="font-semibold text-primary hover:underline"
+          className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
         >
           Sign Up
         </Link>

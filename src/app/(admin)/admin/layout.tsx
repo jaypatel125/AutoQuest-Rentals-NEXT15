@@ -16,9 +16,9 @@ export default function AdminLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex min-h-screen flex-col bg-muted/40">
+    <div className="flex min-h-screen flex-col">
       <UserNavbarWrapper />
-      <MaxWidthWrapper className="flex flex-1 flex-col gap-6 py-6 lg:flex-row lg:gap-8">
+      <MaxWidthWrapper className="flex max-w-7xl flex-1 flex-col gap-8 py-10 lg:flex-row lg:gap-12">
         <AdminSidebar />
         <main id="main" className="min-w-0 flex-1 pb-10">
           <UncontainedPages>{children}</UncontainedPages>

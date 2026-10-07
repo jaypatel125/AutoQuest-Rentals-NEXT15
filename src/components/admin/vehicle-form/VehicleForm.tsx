@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ImagePlus, Loader2, Trash2, TriangleAlert } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -74,10 +74,10 @@ function ChipGroup<T extends string | number>({
               aria-checked={selected}
               onClick={() => onChange(option)}
               className={cn(
-                "cursor-pointer rounded-xl border px-3.5 py-2 text-sm font-medium transition-colors",
+                "cursor-pointer rounded-full border px-3.5 py-1.5 text-sm transition-colors",
                 selected
-                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                  : "bg-card hover:border-primary/40 hover:bg-accent"
+                  ? "border-foreground bg-foreground text-background"
+                  : "hover:border-foreground"
               )}
             >
               {format(option)}
@@ -197,13 +197,13 @@ export function VehicleForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="grid gap-6 xl:grid-cols-[360px_1fr]"
+      className="grid gap-12 xl:grid-cols-[320px_1fr]"
       noValidate
     >
-      <div className="space-y-6">
-        <section className="space-y-4 rounded-2xl border bg-card p-5">
-          <h3 className="font-semibold">Vehicle photo</h3>
-          <div className="relative overflow-hidden rounded-xl border">
+      <div className="space-y-8">
+        <section className="space-y-4">
+          <h3 className="font-medium">Vehicle photo</h3>
+          <div className="relative overflow-hidden rounded-md">
             <VehicleImage
               src={preview ?? image}
               brand={values.brand}
@@ -211,14 +211,13 @@ export function VehicleForm({
               bodyType={values.body_type}
             />
             {photoBusy && (
-              <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
-                <Loader2 className="size-6 animate-spin text-primary" />
+              <div className="absolute inset-0 flex items-center justify-center bg-background/60">
+                <Loader2 className="size-5 animate-spin" />
               </div>
             )}
           </div>
           {legacyPhoto && (
-            <p className="flex gap-2 rounded-xl bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
-              <TriangleAlert className="size-4 shrink-0" />
+            <p className="border-l-2 border-foreground pl-3 text-xs">
               This photo was stored in the old S3 bucket and no longer loads.
               Upload a new one (it&apos;s stored for free in your database).
             </p>
@@ -248,14 +247,12 @@ export function VehicleForm({
               disabled={photoBusy}
               onClick={() => fileInput.current?.click()}
             >
-              <ImagePlus />{" "}
               {image || preview ? "Replace photo" : "Upload photo"}
             </Button>
             {mode === "edit" && image && onRemovePhoto && (
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
                 aria-label="Remove photo"
                 disabled={photoBusy}
                 onClick={async () => {
@@ -264,7 +261,7 @@ export function VehicleForm({
                   setPreview(null);
                 }}
               >
-                <Trash2 />
+                Remove
               </Button>
             )}
           </div>
@@ -273,8 +270,8 @@ export function VehicleForm({
           </p>
         </section>
 
-        <section className="space-y-4 rounded-2xl border bg-card p-5">
-          <h3 className="font-semibold">Availability & branch</h3>
+        <section className="space-y-4 border-t pt-8">
+          <h3 className="font-medium">Availability & branch</h3>
           <div className="space-y-2">
             <Label htmlFor="branch_id">Assigned Branch</Label>
             <Select
@@ -298,11 +295,9 @@ export function VehicleForm({
             </Select>
             {fieldError("branch_id")}
           </div>
-          <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-muted/60 p-3">
+          <label className="flex cursor-pointer items-center justify-between gap-3 border-y py-3">
             <span>
-              <span className="block text-sm font-medium">
-                Available for Rent
-              </span>
+              <span className="block text-sm">Available for Rent</span>
               <span className="text-xs text-muted-foreground">
                 Hidden from search when off.
               </span>
@@ -316,9 +311,9 @@ export function VehicleForm({
         </section>
       </div>
 
-      <div className="space-y-6">
-        <section className="grid gap-4 rounded-2xl border bg-card p-5 sm:grid-cols-2">
-          <h3 className="font-semibold sm:col-span-2">Vehicle details</h3>
+      <div className="space-y-8">
+        <section className="grid gap-4 sm:grid-cols-2">
+          <h3 className="font-medium sm:col-span-2">Vehicle details</h3>
           <div className="space-y-2">
             <Label htmlFor="brand">Brand</Label>
             <Input
@@ -380,8 +375,8 @@ export function VehicleForm({
           </div>
         </section>
 
-        <section className="space-y-6 rounded-2xl border bg-card p-5">
-          <h3 className="font-semibold">Specifications</h3>
+        <section className="space-y-6 border-t pt-8">
+          <h3 className="font-medium">Specifications</h3>
           <ChipGroup
             label="Vehicle Class"
             options={BODY_TYPES}
@@ -415,20 +410,10 @@ export function VehicleForm({
         </section>
 
         <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            iconType="close"
-          >
+          <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button
-            type="submit"
-            disabled={submitting}
-            loading={submitting}
-            iconType="submit"
-          >
+          <Button type="submit" disabled={submitting} loading={submitting}>
             {submitLabel}
           </Button>
         </div>

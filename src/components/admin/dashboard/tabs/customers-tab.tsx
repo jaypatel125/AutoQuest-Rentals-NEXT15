@@ -42,8 +42,8 @@ const formatNumber = (num: number) => {
 
 export const CustomersTab: React.FC<CustomersTabProps> = ({ data }) => {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Rewards Summary</CardTitle>
@@ -51,16 +51,16 @@ export const CustomersTab: React.FC<CustomersTabProps> = ({ data }) => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-primary">
+              <div>
+                <div className="text-2xl font-medium tabular-nums">
                   {formatNumber(data.rewards.points_earned)}
                 </div>
                 <div className="text-sm text-muted-foreground">
                   Points Earned
                 </div>
               </div>
-              <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-sky-600 dark:text-sky-400">
+              <div>
+                <div className="text-2xl font-medium tabular-nums">
                   {formatNumber(data.rewards.points_redeemed)}
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -76,11 +76,11 @@ export const CustomersTab: React.FC<CustomersTabProps> = ({ data }) => {
             <CardDescription>By number of rentals and spending</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div>
               {data.topUsers.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex items-center justify-between border-b py-3 last:border-b-0"
                 >
                   <div>
                     <div className="font-medium">{user.name}</div>
@@ -89,7 +89,7 @@ export const CustomersTab: React.FC<CustomersTabProps> = ({ data }) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold">
+                    <div className="tabular-nums">
                       {user.total_rentals} rentals
                     </div>
                     <div className="text-sm text-muted-foreground">
@@ -108,11 +108,11 @@ export const CustomersTab: React.FC<CustomersTabProps> = ({ data }) => {
             <CardDescription>Top users by reward points</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div>
               {data.rewardsAnalytics.map((user) => (
                 <div
                   key={user.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex items-center justify-between border-b py-3 last:border-b-0"
                 >
                   <div>
                     <div className="font-medium">{user.name}</div>
@@ -121,7 +121,7 @@ export const CustomersTab: React.FC<CustomersTabProps> = ({ data }) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold">
+                    <div className="tabular-nums">
                       {formatNumber(user.reward_points)} pts
                     </div>
                     <div className="text-sm text-muted-foreground">

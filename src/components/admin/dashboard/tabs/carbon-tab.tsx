@@ -46,8 +46,8 @@ interface CarbonTabProps {
 
 export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Carbon Emissions Trend</CardTitle>
@@ -58,10 +58,15 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={data.carbonEmissions}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
+                <CartesianGrid vertical={false} />
+                <XAxis axisLine={false} tickLine={false} dataKey="month" />
+                <YAxis axisLine={false} tickLine={false} yAxisId="left" />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  yAxisId="right"
+                  orientation="right"
+                />
                 <Tooltip />
                 <Legend />
                 <Line
@@ -70,7 +75,7 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
                   dataKey="total_carbon_emissions"
                   stroke="var(--chart-2)"
                   name="Total Carbon Emissions"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                 />
                 <Line
                   yAxisId="right"
@@ -78,7 +83,7 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
                   dataKey="avg_carbon_per_booking"
                   stroke="var(--chart-1)"
                   name="Avg Carbon per Booking"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -100,9 +105,13 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
                 </h4>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={data.fuelTypePerformance}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="fuel_type" />
-                    <YAxis />
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                      axisLine={false}
+                      tickLine={false}
+                      dataKey="fuel_type"
+                    />
+                    <YAxis axisLine={false} tickLine={false} />
                     <Tooltip />
                     <Bar
                       dataKey="avg_carbon_emissions"
@@ -118,9 +127,13 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
                 </h4>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={data.fuelTypePerformance}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="fuel_type" />
-                    <YAxis />
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                      axisLine={false}
+                      tickLine={false}
+                      dataKey="fuel_type"
+                    />
+                    <YAxis axisLine={false} tickLine={false} />
                     <Tooltip />
                     <Bar
                       dataKey="rental_count"
@@ -150,9 +163,9 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
                     item.total_carbon_emitted / item.rental_count,
                 }))}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="body_type" />
-                <YAxis />
+                <CartesianGrid vertical={false} />
+                <XAxis axisLine={false} tickLine={false} dataKey="body_type" />
+                <YAxis axisLine={false} tickLine={false} />
                 <Tooltip />
                 <Legend />
                 <Bar
@@ -176,11 +189,11 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
             <CardDescription>Revenue per carbon unit by branch</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div>
               {data.topBranches.map((branch) => (
                 <div
                   key={branch.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex items-center justify-between border-b py-3 last:border-b-0"
                 >
                   <div>
                     <div className="font-medium">{branch.name}</div>
@@ -189,7 +202,7 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold">
+                    <div className="tabular-nums">
                       ${branch.revenue_per_carbon_unit.toFixed(2)}
                     </div>
                     <div className="text-sm text-muted-foreground">

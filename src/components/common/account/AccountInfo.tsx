@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 type AccountInfoProps = {
   label: string;
   currentInfo: string | React.ReactNode;
-  icon?: React.ReactNode;
   isSuccess?: boolean;
   isError?: boolean;
   errorMessage?: string;
@@ -18,7 +17,6 @@ type AccountInfoProps = {
 const AccountInfo = ({
   label,
   currentInfo,
-  icon,
   isSuccess,
   clearState,
   children,
@@ -42,13 +40,8 @@ const AccountInfo = ({
     <div data-testid={dataTestid} className="w-full">
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
-          {icon && (
-            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-              {icon}
-            </span>
-          )}
           <div className="min-w-0 space-y-0.5">
-            <span className="text-sm font-semibold">{label}</span>
+            <span className="text-sm">{label}</span>
             <div className="truncate text-sm text-muted-foreground">
               {typeof currentInfo === "string" ? (
                 <span data-testid="current-info">{currentInfo}</span>
@@ -59,9 +52,8 @@ const AccountInfo = ({
           </div>
         </div>
         <Button
-          variant={isOpen ? "ghost" : "outline"}
+          variant="ghost"
           size="sm"
-          iconType={isOpen ? "close" : "edit"}
           onClick={handleToggle}
           type={isOpen ? "reset" : "button"}
           data-testid="edit-button"
@@ -82,7 +74,7 @@ const AccountInfo = ({
           <div className="space-y-4 pt-5">
             <div className="w-full">{children}</div>
             <Button
-              iconType="submit"
+              size="sm"
               className="w-full sm:w-auto"
               type="submit"
               data-testid="save-button"

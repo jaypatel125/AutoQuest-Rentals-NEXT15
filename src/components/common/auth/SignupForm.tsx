@@ -87,7 +87,7 @@ export default function SignupForm() {
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Get Started Now</h1>
+        <h1 className="text-2xl font-semibold">Get Started Now</h1>
         <p className="text-muted-foreground">
           Create a free account and earn points on your first rental.
         </p>
@@ -111,7 +111,6 @@ export default function SignupForm() {
                   <Input
                     placeholder="Enter your name"
                     autoComplete="name"
-                    className="h-11"
                     {...field}
                   />
                 </FormControl>
@@ -131,7 +130,6 @@ export default function SignupForm() {
                     placeholder="you@example.com"
                     type="email"
                     autoComplete="email"
-                    className="h-11"
                     {...field}
                   />
                 </FormControl>
@@ -151,7 +149,6 @@ export default function SignupForm() {
                     <PasswordInput
                       placeholder="Enter your password"
                       autoComplete="new-password"
-                      className="h-11"
                       {...field}
                     />
                   </FormControl>
@@ -169,7 +166,6 @@ export default function SignupForm() {
                     <PasswordInput
                       placeholder="Confirm your password"
                       autoComplete="new-password"
-                      className="h-11"
                       {...field}
                     />
                   </FormControl>
@@ -182,8 +178,7 @@ export default function SignupForm() {
 
           <Button
             type="submit"
-            size="lg"
-            className="h-11 w-full"
+            className="w-full"
             disabled={loading}
             loading={loading}
             name="Sign Up"
@@ -204,7 +199,7 @@ export default function SignupForm() {
         Already have an account?{" "}
         <Link
           href="/signin"
-          className="font-semibold text-primary hover:underline"
+          className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
         >
           Sign In
         </Link>
