@@ -111,12 +111,12 @@ export default function EditBranchPage() {
   }
 
   return (
-    <div className="space-y-8 rounded-2xl border bg-card p-6 md:p-8">
+    <div className="max-w-3xl space-y-8">
       {/* Form */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Name */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-medium">Name</label>
+          <label className="text-sm">Name</label>
           <Input
             value={form.name}
             onChange={(e) =>
@@ -128,7 +128,7 @@ export default function EditBranchPage() {
 
         {/* Address */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-medium">Address</label>
+          <label className="text-sm">Address</label>
           <Input
             value={form.address}
             onChange={(e) =>
@@ -140,7 +140,7 @@ export default function EditBranchPage() {
 
         {/* City */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-medium">City</label>
+          <label className="text-sm">City</label>
           <Input
             value={form.city}
             onChange={(e) =>
@@ -152,7 +152,7 @@ export default function EditBranchPage() {
 
         {/* Province (Select dropdown) */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-medium">Province</label>
+          <label className="text-sm">Province</label>
           <Select
             value={form.province}
             onValueChange={(value) =>
@@ -174,7 +174,7 @@ export default function EditBranchPage() {
 
         {/* Postal Code */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-medium">Postal Code</label>
+          <label className="text-sm">Postal Code</label>
           <Input
             value={form.postal_code}
             onChange={(e) =>
@@ -189,7 +189,6 @@ export default function EditBranchPage() {
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t">
         <div className="flex gap-3 w-full sm:w-auto">
           <Button
-            iconType="view"
             variant="outline"
             onClick={() =>
               router.push(`/admin/manage-vehicles?branchId=${branchId}`)
@@ -207,7 +206,6 @@ export default function EditBranchPage() {
               }
             }}
             loading={deleteMutation.isPending}
-            iconType="delete"
           >
             Delete Branch
           </Button>
@@ -216,7 +214,6 @@ export default function EditBranchPage() {
         <div className="flex gap-3 w-full sm:w-auto">
           <Button
             variant="outline"
-            iconType="reset"
             onClick={() =>
               branch &&
               setForm({
@@ -236,7 +233,6 @@ export default function EditBranchPage() {
             onClick={() => mutation.mutate(form)}
             disabled={mutation.isPending}
             loading={mutation.isPending}
-            iconType="submit"
           >
             {mutation.isPending ? "Updating..." : "Save Changes"}
           </Button>
@@ -245,8 +241,8 @@ export default function EditBranchPage() {
 
       {/* Status Feedback */}
       {mutation.isError && (
-        <div className="mt-4 p-4 bg-destructive/10 border border-destructive/30 rounded-xl">
-          <p className="text-destructive text-sm font-medium">
+        <div className="mt-4 border-l-2 border-destructive pl-4">
+          <p className="text-destructive text-sm">
             {(mutation.error as Error)?.message ||
               "Error updating branch. Please try again."}
           </p>

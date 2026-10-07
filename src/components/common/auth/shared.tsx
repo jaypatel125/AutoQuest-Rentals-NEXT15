@@ -64,7 +64,6 @@ export function GoogleButton({
   return (
     <Button
       variant="outline"
-      size="lg"
       className="w-full"
       type="button"
       onClick={onClick}
@@ -77,7 +76,7 @@ export function GoogleButton({
 
 export function Divider() {
   return (
-    <div className="flex items-center gap-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+    <div className="flex items-center gap-3 text-xs text-muted-foreground">
       <div className="h-px flex-1 bg-border" />
       or
       <div className="h-px flex-1 bg-border" />
@@ -116,8 +115,8 @@ export function StrengthMeter({ password }: { password: string }) {
     password.length < 8
       ? "bg-destructive"
       : score <= 2
-        ? "bg-amber-500"
-        : "bg-primary";
+        ? "bg-muted-foreground"
+        : "bg-foreground";
   return (
     <div className="space-y-1" aria-live="polite">
       <div className="flex gap-1">
@@ -125,7 +124,7 @@ export function StrengthMeter({ password }: { password: string }) {
           <span
             key={i}
             className={cn(
-              "h-1.5 flex-1 rounded-full bg-muted",
+              "h-1 flex-1 rounded-full bg-muted",
               i < Math.max(1, score) && color
             )}
           />

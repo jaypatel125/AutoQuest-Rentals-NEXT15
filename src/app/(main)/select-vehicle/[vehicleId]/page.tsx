@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
-import { ChevronRight } from "lucide-react";
 
 import Loader from "@/components/utility/Loader";
 import { EVPromotionDialog } from "@/components/main/select-vehicle/EVPromotionDialog";
@@ -64,16 +63,16 @@ export default function VehicleDetailPage() {
 
   return (
     <>
-      <MaxWidthWrapper className="animate-fade-up py-8 md:py-10">
+      <MaxWidthWrapper className="py-10 md:py-14">
         <nav
           aria-label="Breadcrumb"
-          className="mb-6 flex items-center gap-1 text-sm text-muted-foreground"
+          className="mb-8 flex items-center gap-2 text-sm text-muted-foreground"
         >
           <Link href="/select-vehicle" className="hover:text-foreground">
             Browse cars
           </Link>
-          <ChevronRight className="size-4" />
-          <span className="font-medium text-foreground">
+          <span aria-hidden>/</span>
+          <span className="text-foreground">
             {car.brand} {car.model}
           </span>
         </nav>

@@ -19,7 +19,7 @@ export default function BookingsPage() {
       description="Manage upcoming trips, revisit past rentals, and track your points."
       goBack={false}
       actions={
-        <Button asChild>
+        <Button asChild variant="outline" size="sm">
           <Link href="/select-vehicle">Book a car</Link>
         </Button>
       }

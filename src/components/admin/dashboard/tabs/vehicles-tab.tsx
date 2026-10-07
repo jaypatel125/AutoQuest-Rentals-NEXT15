@@ -10,11 +10,11 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { formatPrice } from "@/lib/utils";
 
 const COLORS = [
-  "var(--chart-2)",
   "var(--chart-1)",
+  "var(--chart-2)",
   "var(--chart-3)",
-  "var(--chart-5)",
   "var(--chart-4)",
+  "var(--chart-5)",
   "oklch(0.7 0.11 190)",
 ];
 
@@ -33,8 +33,8 @@ interface VehiclesTabProps {
 
 export const VehiclesTab: React.FC<VehiclesTabProps> = ({ data }) => {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Vehicle Utilization</CardTitle>
@@ -45,7 +45,7 @@ export const VehiclesTab: React.FC<VehiclesTabProps> = ({ data }) => {
               {data.utilization.slice(0, 10).map((vehicle) => (
                 <div
                   key={vehicle.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex items-center justify-between border-b py-3 last:border-b-0"
                 >
                   <div>
                     <div className="font-medium">
@@ -82,7 +82,10 @@ export const VehiclesTab: React.FC<VehiclesTabProps> = ({ data }) => {
                   cy="50%"
                   labelLine={false}
                   label={({ fuel_type }) => `${fuel_type}`}
+                  innerRadius={84}
                   outerRadius={130}
+                  stroke="var(--background)"
+                  strokeWidth={2}
                   fill="var(--chart-4)"
                   dataKey="total_revenue"
                 >

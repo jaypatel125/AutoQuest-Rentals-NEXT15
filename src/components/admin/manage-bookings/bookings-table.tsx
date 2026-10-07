@@ -122,7 +122,7 @@ const columns: ColumnDef<Booking>[] = [
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Customer <ArrowUpDown className="ml-2 size-4" />
+        Customer <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" />
       </Button>
     ),
   },
@@ -133,7 +133,7 @@ const columns: ColumnDef<Booking>[] = [
         variant="ghost"
         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
       >
-        Email <ArrowUpDown className="ml-2 size-4" />
+        Email <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" />
       </Button>
     ),
   },
@@ -178,7 +178,7 @@ const columns: ColumnDef<Booking>[] = [
 function BookingsTable({ table }: { table: TableType<Booking> }) {
   return (
     <>
-      <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
+      <div className="overflow-x-auto border-y">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
@@ -232,7 +232,6 @@ function BookingsTable({ table }: { table: TableType<Booking> }) {
         <div className="space-x-2">
           <Button
             variant="outline"
-            iconType="left-arrow"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
           >
@@ -240,7 +239,6 @@ function BookingsTable({ table }: { table: TableType<Booking> }) {
           </Button>
           <Button
             variant="outline"
-            iconType="right-arrow"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >

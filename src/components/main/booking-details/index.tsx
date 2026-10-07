@@ -3,17 +3,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  CalendarDays,
-  CircleAlert,
-  Leaf,
-  MapPin,
-  Navigation,
-  Printer,
-  XCircle,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
   DialogContent,
@@ -31,11 +21,7 @@ import {
 import { cn, formatPrice } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { VehicleImage } from "@/components/vehicles/VehicleImage";
-import {
-  FuelBadge,
-  GreenScoreBadge,
-  StatusBadge,
-} from "@/components/vehicles/badges";
+import { StatusBadge } from "@/components/vehicles/badges";
 import { AddToCalendarButton } from "@/components/main/AddToCalendarButton";
 import { cancellationTerms, FREE_CANCELLATION_HOURS } from "@/lib/cancellation";
 import {
@@ -143,11 +129,11 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
   ];
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.6fr_1fr]">
-      <div className="space-y-6">
-        <section className="rounded-2xl border bg-card p-5">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-bold">Status</h2>
+    <div className="grid gap-12 lg:grid-cols-[1.6fr_1fr] lg:gap-16">
+      <div className="space-y-12">
+        <section className="space-y-6">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-sm text-muted-foreground">Status</h2>
             <StatusBadge status={status} />
           </div>
           <ol
@@ -156,111 +142,96 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
               gridTemplateColumns: `repeat(${timeline.length}, minmax(0, 1fr))`,
             }}
           >
-            {timeline.map((step, i) => (
-              <li key={step.label} className="relative">
-                {i > 0 && (
-                  <span
-                    className={cn(
-                      "absolute top-3 right-1/2 left-[-50%] h-0.5 -translate-y-1/2",
-                      step.done ? "bg-primary" : "bg-border"
-                    )}
-                    aria-hidden
-                  />
+            {timeline.map((step) => (
+              <li
+                key={step.label}
+                className={cn(
+                  "border-t-2 pt-3",
+                  "cancelled" in step
+                    ? "border-destructive"
+                    : step.done
+                      ? "border-foreground"
+                      : "border-border"
                 )}
-                <div className="relative flex flex-col items-center text-center">
-                  <span
-                    className={cn(
-                      "z-10 inline-flex size-6 items-center justify-center rounded-full border-2 bg-card",
-                      step.done &&
-                        !("cancelled" in step) &&
-                        "border-primary bg-primary",
-                      "cancelled" in step &&
-                        "border-destructive bg-destructive",
-                      !step.done && "border-border"
-                    )}
-                  />
-                  <span className="mt-2 text-sm font-semibold">
-                    {step.label}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {step.date ? format(step.date, "MMM d") : " "}
-                  </span>
-                </div>
+              >
+                <p
+                  className={cn(
+                    "text-sm",
+                    !step.done && "text-muted-foreground"
+                  )}
+                >
+                  {step.label}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {step.date ? format(step.date, "MMM d") : " "}
+                </p>
               </li>
             ))}
           </ol>
         </section>
 
-        <section className="grid overflow-hidden rounded-2xl border bg-card md:grid-cols-[1fr_1.1fr]">
+        <section className="grid gap-8 border-t pt-10 sm:grid-cols-[220px_1fr]">
           <VehicleImage
             src={booking.image}
             brand={booking.brand}
             model={booking.model}
             bodyType={booking.body_type}
-            className="h-full md:aspect-auto"
+            className="rounded-md"
           />
-          <div className="space-y-4 p-5">
-            <div className="flex flex-wrap gap-2">
-              <FuelBadge fuelType={booking.fuel_type} />
-              <GreenScoreBadge emissions={booking.carbon_emissions} />
-            </div>
+          <div className="space-y-5">
             <div>
-              <h3 className="text-xl font-bold">
+              <h3 className="text-xl font-medium">
                 {booking.brand} {booking.model}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {bodyTypeLabel(booking.body_type)} · {booking.transmission} ·{" "}
+                <span className={ev ? "text-eco" : undefined}>
+                  {booking.fuel_type}
+                </span>{" "}
+                · {bodyTypeLabel(booking.body_type)} · {booking.transmission} ·{" "}
                 {booking.passenger_capacity} seats · {booking.carbon_emissions}{" "}
                 g/km
               </p>
             </div>
-            <div className="flex gap-3 text-sm">
-              <CalendarDays className="mt-0.5 size-4 shrink-0 text-primary" />
+            <dl className="grid gap-4 text-sm sm:grid-cols-2">
               <div>
-                <p className="font-semibold">
-                  {format(start, "EEEE, MMMM d, yyyy")}
-                </p>
-                <p className="text-muted-foreground">
+                <dt className="text-muted-foreground">Dates</dt>
+                <dd className="mt-1">{format(start, "EEEE, MMMM d, yyyy")}</dd>
+                <dd className="text-muted-foreground">
                   to {format(end, "EEEE, MMMM d, yyyy")} · {days} day
                   {days === 1 ? "" : "s"}
-                </p>
+                </dd>
               </div>
-            </div>
-            <div className="flex gap-3 text-sm">
-              <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
               <div>
-                <p className="font-semibold">{booking.branch_name}</p>
-                <p className="text-muted-foreground">{address}</p>
-                <a
-                  href={mapsUrl(`${booking.branch_name}, ${address}`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="no-print mt-1 inline-flex items-center gap-1 font-medium text-primary hover:underline"
-                >
-                  <Navigation className="size-3.5" /> Get directions
-                </a>
+                <dt className="text-muted-foreground">Pick-up</dt>
+                <dd className="mt-1">{booking.branch_name}</dd>
+                <dd className="text-muted-foreground">{address}</dd>
+                <dd>
+                  <a
+                    href={mapsUrl(`${booking.branch_name}, ${address}`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="no-print underline decoration-border underline-offset-4 hover:decoration-foreground"
+                  >
+                    Get directions
+                  </a>
+                </dd>
               </div>
-            </div>
+            </dl>
           </div>
         </section>
 
         {saved >= 1 && status !== "Cancelled" && (
-          <section className="flex items-center gap-4 rounded-2xl border bg-accent/60 p-5 text-accent-foreground">
-            <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl bg-card text-primary">
-              <Leaf className="size-5" />
-            </span>
-            <p className="text-sm">
-              Choosing this car avoids an estimated{" "}
-              <strong>{Math.round(saved)} kg of CO₂</strong> compared with a
-              typical gas car on an 80 km/day trip.
-            </p>
-          </section>
+          <p className="border-t pt-10 text-sm text-muted-foreground">
+            Choosing this car avoids an estimated{" "}
+            <span className="text-eco">{Math.round(saved)} kg of CO₂</span>{" "}
+            compared with a typical gas car on an 80 km/day trip.
+          </p>
         )}
       </div>
 
-      <aside className="space-y-6">
-        <section className="rounded-2xl border bg-card p-5">
-          <h2 className="mb-4 font-bold">Price Summary</h2>
+      <aside className="space-y-10">
+        <section className="space-y-4 rounded-lg border p-6">
+          <h2 className="font-medium">Price Summary</h2>
           <div className="space-y-2 text-sm">
             {subTotal !== null && (
               <>
@@ -279,22 +250,22 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
               <Row
                 label={`Points redeemed (${pointsRedeemed.toLocaleString()})`}
                 value={`-${formatPrice(pointsRedeemed / POINTS_PER_DOLLAR)}`}
-                accent
               />
             )}
           </div>
-          <Separator className="my-4" />
-          <div className="flex items-baseline justify-between">
-            <span className="font-semibold">Total</span>
-            <span className="font-display text-2xl font-bold">
+          <div className="flex items-baseline justify-between border-t pt-4">
+            <span className="text-sm">Total</span>
+            <span className="text-xl font-medium tabular-nums">
               {formatPrice(total)}
             </span>
           </div>
           {status === "Cancelled" && (
-            <div className="mt-4 rounded-xl bg-muted/70 p-3 text-sm">
-              <div className="flex justify-between font-semibold">
+            <div className="border-t pt-4 text-sm">
+              <div className="flex justify-between">
                 <span>Refund</span>
-                <span>{formatPrice(Number(booking.refund_amount ?? 0))}</span>
+                <span className="tabular-nums">
+                  {formatPrice(Number(booking.refund_amount ?? 0))}
+                </span>
               </div>
               {booking.cancelled_at && (
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -306,44 +277,34 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
           )}
         </section>
 
-        <section className="rounded-2xl border bg-card p-5">
-          <h2 className="mb-4 font-bold">Rewards Summary</h2>
-          <div className="space-y-2 text-sm">
+        <section className="space-y-3 text-sm">
+          <h2 className="font-medium">Rewards</h2>
+          <Row
+            label="Points Earned"
+            value={`+${pointsEarned.toLocaleString()} pts`}
+          />
+          {pointsRedeemed > 0 && (
             <Row
-              label="Points Earned"
-              value={`+${pointsEarned.toLocaleString()} pts`}
-              accent
+              label="Points Redeemed"
+              value={`-${pointsRedeemed.toLocaleString()} pts`}
             />
-            {pointsRedeemed > 0 && (
-              <Row
-                label="Points Redeemed"
-                value={`-${pointsRedeemed.toLocaleString()} pts`}
-              />
-            )}
-          </div>
-          <p
-            className={cn(
-              "mt-4 rounded-xl p-3 text-sm",
-              ev
-                ? "bg-accent text-accent-foreground"
-                : "bg-muted/70 text-muted-foreground"
-            )}
-          >
+          )}
+          <p className="text-muted-foreground">
             {ev ? (
               <>
-                Thank you for choosing an <strong>Electric Vehicle</strong>! You
-                earned <strong>2x rewards</strong> for this booking.
+                Thank you for choosing an electric vehicle. You earned 2x
+                rewards for this booking.
               </>
             ) : (
               <>
-                Earn <strong>2x rewards</strong> on your next booking by
-                choosing an electric vehicle.
+                Earn 2x rewards on your next booking by choosing an electric
+                vehicle.
               </>
             )}
           </p>
         </section>
 
-        <section className="no-print space-y-3">
+        <section className="no-print space-y-2">
           {upcoming && (
             <AddToCalendarButton
               id={booking.booking_id}
@@ -359,17 +320,17 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
             className="w-full"
             onClick={() => window.print()}
           >
-            <Printer /> Print receipt
+            Print receipt
           </Button>
           {status === "Confirmed" && (
             <>
               <Button
-                variant="outline"
-                className="w-full border-destructive/40 text-destructive hover:bg-destructive hover:text-white"
+                variant="ghost"
+                className="w-full text-destructive hover:bg-destructive/5 hover:text-destructive"
                 onClick={() => setConfirmOpen(true)}
                 disabled={!terms.allowed}
               >
-                <XCircle /> Cancel Booking
+                Cancel Booking
               </Button>
               <p className="text-center text-xs text-muted-foreground">
                 {terms.allowed
@@ -392,7 +353,7 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
               {format(end, "MMM d")}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-2 rounded-xl bg-muted/70 p-4 text-sm">
+          <div className="space-y-2 border-y py-4 text-sm">
             <Row label="Amount paid" value={formatPrice(total)} />
             {terms.fee > 0 && (
               <Row
@@ -400,7 +361,7 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
                 value={`-${formatPrice(terms.fee)}`}
               />
             )}
-            <Separator className="my-2" />
+            <div className="border-t" />
             <Row
               label="You'll be refunded"
               value={formatPrice(terms.refund)}
@@ -408,8 +369,7 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
             />
           </div>
           {!terms.free && (
-            <p className="flex gap-2 text-sm text-amber-700 dark:text-amber-300">
-              <CircleAlert className="mt-0.5 size-4 shrink-0" />
+            <p className="text-sm">
               Your pick-up is less than {FREE_CANCELLATION_HOURS} hours away, so
               one day&apos;s rental is kept.
             </p>
@@ -444,30 +404,21 @@ export default function BookingDetail({ booking, isLoading, error }: Props) {
 function Row({
   label,
   value,
-  accent,
   strong,
 }: {
   label: string;
   value: string;
-  accent?: boolean;
   strong?: boolean;
 }) {
   return (
     <div
       className={cn(
         "flex justify-between gap-4",
-        strong ? "font-bold" : "text-muted-foreground"
+        strong ? "font-medium" : "text-muted-foreground"
       )}
     >
       <span>{label}</span>
-      <span
-        className={cn(
-          "font-medium",
-          accent ? "text-primary" : "text-foreground"
-        )}
-      >
-        {value}
-      </span>
+      <span className="text-foreground tabular-nums">{value}</span>
     </div>
   );
 }

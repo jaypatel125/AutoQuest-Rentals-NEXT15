@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { UserRound } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AccountInfo from "../AccountInfo";
 import { authClient, IUser } from "../../../../../auth-client";
@@ -70,7 +69,6 @@ const ProfileName = ({ currentUser }: { currentUser: IUser }) => {
     <form onSubmit={handleSubmit} className="w-full">
       <AccountInfo
         label="Name"
-        icon={<UserRound className="size-5" />}
         currentInfo={currentUser?.name || ""}
         isSuccess={successState}
         isError={!!errorState}

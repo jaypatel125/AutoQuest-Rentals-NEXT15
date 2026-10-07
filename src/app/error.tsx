@@ -2,7 +2,6 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
-import { RefreshCw, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function GlobalError({
@@ -17,13 +16,10 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <div className="flex min-h-[70vh] flex-col items-center justify-center gap-6 px-4 text-center">
-      <span className="inline-flex size-16 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
-        <TriangleAlert className="size-8" />
-      </span>
+    <div className="mx-auto flex min-h-[70vh] w-full max-w-md flex-col justify-center gap-6 px-5">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold">Something went wrong</h1>
-        <p className="mx-auto max-w-md text-muted-foreground">
+        <h1 className="text-3xl font-semibold">Something went wrong</h1>
+        <p className="text-muted-foreground">
           An unexpected error occurred. Please try again; if it keeps happening,
           contact support.
         </p>
@@ -33,10 +29,8 @@ export default function GlobalError({
           </p>
         )}
       </div>
-      <div className="flex gap-3">
-        <Button onClick={reset}>
-          <RefreshCw /> Try again
-        </Button>
+      <div className="flex gap-2">
+        <Button onClick={reset}>Try again</Button>
         <Button asChild variant="outline">
           <Link href="/">Go home</Link>
         </Button>

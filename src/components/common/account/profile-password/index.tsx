@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import { KeyRound } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import AccountInfo from "../AccountInfo";
@@ -70,7 +69,6 @@ const ProfilePassword = () => {
     <form onSubmit={handleSubmit} className="w-full">
       <AccountInfo
         label="Password"
-        icon={<KeyRound className="size-5" />}
         currentInfo={"The password is not shown for security reasons."}
         isSuccess={successState}
         isError={!!errorState}

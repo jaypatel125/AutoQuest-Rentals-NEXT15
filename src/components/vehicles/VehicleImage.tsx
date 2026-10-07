@@ -37,7 +37,7 @@ export function VehicleImage({
   return (
     <div
       className={cn(
-        "relative aspect-[16/10] w-full overflow-hidden bg-studio",
+        "relative aspect-[16/10] w-full overflow-hidden bg-muted",
         className
       )}
     >
@@ -56,12 +56,11 @@ export function VehicleImage({
           onError={() => setFailedSrc(resolved)}
         />
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center px-[7%] pt-[4%]">
+        <div className="absolute inset-0 flex items-center justify-center px-[14%] pt-[3%] text-foreground/60">
           <CarIllustration
             bodyType={bodyType}
-            seed={`${brand ?? ""}${model ?? ""}`}
             title={`${name} illustration`}
-            className="max-h-full drop-shadow-sm"
+            className="max-h-full"
           />
         </div>
       )}

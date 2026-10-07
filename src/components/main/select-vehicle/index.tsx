@@ -4,13 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import {
-  CalendarDays,
-  CarFront,
-  MapPin,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import { CarFront, X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -259,12 +253,12 @@ export default function SelectVehiclePage() {
   };
 
   const filterPanel = (idPrefix: string) => (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {cars.length > 0 && priceCeiling > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold">Max price per day</h4>
-            <span className="text-sm font-semibold text-primary">
+          <div className="flex items-center justify-between text-sm">
+            <h4 className="text-muted-foreground">Max price per day</h4>
+            <span className="tabular-nums">
               {maxPrice ? formatPrice(maxPrice) : "Any"}
             </span>
           </div>
@@ -285,11 +279,10 @@ export default function SelectVehiclePage() {
       )}
       {FILTER_ORDER.map((key) =>
         availableFilters[key].length ? (
-          <div
-            key={key}
-            className="space-y-3 border-t pt-5 first:border-t-0 first:pt-0"
-          >
-            <h4 className="text-sm font-semibold">{FILTER_LABELS[key]}</h4>
+          <div key={key} className="space-y-3">
+            <h4 className="text-sm text-muted-foreground">
+              {FILTER_LABELS[key]}
+            </h4>
             <div className="space-y-2.5">
               {availableFilters[key].map((opt) => {
                 const id = `${idPrefix}-${key}-${opt}`;
@@ -317,188 +310,188 @@ export default function SelectVehiclePage() {
     </div>
   );
 
-  return (
-    <div className="pb-20">
-      <div className="border-b bg-muted/40">
-        <MaxWidthWrapper className="space-y-5 py-8">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold md:text-4xl">
-              {city ? `Cars in ${city}` : "Browse cars"}
-            </h1>
-            <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground">
-              {hasTrip ? (
-                <>
-                  <span className="inline-flex items-center gap-1.5">
-                    <CalendarDays className="size-4" />
-                    {format(start!, "EEE, MMM d")} to{" "}
-                    {format(end!, "EEE, MMM d")}
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="size-4" />
-                    {rentalDays(start!, end!)} day trip
-                  </span>
-                </>
-              ) : (
-                <span>Select a location and date range to get started.</span>
-              )}
-            </p>
-          </div>
-          <SearchBar onSearch={() => undefined} />
-        </MaxWidthWrapper>
-      </div>
+  const chip =
+    "inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-sm transition-colors hover:border-foreground";
 
-      <MaxWidthWrapper className="mt-8 flex flex-col gap-8 lg:flex-row">
-        <aside className="hidden w-64 shrink-0 lg:block">
-          <div className="sticky top-24 rounded-2xl border bg-card p-5">
-            <div className="mb-5 flex items-center justify-between">
-              <h3 className="font-semibold">Filters</h3>
-              {hasActiveFilters && (
+  return (
+    <div className="pb-24">
+      <MaxWidthWrapper className="space-y-8 pt-12 pb-10 md:pt-16">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold md:text-4xl">
+            {city ? `Cars in ${city}` : "Browse cars"}
+          </h1>
+          <p className="text-muted-foreground">
+            {hasTrip ? (
+              <>
+                {format(start!, "EEE, MMM d")} to {format(end!, "EEE, MMM d")}
+                {" · "}
+                {rentalDays(start!, end!)} day trip
+              </>
+            ) : (
+              "Select a location and date range to get started."
+            )}
+          </p>
+        </div>
+        <SearchBar onSearch={() => undefined} />
+      </MaxWidthWrapper>
+
+      <MaxWidthWrapper>
+        <div className="flex flex-col gap-12 border-t pt-10 lg:flex-row">
+          <aside className="hidden w-52 shrink-0 lg:block">
+            <div className="sticky top-24">
+              <div className="mb-8 flex h-8 items-center justify-between">
+                <h3 className="text-sm font-medium">Filters</h3>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    onClick={clearAllFilters}
+                    className="cursor-pointer text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
+              {filterPanel("desktop")}
+            </div>
+          </aside>
+
+          <div className="min-w-0 flex-1 space-y-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground" aria-live="polite">
+                {isLoading ? (
+                  "Finding cars..."
+                ) : (
+                  <>
+                    <span className="text-foreground tabular-nums">
+                      {filteredCars.length}
+                    </span>{" "}
+                    {filteredCars.length === 1 ? "car" : "cars"}
+                    {hasTrip ? " available for your dates" : ""}
+                  </>
+                )}
+              </p>
+              <div className="flex items-center gap-2">
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm" className="lg:hidden">
+                      Filters
+                      {activeChips.length > 0 && (
+                        <span className="tabular-nums text-muted-foreground">
+                          {activeChips.length}
+                        </span>
+                      )}
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent
+                    side="left"
+                    className="w-[85%] max-w-sm overflow-y-auto p-6"
+                  >
+                    <SheetHeader className="px-0">
+                      <SheetTitle>Filters</SheetTitle>
+                    </SheetHeader>
+                    {filterPanel("mobile")}
+                  </SheetContent>
+                </Sheet>
+                <Select
+                  value={sort}
+                  onValueChange={(v) => setSort(v as SortKey)}
+                >
+                  <SelectTrigger
+                    className="h-8 w-[180px] text-[13px]"
+                    aria-label="Sort by"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="end">
+                    <SelectItem value="price-asc">
+                      Price: low to high
+                    </SelectItem>
+                    <SelectItem value="price-desc">
+                      Price: high to low
+                    </SelectItem>
+                    <SelectItem value="green">Greenest first</SelectItem>
+                    <SelectItem value="seats">Most seats</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {hasActiveFilters && (
+              <div className="flex flex-wrap items-center gap-2">
+                {activeChips.map(({ key, value }) => (
+                  <button
+                    key={`${key}-${value}`}
+                    type="button"
+                    onClick={() => handleFilterChange(key, value, false)}
+                    className={chip}
+                  >
+                    {optionLabel(key, value)}
+                    <X className="size-3.5 text-muted-foreground" />
+                  </button>
+                ))}
+                {maxPrice && (
+                  <button
+                    type="button"
+                    onClick={() => setMaxPrice(null)}
+                    className={chip}
+                  >
+                    Under {formatPrice(maxPrice)}/day
+                    <X className="size-3.5 text-muted-foreground" />
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={clearAllFilters}
-                  className="cursor-pointer text-sm font-medium text-primary hover:underline"
+                  className="cursor-pointer px-2 text-sm text-muted-foreground hover:text-foreground lg:hidden"
                 >
                   Clear Filters
                 </button>
-              )}
-            </div>
-            {filterPanel("desktop")}
+              </div>
+            )}
+
+            {error ? (
+              <Error
+                error={(error as Error).message || "Failed to load vehicles."}
+                onRetry={() => refetch()}
+              />
+            ) : isLoading ? (
+              <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <VehicleCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : filteredCars.length > 0 ? (
+              <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
+                {filteredCars.map((car, i) => (
+                  <VehicleCard
+                    key={car.id}
+                    car={car}
+                    start={hasTrip ? start : undefined}
+                    end={hasTrip ? end : undefined}
+                    onRent={handleRent}
+                    priority={i < 3}
+                  />
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                icon={CarFront}
+                title="No vehicles found"
+                description={
+                  hasActiveFilters
+                    ? "Try adjusting your filters to find more options."
+                    : "Try adjusting your search criteria to find more options."
+                }
+                action={
+                  hasActiveFilters ? (
+                    <Button variant="outline" onClick={clearAllFilters}>
+                      Clear All Filters
+                    </Button>
+                  ) : undefined
+                }
+              />
+            )}
           </div>
-        </aside>
-
-        <div className="min-w-0 flex-1 space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground" aria-live="polite">
-              {isLoading ? (
-                "Finding cars..."
-              ) : (
-                <>
-                  <strong className="text-foreground">
-                    {filteredCars.length}
-                  </strong>{" "}
-                  {filteredCars.length === 1 ? "car" : "cars"}
-                  {hasTrip ? " available for your dates" : ""}
-                </>
-              )}
-            </p>
-            <div className="flex items-center gap-2">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="sm" className="lg:hidden">
-                    <SlidersHorizontal /> Filters
-                    {activeChips.length > 0 && (
-                      <span className="rounded-full bg-primary px-1.5 text-[11px] text-primary-foreground">
-                        {activeChips.length}
-                      </span>
-                    )}
-                  </Button>
-                </SheetTrigger>
-                <SheetContent
-                  side="left"
-                  className="w-[85%] max-w-sm overflow-y-auto p-6"
-                >
-                  <SheetHeader className="px-0">
-                    <SheetTitle>Filters</SheetTitle>
-                  </SheetHeader>
-                  {filterPanel("mobile")}
-                </SheetContent>
-              </Sheet>
-              <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
-                <SelectTrigger
-                  className="h-8 w-[190px] rounded-lg text-[13px]"
-                  aria-label="Sort by"
-                >
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  <SelectItem value="price-asc">Price: low to high</SelectItem>
-                  <SelectItem value="price-desc">Price: high to low</SelectItem>
-                  <SelectItem value="green">Greenest first</SelectItem>
-                  <SelectItem value="seats">Most seats</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {hasActiveFilters && (
-            <div className="flex flex-wrap items-center gap-2">
-              {activeChips.map(({ key, value }) => (
-                <button
-                  key={`${key}-${value}`}
-                  type="button"
-                  onClick={() => handleFilterChange(key, value, false)}
-                  className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-accent px-3 py-1 text-sm font-medium text-accent-foreground hover:bg-accent/70"
-                >
-                  {optionLabel(key, value)} <X className="size-3.5" />
-                </button>
-              ))}
-              {maxPrice && (
-                <button
-                  type="button"
-                  onClick={() => setMaxPrice(null)}
-                  className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-accent px-3 py-1 text-sm font-medium text-accent-foreground hover:bg-accent/70"
-                >
-                  Under {formatPrice(maxPrice)}/day <X className="size-3.5" />
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="cursor-pointer px-2 text-sm font-medium text-muted-foreground hover:text-foreground lg:hidden"
-              >
-                Clear Filters
-              </button>
-            </div>
-          )}
-
-          {!hasTrip && (
-            <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-accent/50 px-4 py-3 text-sm text-accent-foreground">
-              <CalendarDays className="size-5 shrink-0" />
-              Add a location and dates above to check availability and see trip
-              totals.
-            </div>
-          )}
-
-          {error ? (
-            <Error
-              error={(error as Error).message || "Failed to load vehicles."}
-              onRetry={() => refetch()}
-            />
-          ) : isLoading ? (
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <VehicleCardSkeleton key={i} />
-              ))}
-            </div>
-          ) : filteredCars.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredCars.map((car, i) => (
-                <VehicleCard
-                  key={car.id}
-                  car={car}
-                  start={hasTrip ? start : undefined}
-                  end={hasTrip ? end : undefined}
-                  onRent={handleRent}
-                  priority={i < 3}
-                />
-              ))}
-            </div>
-          ) : (
-            <EmptyState
-              icon={CarFront}
-              title="No vehicles found"
-              description={
-                hasActiveFilters
-                  ? "Try adjusting your filters to find more options."
-                  : "Try adjusting your search criteria to find more options."
-              }
-              action={
-                hasActiveFilters ? (
-                  <Button onClick={clearAllFilters}>Clear All Filters</Button>
-                ) : undefined
-              }
-            />
-          )}
         </div>
       </MaxWidthWrapper>
 

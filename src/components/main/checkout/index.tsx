@@ -5,19 +5,8 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
-import {
-  CalendarDays,
-  CarFront,
-  CircleAlert,
-  Gift,
-  Info,
-  Lock,
-  MapPin,
-  ShieldCheck,
-  UserRound,
-} from "lucide-react";
+import { CalendarDays, CarFront, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { handleCheckout } from "@/app/(main)/checkout/actions";
@@ -33,7 +22,7 @@ import {
   TAX_RATE,
 } from "@/lib/pricing";
 import { VehicleImage } from "@/components/vehicles/VehicleImage";
-import { FuelBadge, GreenScoreBadge } from "@/components/vehicles/badges";
+import { greenScore } from "@/lib/green";
 import type { VehicleDetail } from "@/components/main/select-vehicle-details";
 import { EmptyState } from "@/components/utility/EmptyState";
 import { useToast } from "@/hooks/use-toast";
@@ -43,31 +32,23 @@ const STEPS = ["Search", "Choose", "Checkout", "Confirmed"];
 function Steps({ current }: { current: number }) {
   return (
     <ol
-      className="flex items-center gap-2 text-sm"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm"
       aria-label="Booking progress"
     >
       {STEPS.map((step, i) => (
-        <li key={step} className="flex items-center gap-2">
-          <span
-            className={cn(
-              "inline-flex size-6 items-center justify-center rounded-full text-xs font-bold",
-              i < current && "bg-primary/15 text-primary",
-              i === current && "bg-primary text-primary-foreground",
-              i > current && "bg-muted text-muted-foreground"
-            )}
-          >
-            {i + 1}
-          </span>
-          <span
-            className={cn(
-              "hidden sm:inline",
-              i === current ? "font-semibold" : "text-muted-foreground"
-            )}
-          >
-            {step}
-          </span>
+        <li
+          key={step}
+          className={cn(
+            "flex items-center gap-3",
+            i === current ? "text-foreground" : "text-muted-foreground"
+          )}
+          aria-current={i === current ? "step" : undefined}
+        >
+          {step}
           {i < STEPS.length - 1 && (
-            <span className="h-px w-6 bg-border sm:w-10" />
+            <span aria-hidden className="text-border">
+              /
+            </span>
           )}
         </li>
       ))}
@@ -191,97 +172,91 @@ export default function Checkout({ user }: { user: IUser }) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <Steps current={2} />
 
       {searchParams?.get("cancelled") && (
-        <div className="flex items-center gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
-          <Info className="size-5 shrink-0" />
+        <p className="border-l-2 border-foreground pl-4 text-sm">
           Payment was cancelled and your card was not charged. You can try again
           below.
-        </div>
+        </p>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr]">
-        <div className="space-y-6">
-          <section className="overflow-hidden rounded-2xl border bg-card">
-            <div className="grid sm:grid-cols-[240px_1fr]">
-              <VehicleImage
-                src={vehicle.image}
-                brand={vehicle.brand}
-                model={vehicle.model}
-                bodyType={vehicle.body_type}
-                className="h-full sm:aspect-auto"
-              />
-              <div className="space-y-3 p-5">
-                <div className="flex flex-wrap gap-2">
-                  <FuelBadge fuelType={vehicle.fuel_type} />
-                  <GreenScoreBadge emissions={vehicle.carbon_emissions} />
-                </div>
-                <h2 className="text-xl font-bold">
+      <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr] lg:gap-16">
+        <div className="divide-y">
+          <section className="grid gap-6 pb-10 sm:grid-cols-[200px_1fr]">
+            <VehicleImage
+              src={vehicle.image}
+              brand={vehicle.brand}
+              model={vehicle.model}
+              bodyType={vehicle.body_type}
+              className="rounded-md"
+            />
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-xl font-medium">
                   {vehicle.brand} {vehicle.model}
                 </h2>
-                <div className="grid gap-3 text-sm sm:grid-cols-2">
-                  <div className="flex gap-2">
-                    <CalendarDays className="mt-0.5 size-4 shrink-0 text-primary" />
-                    <div>
-                      <p className="font-semibold">
-                        {format(start, "EEE, MMM d")} to{" "}
-                        {format(end, "EEE, MMM d")}
-                      </p>
-                      <p className="text-muted-foreground">
-                        {quote.days} day{quote.days === 1 ? "" : "s"} ·{" "}
-                        <Link
-                          href={`/select-vehicle/${vehicle.id}`}
-                          className="font-medium text-primary hover:underline"
-                        >
-                          Change
-                        </Link>
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
-                    <div>
-                      <p className="font-semibold">
-                        {vehicle.branch_name || "Pick-up branch"}
-                      </p>
-                      <p className="text-muted-foreground">
-                        {[
-                          vehicle.branch_address,
-                          vehicle.branch_city,
-                          vehicle.branch_province,
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  <span className={ev ? "text-eco" : undefined}>
+                    {vehicle.fuel_type}
+                  </span>{" "}
+                  · Green {greenScore(vehicle.carbon_emissions).grade}
+                </p>
               </div>
+              <dl className="grid gap-4 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="text-muted-foreground">Dates</dt>
+                  <dd className="mt-1">
+                    {format(start, "EEE, MMM d")} to {format(end, "EEE, MMM d")}
+                  </dd>
+                  <dd className="text-muted-foreground">
+                    {quote.days} day{quote.days === 1 ? "" : "s"} ·{" "}
+                    <Link
+                      href={`/select-vehicle/${vehicle.id}`}
+                      className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
+                    >
+                      Change
+                    </Link>
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-muted-foreground">Pick-up</dt>
+                  <dd className="mt-1">
+                    {vehicle.branch_name || "Pick-up branch"}
+                  </dd>
+                  <dd className="text-muted-foreground">
+                    {[
+                      vehicle.branch_address,
+                      vehicle.branch_city,
+                      vehicle.branch_province,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
+                  </dd>
+                </div>
+              </dl>
             </div>
           </section>
 
-          <section className="rounded-2xl border bg-card p-5">
-            <h3 className="mb-4 flex items-center gap-2 font-bold">
-              <UserRound className="size-5 text-primary" /> Renter Information
-            </h3>
+          <section className="space-y-4 py-10">
+            <h3 className="font-medium">Renter Information</h3>
             <dl className="grid gap-4 text-sm sm:grid-cols-2">
               <div>
                 <dt className="text-muted-foreground">Full name</dt>
-                <dd className="font-semibold">{user.name}</dd>
+                <dd className="mt-1">{user.name}</dd>
               </div>
               <div>
                 <dt className="text-muted-foreground">Email</dt>
-                <dd className="font-semibold">{user.email}</dd>
+                <dd className="mt-1">{user.email}</dd>
               </div>
             </dl>
-            <p className="mt-4 rounded-xl bg-muted/60 p-3 text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Bring your driver&apos;s licence and a photo ID to pick-up.
-              Details are taken from your{" "}
+              Details come from your{" "}
               <Link
                 href="/account"
-                className="font-medium text-primary hover:underline"
+                className="text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground"
               >
                 account
               </Link>
@@ -289,23 +264,25 @@ export default function Checkout({ user }: { user: IUser }) {
             </p>
           </section>
 
-          <section className="rounded-2xl border bg-card p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex gap-3">
-                <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-                  <Gift className="size-5" />
-                </span>
-                <div>
-                  <h3 className="font-bold">Use reward points</h3>
-                  <p className="text-sm text-muted-foreground">
-                    You have{" "}
-                    <strong className="text-foreground">
-                      {balance.toLocaleString()} pts
-                    </strong>
-                    . {POINTS_PER_DOLLAR} points = $1, up to{" "}
-                    {MAX_REDEEMABLE_POINTS.toLocaleString()} per booking.
+          <section className="py-10">
+            <div className="flex items-start justify-between gap-6">
+              <div>
+                <h3 className="font-medium">Use reward points</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  You have{" "}
+                  <span className="text-foreground tabular-nums">
+                    {balance.toLocaleString()} pts
+                  </span>
+                  . {POINTS_PER_DOLLAR} points = $1, up to{" "}
+                  {MAX_REDEEMABLE_POINTS.toLocaleString()} per booking.
+                </p>
+                {potentialRedeem > 0 && (
+                  <p className="mt-2 text-sm">
+                    {redeemPoints
+                      ? `Using ${quote.pointsRedeemed.toLocaleString()} points saves you ${formatPrice(quote.discount)}.`
+                      : `Turn on to save ${formatPrice(potentialRedeem / POINTS_PER_DOLLAR)}.`}
                   </p>
-                </div>
+                )}
               </div>
               <Switch
                 checked={redeemPoints && potentialRedeem > 0}
@@ -314,24 +291,17 @@ export default function Checkout({ user }: { user: IUser }) {
                 aria-label="Use reward points"
               />
             </div>
-            {potentialRedeem > 0 && (
-              <p className="mt-3 text-sm font-medium text-primary">
-                {redeemPoints
-                  ? `Using ${quote.pointsRedeemed.toLocaleString()} points saves you ${formatPrice(quote.discount)}.`
-                  : `Turn on to save ${formatPrice(potentialRedeem / POINTS_PER_DOLLAR)}.`}
-              </p>
-            )}
           </section>
 
-          <section className="rounded-2xl border bg-card p-5">
-            <h3 className="mb-3 font-bold">Terms & Conditions</h3>
-            <ul className="mb-4 grid gap-2 text-sm text-muted-foreground sm:grid-cols-2">
+          <section className="space-y-4 pt-10">
+            <h3 className="font-medium">Terms & Conditions</h3>
+            <ul className="grid gap-1 text-sm text-muted-foreground sm:grid-cols-2">
               <li>Minimum age requirement: 21</li>
               <li>{ev ? "Charge" : "Fuel"} policy: same-to-same</li>
               <li>Basic insurance coverage included</li>
               <li>Late return charges apply</li>
             </ul>
-            <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-muted/60 p-3 text-sm">
+            <label className="flex cursor-pointer items-start gap-3 pt-2 text-sm">
               <Checkbox
                 checked={agreed}
                 onCheckedChange={(v) => setAgreed(v === true)}
@@ -343,7 +313,7 @@ export default function Checkout({ user }: { user: IUser }) {
                 <Link
                   href="/terms"
                   target="_blank"
-                  className="font-medium text-primary hover:underline"
+                  className="underline decoration-border underline-offset-4 hover:decoration-foreground"
                 >
                   rental terms
                 </Link>{" "}
@@ -355,8 +325,8 @@ export default function Checkout({ user }: { user: IUser }) {
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="space-y-4 rounded-3xl border bg-card p-6 shadow-xl shadow-emerald-950/5">
-            <h3 className="text-lg font-bold">Trip Cost</h3>
+          <div className="space-y-5 rounded-lg border p-6">
+            <h3 className="font-medium">Trip Cost</h3>
             <div className="space-y-2 text-sm">
               <Line
                 label={`Rental Charge (${quote.days} x ${formatPrice(quote.dailyRate)})`}
@@ -374,48 +344,37 @@ export default function Checkout({ user }: { user: IUser }) {
                 <Line
                   label={`Rewards (${quote.pointsRedeemed.toLocaleString()} pts)`}
                   value={`-${formatPrice(quote.discount)}`}
-                  className="text-primary"
                 />
               )}
             </div>
-            <Separator />
-            <div className="flex items-baseline justify-between">
-              <span className="font-semibold">Amount Due</span>
-              <span className="font-display text-3xl font-bold">
+            <div className="flex items-baseline justify-between border-t pt-4">
+              <span className="text-sm">Amount Due</span>
+              <span className="text-2xl font-medium tabular-nums">
                 {formatPrice(quote.total)}
               </span>
             </div>
-            <div className="flex items-center gap-2 rounded-xl bg-accent px-3 py-2 text-sm font-medium text-accent-foreground">
-              <Gift className="size-4" />
+            <p className="text-xs text-muted-foreground">
               You&apos;ll earn +{quote.pointsToEarn.toLocaleString()} pts
               {ev ? " (2x EV bonus)" : ""}
-            </div>
+            </p>
 
-            {error && (
-              <p className="flex items-start gap-2 rounded-xl bg-destructive/10 p-3 text-sm text-destructive">
-                <CircleAlert className="mt-0.5 size-4 shrink-0" /> {error}
-              </p>
-            )}
+            {error && <p className="text-sm text-destructive">{error}</p>}
 
             <Button
               size="lg"
-              className="h-12 w-full text-base"
+              className="w-full"
               onClick={onPayNow}
               disabled={!agreed}
               loading={paying}
             >
-              {!paying && <Lock className="size-4" />}
               {paying
                 ? "Redirecting to payment..."
                 : `Pay Now ${formatPrice(quote.total)}`}
             </Button>
-            {!agreed && (
-              <p className="text-center text-xs text-muted-foreground">
-                Accept the rental terms to continue.
-              </p>
-            )}
-            <p className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground">
-              <ShieldCheck className="size-4" /> Secure payment with Stripe
+            <p className="text-center text-xs text-muted-foreground">
+              {agreed
+                ? "Secure payment with Stripe"
+                : "Accept the rental terms to continue."}
             </p>
           </div>
         </aside>
@@ -424,26 +383,11 @@ export default function Checkout({ user }: { user: IUser }) {
   );
 }
 
-function Line({
-  label,
-  value,
-  className,
-}: {
-  label: string;
-  value: string;
-  className?: string;
-}) {
+function Line({ label, value }: { label: string; value: string }) {
   return (
-    <div
-      className={cn(
-        "flex justify-between gap-4 text-muted-foreground",
-        className
-      )}
-    >
+    <div className="flex justify-between gap-4 text-muted-foreground">
       <span>{label}</span>
-      <span className={cn("font-medium", !className && "text-foreground")}>
-        {value}
-      </span>
+      <span className="text-foreground tabular-nums">{value}</span>
     </div>
   );
 }

@@ -3,13 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  CalendarCheck,
-  ChevronDown,
-  Gift,
-  LogOut,
-  UserRound,
-} from "lucide-react";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
@@ -42,7 +35,7 @@ export function Avatar({
   return (
     <span
       aria-hidden
-      className={`inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-400 to-teal-600 text-xs font-bold text-white ${className}`}
+      className={`inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-medium text-foreground ${className}`}
     >
       {initials(name)}
     </span>
@@ -74,52 +67,42 @@ export function Dropdown({ user }: { user: IUser }) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex cursor-pointer items-center gap-2 rounded-full border bg-card py-1 pr-2.5 pl-1 text-sm font-medium shadow-xs transition-colors hover:bg-accent"
+          className="flex cursor-pointer items-center gap-2 rounded-full py-1 pr-2 pl-1 text-sm transition-colors hover:bg-accent"
           aria-label="Open account menu"
         >
           <Avatar name={user.name} />
           <span className="hidden max-w-[9rem] truncate sm:inline">
             {user.name}
           </span>
-          <ChevronDown className="size-4 text-muted-foreground" />
         </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent className="w-64" align="end" sideOffset={8}>
-        <DropdownMenuLabel className="flex items-center gap-3 py-2">
-          <Avatar name={user.name} className="size-10 text-sm" />
-          <div className="min-w-0">
-            <p className="truncate font-semibold">{user.name}</p>
-            <p className="truncate text-xs font-normal text-muted-foreground">
-              {user.email}
-            </p>
-            <p className="mt-0.5 text-xs font-semibold text-primary">
-              {isAdmin
-                ? "Admin"
-                : `${(user.reward_points ?? 0).toLocaleString()} pts`}
-            </p>
-          </div>
+      <DropdownMenuContent className="w-60" align="end" sideOffset={8}>
+        <DropdownMenuLabel className="py-2 font-normal">
+          <p className="truncate text-sm font-medium">{user.name}</p>
+          <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+          <p className="mt-1 text-xs text-muted-foreground tabular-nums">
+            {isAdmin
+              ? "Admin"
+              : `${(user.reward_points ?? 0).toLocaleString()} pts`}
+          </p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
         {isAdmin ? (
           <>
             <DropdownMenuGroup>
-              {ADMIN_NAV.map(({ href, label, icon: Icon }) => (
+              {ADMIN_NAV.map(({ href, label }) => (
                 <DropdownMenuItem key={href} asChild>
-                  <Link href={href}>
-                    <Icon /> {label}
-                  </Link>
+                  <Link href={href}>{label}</Link>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              {ADMIN_QUICK_ADD.map(({ href, label, icon: Icon }) => (
+              {ADMIN_QUICK_ADD.map(({ href, label }) => (
                 <DropdownMenuItem key={href} asChild>
-                  <Link href={href}>
-                    <Icon /> {label}
-                  </Link>
+                  <Link href={href}>{label}</Link>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
@@ -127,27 +110,19 @@ export function Dropdown({ user }: { user: IUser }) {
         ) : (
           <DropdownMenuGroup>
             <DropdownMenuItem asChild>
-              <Link href="/bookings">
-                <CalendarCheck /> My bookings
-              </Link>
+              <Link href="/bookings">My bookings</Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <Link href="/rewards">
-                <Gift /> Rewards
-              </Link>
+              <Link href="/rewards">Rewards</Link>
             </DropdownMenuItem>
           </DropdownMenuGroup>
         )}
 
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/account">
-            <UserRound /> Profile & security
-          </Link>
+          <Link href="/account">Profile & security</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
-          <LogOut /> Sign out
-        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleSignOut}>Sign out</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

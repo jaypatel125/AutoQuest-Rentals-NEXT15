@@ -69,7 +69,7 @@ export function CustomersTable({
             className=""
           >
             Customer
-            <ArrowUpDown className="ml-2 size-4" />
+            <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" />
           </Button>
         ),
         cell: ({ row }) => (
@@ -94,7 +94,7 @@ export function CustomersTable({
             className="px-0 text-center w-full"
           >
             Bookings
-            <ArrowUpDown className="ml-2 size-4" />
+            <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" />
           </Button>
         ),
         cell: ({ row }) => (
@@ -114,7 +114,7 @@ export function CustomersTable({
               className="px-0"
             >
               Revenue
-              <ArrowUpDown className="ml-2 size-4" />
+              <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" />
             </Button>
           </div>
         ),
@@ -139,7 +139,7 @@ export function CustomersTable({
             className="px-0"
           >
             Joined
-            <ArrowUpDown className="ml-2 size-4" />
+            <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" />
           </Button>
         ),
         cell: ({ row }) => (
@@ -279,7 +279,7 @@ export function CustomersTable({
 
   return (
     <div className="w-full">
-      <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
+      <div className="overflow-x-auto border-y">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

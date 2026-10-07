@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { CalendarCheck, Gift, LogIn, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import MaxWidthWrapper from "../../utility/MaxWidthWrapper";
 import { ISession, IUser } from "../../../../auth-client";
 import { Dropdown } from "./Dropdown";
@@ -36,11 +36,16 @@ const Navbar = ({
   const links = isAdmin ? [] : CUSTOMER_NAV;
 
   return (
-    <header className="sticky top-0 inset-x-0 z-40 border-b border-border/60 bg-background/75 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
-      <MaxWidthWrapper className="flex h-16 items-center justify-between gap-4">
-        <div className="flex items-center gap-8">
+    <header className="sticky top-0 inset-x-0 z-40 border-b bg-background/95 supports-[backdrop-filter]:bg-background/80 supports-[backdrop-filter]:backdrop-blur">
+      <MaxWidthWrapper
+        className={cn(
+          "flex h-16 items-center justify-between gap-4",
+          isAdmin && "max-w-7xl"
+        )}
+      >
+        <div className="flex items-center gap-10">
           <Logo href={isAdmin ? "/admin" : "/"} />
-          <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
+          <nav aria-label="Main" className="hidden items-center gap-7 lg:flex">
             {links.map((link) => {
               const active = isActive(pathname, link.href, link.exact);
               return (
@@ -49,9 +54,8 @@ const Navbar = ({
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
-                    active &&
-                      "bg-accent text-accent-foreground hover:text-accent-foreground"
+                    "text-sm text-muted-foreground transition-colors hover:text-foreground",
+                    active && "text-foreground"
                   )}
                 >
                   {link.label}
@@ -61,28 +65,25 @@ const Navbar = ({
           </nav>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           {user && !isAdmin && (
             <Link
               href="/rewards"
-              className="hidden items-center gap-1.5 rounded-full bg-accent px-3 py-1.5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent/70 sm:inline-flex"
+              className="mr-2 hidden text-sm text-muted-foreground tabular-nums transition-colors hover:text-foreground sm:inline"
               title="Your reward points"
             >
-              <Gift className="size-4" />
-              <span>{(user.reward_points ?? 0).toLocaleString()} pts</span>
+              {(user.reward_points ?? 0).toLocaleString()} pts
             </Link>
           )}
           <ThemeToggle />
           {user ? (
             <Dropdown user={user} />
           ) : (
-            <div className="hidden items-center gap-2 sm:flex">
+            <div className="hidden items-center gap-1.5 sm:flex">
               <Button asChild variant="ghost" size="sm">
-                <Link href="/signin">
-                  <LogIn /> Sign in
-                </Link>
+                <Link href="/signin">Sign in</Link>
               </Button>
-              <Button asChild size="sm" className="rounded-full px-4">
+              <Button asChild size="sm">
                 <Link href="/signup">Create account</Link>
               </Button>
             </div>
@@ -97,19 +98,19 @@ const Navbar = ({
                   className="lg:hidden"
                   aria-label="Open menu"
                 >
-                  <Menu className="size-5" />
+                  <Menu className="size-5" strokeWidth={1.5} />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[82%] max-w-sm gap-0 p-0">
-                <SheetHeader className="border-b p-5">
+                <SheetHeader className="h-16 justify-center border-b px-6">
                   <SheetTitle asChild>
                     <div>
                       <Logo href={isAdmin ? "/admin" : "/"} />
                     </div>
                   </SheetTitle>
                 </SheetHeader>
-                <nav aria-label="Mobile" className="flex flex-col gap-1 p-3">
-                  {links.map(({ href, label, icon: Icon, exact }) => {
+                <nav aria-label="Mobile" className="flex flex-col px-6 py-4">
+                  {links.map(({ href, label, exact }) => {
                     const active = isActive(pathname, href, exact);
                     return (
                       <Link
@@ -117,11 +118,11 @@ const Navbar = ({
                         href={href}
                         onClick={() => setOpen(false)}
                         className={cn(
-                          "flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-medium transition-colors hover:bg-accent",
-                          active && "bg-accent text-accent-foreground"
+                          "border-b py-3.5 text-[15px] text-muted-foreground transition-colors hover:text-foreground",
+                          active && "text-foreground"
                         )}
                       >
-                        <Icon className="size-5 text-primary" /> {label}
+                        {label}
                       </Link>
                     );
                   })}
@@ -129,18 +130,17 @@ const Navbar = ({
                     <Link
                       href="/bookings"
                       onClick={() => setOpen(false)}
-                      className="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-medium hover:bg-accent"
+                      className="flex items-center border-b py-3.5 text-[15px] text-muted-foreground hover:text-foreground"
                     >
-                      <CalendarCheck className="size-5 text-primary" />
                       My bookings
-                      <span className="ml-auto rounded-full bg-accent px-2 py-0.5 text-xs font-semibold text-accent-foreground">
+                      <span className="ml-auto text-sm tabular-nums">
                         {(user.reward_points ?? 0).toLocaleString()} pts
                       </span>
                     </Link>
                   )}
                 </nav>
                 {!user && (
-                  <div className="mt-auto grid gap-2 border-t p-5">
+                  <div className="mt-auto grid gap-2 border-t p-6">
                     <Button
                       asChild
                       variant="outline"

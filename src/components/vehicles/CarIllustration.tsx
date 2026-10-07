@@ -154,107 +154,29 @@ const SHAPES: Record<string, Shape> = {
   },
 };
 
-/** Curated paint colors; a vehicle always gets the same one. */
-const PAINTS = [
-  "#0f766e", // teal
-  "#1d4ed8", // blue
-  "#be123c", // red
-  "#334155", // slate
-  "#e2e8f0", // silver
-  "#111827", // black
-  "#047857", // green
-  "#b45309", // amber
-  "#6d28d9", // violet
-  "#f8fafc", // white
-];
-
-function hash(value: string) {
-  let h = 2166136261;
-  for (let i = 0; i < value.length; i++) {
-    h ^= value.charCodeAt(i);
-    h = Math.imul(h, 16777619);
-  }
-  return h >>> 0;
-}
-
-export function paintFor(seed: string) {
-  return PAINTS[hash(seed) % PAINTS.length];
-}
-
-function shade(hex: string, amount: number) {
-  const n = parseInt(hex.slice(1), 16);
-  const f = (c: number) =>
-    Math.max(
-      0,
-      Math.min(
-        255,
-        Math.round(amount < 0 ? c * (1 + amount) : c + (255 - c) * amount)
-      )
-    );
-  const r = f(n >> 16);
-  const g = f((n >> 8) & 255);
-  const b = f(n & 255);
-  return `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1)}`;
-}
-
-function luminance(hex: string) {
-  const n = parseInt(hex.slice(1), 16);
-  return (
-    (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255
-  );
-}
-
 export function shapeKey(bodyType?: string | null) {
   const key = (bodyType ?? "").toLowerCase();
   return key in SHAPES ? key : "sedan";
 }
 
+/**
+ * Single-stroke line drawing in the current text colour, so it adapts to
+ * light and dark themes without any extra palette.
+ */
 export function CarIllustration({
   bodyType,
-  color,
-  seed = "",
   className,
   title,
 }: {
   bodyType?: string | null;
-  color?: string;
-  seed?: string;
   className?: string;
   title?: string;
 }) {
   const key = shapeKey(bodyType);
   const s = SHAPES[key];
-  const paint = color ?? paintFor(seed || key);
-  const id = `car-${key}-${paint.slice(1)}`;
-  const dark = luminance(paint) < 0.25;
-  const outline = dark ? shade(paint, 0.35) : shade(paint, -0.45);
-  const seam = dark ? shade(paint, 0.3) : shade(paint, -0.35);
+  const clip = `car-${key}-clip`;
   const bodyPath = s.body((cx) => archPath(cx, s.cy, s.arch));
-
-  const wheel = (cx: number) => (
-    <g key={cx}>
-      <path
-        d={`M${cx + Math.sqrt(s.arch ** 2 - (BOTTOM - s.cy) ** 2)} ${BOTTOM} A${s.arch} ${s.arch} 0 1 0 ${cx - Math.sqrt(s.arch ** 2 - (BOTTOM - s.cy) ** 2)} ${BOTTOM} Z`}
-        fill="#0b0f19"
-        opacity="0.85"
-      />
-      <circle cx={cx} cy={s.cy} r={s.r} fill="#0b0f19" />
-      <circle cx={cx} cy={s.cy} r={s.r * 0.66} fill={`url(#${id}-rim)`} />
-      {[0, 72, 144, 216, 288].map((deg) => (
-        <rect
-          key={deg}
-          x={cx - 1.6}
-          y={s.cy - s.r * 0.58}
-          width="3.2"
-          height={s.r * 0.5}
-          rx="1.6"
-          fill="#94a3b8"
-          transform={`rotate(${deg} ${cx} ${s.cy})`}
-        />
-      ))}
-      <circle cx={cx} cy={s.cy} r={s.r * 0.18} fill="#475569" />
-    </g>
-  );
+  const ground = s.cy + s.r;
 
   return (
     <svg
@@ -262,141 +184,64 @@ export function CarIllustration({
       role="img"
       aria-label={title ?? `${key} illustration`}
       className={cn("h-auto w-full", className)}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
       <defs>
-        <linearGradient id={`${id}-paint`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={shade(paint, 0.28)} />
-          <stop offset="0.55" stopColor={paint} />
-          <stop offset="1" stopColor={shade(paint, -0.3)} />
-        </linearGradient>
-        <linearGradient id={`${id}-glass`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#334155" />
-          <stop offset="0.6" stopColor="#0f172a" />
-          <stop offset="1" stopColor="#1e293b" />
-        </linearGradient>
-        <radialGradient id={`${id}-rim`}>
-          <stop offset="0" stopColor="#e2e8f0" />
-          <stop offset="1" stopColor="#64748b" />
-        </radialGradient>
-        <radialGradient id={`${id}-shadow`}>
-          <stop offset="0" stopColor="#000" stopOpacity="0.35" />
-          <stop offset="1" stopColor="#000" stopOpacity="0" />
-        </radialGradient>
-        <clipPath id={`${id}-clip`}>
+        <clipPath id={clip}>
           <path d={bodyPath} />
         </clipPath>
       </defs>
 
-      <ellipse
-        cx="200"
-        cy={s.cy + s.r - 1}
-        rx="186"
-        ry="10"
-        fill={`url(#${id}-shadow)`}
-      />
-      <path
-        d={bodyPath}
-        fill={`url(#${id}-paint)`}
-        stroke={outline}
-        strokeWidth="1.2"
-        strokeLinejoin="round"
-      />
+      <path d={`M8 ${ground} L392 ${ground}`} strokeOpacity="0.25" />
+      <path d={bodyPath} />
       {s.windows.map((w) => (
-        <path key={w} d={w} fill={`url(#${id}-glass)`} />
+        <path key={w} d={w} strokeOpacity="0.7" />
       ))}
-      <path d={s.windows[0]} fill="#fff" fillOpacity="0.08" />
 
-      <g clipPath={`url(#${id}-clip)`}>
-        <path
-          d={`M0 ${s.belt} L400 ${s.belt}`}
-          stroke="#fff"
-          strokeOpacity="0.28"
-          strokeWidth="2"
-        />
+      <g clipPath={`url(#${clip})`} strokeOpacity="0.45" strokeWidth="1.2">
         {s.doors.map((x) => (
-          <path
-            key={x}
-            d={`M${x} ${s.belt - 6} L${x} 148`}
-            stroke={seam}
-            strokeOpacity="0.55"
-            strokeWidth="1.2"
-          />
+          <path key={x} d={`M${x} ${s.belt - 4} L${x} 146`} />
         ))}
-        {s.bed && (
-          <path
-            d="M24 104 L166 104"
-            stroke={seam}
-            strokeWidth="1.5"
-            strokeOpacity="0.6"
-          />
-        )}
+        {s.bed && <path d="M24 104 L166 104" />}
       </g>
 
-      <rect
-        x={s.handle[0]}
-        y={s.handle[1]}
-        width="12"
-        height="3"
-        rx="1.5"
-        fill={seam}
+      <path
+        d={`M${s.handle[0]} ${s.handle[1] + 1.5} L${s.handle[0] + 12} ${s.handle[1] + 1.5}`}
+        strokeOpacity="0.6"
       />
-      <rect
-        x={s.head[0] - 6}
-        y={s.head[1]}
-        width="16"
-        height="6"
-        rx="3"
-        fill="#fef3c7"
+      <path
+        d={`M${s.head[0] - 4} ${s.head[1] + 3} L${s.head[0] + 8} ${s.head[1] + 3}`}
       />
-      <rect
-        x={s.tail[0] - 2}
-        y={s.tail[1]}
-        width="8"
-        height="10"
-        rx="2.5"
-        fill="#ef4444"
+      <path
+        d={`M${s.tail[0] + 2} ${s.tail[1]} L${s.tail[0] + 2} ${s.tail[1] + 9}`}
       />
 
-      {s.rails && (
-        <path
-          d="M104 44 L250 44"
-          stroke={shade(paint, -0.5)}
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-      )}
-      {s.spoiler && (
-        <path
-          d="M30 114 L50 108"
-          stroke={shade(paint, -0.5)}
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-      )}
-      {s.bed && (
-        <rect
-          x="20"
-          y="88"
-          width="152"
-          height="6"
-          rx="2"
-          fill={shade(paint, -0.3)}
-        />
-      )}
+      {s.rails && <path d="M104 43 L250 43" />}
+      {s.spoiler && <path d="M30 114 L50 108" />}
       {s.open && (
         <>
-          <rect x="140" y="80" width="18" height="26" rx="7" fill="#1f2937" />
-          <rect x="196" y="80" width="18" height="26" rx="7" fill="#1f2937" />
           <path
-            d="M226 100 L238 90"
-            stroke="#1f2937"
-            strokeWidth="4"
-            strokeLinecap="round"
+            d="M146 104 L146 84 C146 81 148 80 151 80 L153 80 C156 80 158 81 158 84 L158 104"
+            strokeOpacity="0.6"
           />
+          <path
+            d="M202 104 L202 84 C202 81 204 80 207 80 L209 80 C212 80 214 81 214 84 L214 104"
+            strokeOpacity="0.6"
+          />
+          <path d="M226 100 L238 90" strokeOpacity="0.6" />
         </>
       )}
 
-      {s.wheels.map(wheel)}
+      {s.wheels.map((cx) => (
+        <g key={cx}>
+          <circle cx={cx} cy={s.cy} r={s.r} />
+          <circle cx={cx} cy={s.cy} r={s.r * 0.42} strokeOpacity="0.6" />
+        </g>
+      ))}
     </svg>
   );
 }

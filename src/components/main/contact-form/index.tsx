@@ -6,26 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  CalendarX2,
-  CheckCircle2,
-  Clock,
-  Gift,
-  Mail,
-  MapPin,
-  Phone,
-} from "lucide-react";
 import { sendContactMessage } from "@/app/(main)/contact/actions";
 
 const QUICK_HELP = [
   {
-    icon: CalendarX2,
     title: "Cancel or change a booking",
     body: "Cancel from My Bookings for a refund up to 24 hours before pick-up.",
     href: "/bookings",
   },
   {
-    icon: Gift,
     title: "Rewards questions",
     body: "See your balance, status, and points history.",
     href: "/rewards",
@@ -72,26 +61,24 @@ export default function ContactForm() {
   };
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
-      <div className="rounded-3xl border bg-card p-6 md:p-8">
-        <h2 className="mb-1 text-xl font-bold">Send us a message</h2>
-        <p className="mb-6 text-sm text-muted-foreground">
+    <div className="grid gap-16 lg:grid-cols-[1.4fr_1fr]">
+      <div>
+        <h2 className="font-medium">Send us a message</h2>
+        <p className="mt-1 mb-8 text-sm text-muted-foreground">
           We usually reply within one business day.
         </p>
         {isSuccess ? (
-          <div className="flex flex-col items-center justify-center gap-3 py-10 text-center">
-            <span className="inline-flex size-14 items-center justify-center rounded-full bg-accent text-accent-foreground">
-              <CheckCircle2 className="size-7" />
-            </span>
-            <p className="font-semibold">
+          <div className="space-y-3 border-y py-10">
+            <p className="font-medium">
               Your message has been sent successfully!
             </p>
             <p className="text-sm text-muted-foreground">
               Thanks for reaching out. We&apos;ll be in touch soon.
             </p>
             <Button
-              iconType="right-arrow"
               variant="outline"
+              size="sm"
+              className="mt-2"
               onClick={() => setIsSuccess(false)}
             >
               Send another message
@@ -160,10 +147,8 @@ export default function ContactForm() {
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button
               type="submit"
-              size="lg"
               disabled={isSubmitting}
-              iconType="send"
-              className="w-full"
+              className="w-full sm:w-auto"
               loading={isSubmitting}
             >
               {isSubmitting ? "Sending..." : "Send Message"}
@@ -172,55 +157,40 @@ export default function ContactForm() {
         )}
       </div>
 
-      <div className="space-y-6">
-        <div className="space-y-4 rounded-3xl border bg-card p-6">
-          <h2 className="font-bold">Contact Information</h2>
-          {[
-            {
-              icon: Mail,
-              text: "autoquest.rental@gmail.com",
-              href: "mailto:autoquest.rental@gmail.com",
-            },
-            {
-              icon: Phone,
-              text: "+1 (123) 456-7890",
-              href: "tel:+11234567890",
-            },
-            { icon: MapPin, text: "123 Main Street, Toronto, ON" },
-            { icon: Clock, text: "Mon to Fri: 9:00 AM to 6:00 PM" },
-          ].map(({ icon: Icon, text, href }) => (
-            <div key={text} className="flex items-center gap-3 text-sm">
-              <span className="inline-flex size-9 items-center justify-center rounded-xl bg-accent text-accent-foreground">
-                <Icon className="size-4" />
-              </span>
-              {href ? (
-                <a href={href} className="font-medium hover:text-primary">
-                  {text}
-                </a>
-              ) : (
-                <span className="font-medium">{text}</span>
-              )}
-            </div>
-          ))}
+      <div className="space-y-12">
+        <div className="space-y-4">
+          <h2 className="font-medium">Contact Information</h2>
+          <ul className="space-y-1.5 text-sm text-muted-foreground">
+            <li>
+              <a
+                href="mailto:autoquest.rental@gmail.com"
+                className="hover:text-foreground"
+              >
+                autoquest.rental@gmail.com
+              </a>
+            </li>
+            <li>
+              <a href="tel:+11234567890" className="hover:text-foreground">
+                +1 (123) 456-7890
+              </a>
+            </li>
+            <li>123 Main Street, Toronto, ON</li>
+            <li>Mon to Fri: 9:00 AM to 6:00 PM</li>
+          </ul>
         </div>
 
-        <div className="space-y-3">
-          <h2 className="px-1 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            Quick help
-          </h2>
-          {QUICK_HELP.map(({ icon: Icon, title, body, href }) => (
-            <Link
-              key={title}
-              href={href}
-              className="flex gap-3 rounded-2xl border bg-card p-4 transition-colors hover:border-primary/40"
-            >
-              <Icon className="mt-0.5 size-5 shrink-0 text-primary" />
-              <span>
-                <span className="block font-semibold">{title}</span>
+        <div className="space-y-4">
+          <h2 className="font-medium">Quick help</h2>
+          <div className="divide-y border-y">
+            {QUICK_HELP.map(({ title, body, href }) => (
+              <Link key={title} href={href} className="group block py-4">
+                <span className="block text-sm group-hover:underline group-hover:underline-offset-4">
+                  {title}
+                </span>
                 <span className="text-sm text-muted-foreground">{body}</span>
-              </span>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </div>

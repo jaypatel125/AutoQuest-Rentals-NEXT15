@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { CalendarDays } from "lucide-react";
 import type { DateRange } from "react-day-picker";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -37,9 +36,8 @@ export function DateRangeField({
     if (next.to) setOpen(false);
   };
 
-  const cell = "flex-1 rounded-xl px-3 py-2 text-left";
-  const label =
-    "block text-[11px] font-semibold uppercase tracking-wide text-muted-foreground";
+  const cell = "flex-1 px-3 py-2.5 text-left";
+  const label = "block text-xs text-muted-foreground";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -47,25 +45,19 @@ export function DateRangeField({
         <button
           type="button"
           className={cn(
-            "flex w-full cursor-pointer items-stretch divide-x rounded-xl border bg-card text-sm transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+            "flex w-full cursor-pointer items-stretch divide-x rounded-md border text-sm transition-colors hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
             className
           )}
         >
           <span className={cell}>
             <span className={label}>Pick-up</span>
-            <span
-              className={cn(
-                "flex items-center gap-1.5 font-medium",
-                !from && "text-muted-foreground"
-              )}
-            >
-              <CalendarDays className="size-4 text-primary" />
+            <span className={cn(!from && "text-muted-foreground")}>
               {from ? format(from, "EEE, MMM d") : "Add date"}
             </span>
           </span>
           <span className={cell}>
             <span className={label}>Return</span>
-            <span className={cn("font-medium", !to && "text-muted-foreground")}>
+            <span className={cn(!to && "text-muted-foreground")}>
               {to ? format(to, "EEE, MMM d") : "Add date"}
             </span>
           </span>

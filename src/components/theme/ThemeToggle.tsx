@@ -15,12 +15,18 @@ export function ThemeToggle({ className }: { className?: string }) {
       title={isDark ? "Light mode" : "Dark mode"}
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={cn(
-        "relative inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer",
+        "relative inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground cursor-pointer",
         className
       )}
     >
-      <Sun className="size-[18px] rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
-      <Moon className="absolute size-[18px] rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
+      <Sun
+        strokeWidth={1.5}
+        className="size-[18px] scale-100 transition-transform dark:scale-0"
+      />
+      <Moon
+        strokeWidth={1.5}
+        className="absolute size-[18px] scale-0 transition-transform dark:scale-100"
+      />
     </button>
   );
 }

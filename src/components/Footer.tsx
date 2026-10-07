@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Leaf, Mail, MapPin, Phone } from "lucide-react";
 import MaxWidthWrapper from "./utility/MaxWidthWrapper";
 import { isAuthRoutes } from "@/lib/utils";
-import { Logo } from "@/components/brand/Logo";
 
 const COLUMNS = [
   {
@@ -44,41 +42,29 @@ export default function Footer() {
     return null;
   }
   return (
-    <footer className="mt-auto bg-ink text-ink-foreground">
+    <footer className="mt-auto border-t">
       <MaxWidthWrapper className="py-14">
         <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
-          <div className="space-y-4">
-            <Logo tone="light" />
-            <p className="max-w-xs text-sm leading-relaxed text-white/60">
-              Electric, hybrid, and gas rentals across Canada. Every EV trip
-              earns double points and leaves less behind.
+          <div className="space-y-3 text-sm">
+            <p className="font-medium">AutoQuest</p>
+            <p className="max-w-xs leading-relaxed text-muted-foreground">
+              Electric, hybrid, and gas rentals across Canada.
             </p>
-            <ul className="space-y-2 text-sm text-white/70">
-              <li className="flex items-center gap-2">
-                <Mail className="size-4 text-emerald-300" />
-                autoquest.rental@gmail.com
-              </li>
-              <li className="flex items-center gap-2">
-                <Phone className="size-4 text-emerald-300" />
-                +1 (123) 456-7890
-              </li>
-              <li className="flex items-center gap-2">
-                <MapPin className="size-4 text-emerald-300" />
-                123 Main Street, Toronto, ON
-              </li>
+            <ul className="space-y-1 text-muted-foreground">
+              <li>autoquest.rental@gmail.com</li>
+              <li>+1 (123) 456-7890</li>
+              <li>123 Main Street, Toronto, ON</li>
             </ul>
           </div>
           {COLUMNS.map((col) => (
             <div key={col.title}>
-              <h3 className="mb-4 text-sm font-semibold text-white">
-                {col.title}
-              </h3>
-              <ul className="space-y-2.5 text-sm">
+              <h3 className="mb-3 text-sm font-medium">{col.title}</h3>
+              <ul className="space-y-2 text-sm">
                 {col.links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-white/60 transition-colors hover:text-white"
+                      className="text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {link.label}
                     </Link>
@@ -88,13 +74,9 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-white/10 pt-6 text-xs text-white/50 sm:flex-row sm:items-center">
-          <p>© {new Date().getFullYear()} AutoQuest. All rights reserved.</p>
-          <p className="inline-flex items-center gap-1.5">
-            <Leaf className="size-3.5 text-emerald-300" />
-            Drive electric, earn 2x points.
-          </p>
-        </div>
+        <p className="mt-14 text-xs text-muted-foreground">
+          © {new Date().getFullYear()} AutoQuest
+        </p>
       </MaxWidthWrapper>
     </footer>
   );

@@ -23,11 +23,11 @@ import {
 import { formatPrice } from "@/lib/utils";
 
 const COLORS = [
-  "var(--chart-2)",
   "var(--chart-1)",
+  "var(--chart-2)",
   "var(--chart-3)",
-  "var(--chart-5)",
   "var(--chart-4)",
+  "var(--chart-5)",
   "oklch(0.7 0.11 190)",
 ];
 
@@ -52,8 +52,8 @@ interface OverviewTabProps {
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Daily Rentals & Revenue</CardTitle>
@@ -62,18 +62,23 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <AreaChart data={data.dailyTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
+                <CartesianGrid vertical={false} />
+                <XAxis axisLine={false} tickLine={false} dataKey="day" />
+                <YAxis axisLine={false} tickLine={false} yAxisId="left" />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  yAxisId="right"
+                  orientation="right"
+                />
                 <Tooltip />
                 <Legend />
                 <Area
                   yAxisId="left"
                   type="monotone"
                   dataKey="rentals"
-                  stroke="var(--chart-4)"
-                  strokeWidth={2}
+                  stroke="var(--chart-2)"
+                  strokeWidth={1.5}
                   fill="var(--chart-4)"
                   fillOpacity={0}
                   name="Rentals"
@@ -83,7 +88,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
                   type="monotone"
                   dataKey="revenue"
                   stroke="var(--chart-1)"
-                  strokeWidth={2}
+                  strokeWidth={1.5}
                   fillOpacity={0}
                   name="Revenue"
                 />
@@ -108,7 +113,10 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
                   label={({ status, percentage }) =>
                     `${status}: ${percentage}%`
                   }
+                  innerRadius={52}
                   outerRadius={80}
+                  stroke="var(--background)"
+                  strokeWidth={2}
                   fill="var(--chart-4)"
                   dataKey="count"
                 >
@@ -133,19 +141,28 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={data.topVehicles}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="model" />
-                <YAxis yAxisId="left" />
-                <YAxis yAxisId="right" orientation="right" />
+                <CartesianGrid vertical={false} />
+                <XAxis axisLine={false} tickLine={false} dataKey="model" />
+                <YAxis axisLine={false} tickLine={false} yAxisId="left" />
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
+                  yAxisId="right"
+                  orientation="right"
+                />
                 <Tooltip />
                 <Legend />
                 <Bar
+                  radius={[2, 2, 0, 0]}
+                  maxBarSize={28}
                   yAxisId="left"
                   dataKey="rental_count"
                   name="Rental Count"
                   fill="var(--chart-2)"
                 />
                 <Bar
+                  radius={[2, 2, 0, 0]}
+                  maxBarSize={28}
                   yAxisId="right"
                   dataKey="total_revenue"
                   name="Total Revenue"
@@ -162,11 +179,11 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
             <CardDescription>Revenue and booking metrics</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div>
               {data.topBranches.map((branch) => (
                 <div
                   key={branch.id}
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className="flex items-center justify-between border-b py-3 last:border-b-0"
                 >
                   <div>
                     <div className="font-medium">{branch.name}</div>
@@ -175,7 +192,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold">
+                    <div className="tabular-nums">
                       {formatPrice(branch.total_revenue)}
                     </div>
                     <div className="text-sm text-muted-foreground">

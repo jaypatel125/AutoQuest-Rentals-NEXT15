@@ -57,7 +57,8 @@ export default function ManageBranchesTable() {
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Branch Name <ArrowUpDown className="ml-2 size-4" />
+          Branch Name{" "}
+          <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" />
         </Button>
       ),
       cell: ({ row }) => <div>{row.getValue("name")}</div>,
@@ -74,7 +75,7 @@ export default function ManageBranchesTable() {
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          City <ArrowUpDown className="ml-2 size-4" />
+          City <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" />
         </Button>
       ),
       cell: ({ row }) => <div>{row.getValue("city")}</div>,
@@ -97,7 +98,7 @@ export default function ManageBranchesTable() {
         const branchId = row.original.id;
         return (
           <Link href={`/admin/manage-branches/${branchId}`}>
-            <Button iconType="edit" variant="outline" size="sm">
+            <Button variant="outline" size="sm">
               Edit
             </Button>
           </Link>
@@ -165,12 +166,12 @@ export default function ManageBranchesTable() {
             </DropdownMenuContent>
           </DropdownMenu>
           <Link href="/admin/add-branch">
-            <Button iconType="add">Add Branch</Button>
+            <Button>Add Branch</Button>
           </Link>
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
+      <div className="overflow-x-auto border-y">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -220,7 +221,6 @@ export default function ManageBranchesTable() {
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
-          iconType="left-arrow"
           onClick={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
@@ -228,7 +228,6 @@ export default function ManageBranchesTable() {
         </Button>
         <Button
           variant="outline"
-          iconType="right-arrow"
           onClick={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >

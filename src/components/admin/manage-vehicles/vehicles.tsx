@@ -72,7 +72,8 @@ export default function VehicleOverviewTable({
           className="hover:bg-transparent"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Vehicle <ArrowUpDown className="ml-2 size-4" />
+          Vehicle{" "}
+          <ArrowUpDown className="ml-1 size-3.5 text-muted-foreground" />
         </Button>
       ),
       cell: ({ row }) => (
@@ -112,8 +113,8 @@ export default function VehicleOverviewTable({
           <span
             className={
               available
-                ? "inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300"
-                : "inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground"
+                ? "inline-flex items-center gap-1.5 text-sm [&>span]:text-eco"
+                : "inline-flex items-center gap-1.5 text-sm text-muted-foreground"
             }
           >
             <span className="size-1.5 rounded-full bg-current" />
@@ -129,7 +130,7 @@ export default function VehicleOverviewTable({
         const vehicleId = row.original.id;
         return (
           <Link href={`/admin/manage-vehicles/${vehicleId}`}>
-            <Button iconType="edit" variant="outline" size="sm">
+            <Button variant="outline" size="sm">
               Edit
             </Button>
           </Link>
@@ -187,11 +188,7 @@ export default function VehicleOverviewTable({
             className="md:min-w-md"
           />
           {branchId && (
-            <Button
-              iconType="close"
-              variant="outline"
-              onClick={handleClearFilter}
-            >
+            <Button variant="outline" onClick={handleClearFilter}>
               Clear Filter
             </Button>
           )}
@@ -223,7 +220,6 @@ export default function VehicleOverviewTable({
           </DropdownMenu>
 
           <Button
-            iconType="add"
             onClick={() => {
               router.push("/admin/add-vehicle");
             }}
@@ -233,7 +229,7 @@ export default function VehicleOverviewTable({
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
+      <div className="overflow-x-auto border-y">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -286,7 +282,6 @@ export default function VehicleOverviewTable({
         </div>
         <div className="space-x-2">
           <Button
-            iconType="left-arrow"
             variant="outline"
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
@@ -295,7 +290,6 @@ export default function VehicleOverviewTable({
           </Button>
           <Button
             variant="outline"
-            iconType="right-arrow"
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
           >

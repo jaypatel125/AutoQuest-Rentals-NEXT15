@@ -1,5 +1,3 @@
-import { CircleCheck } from "lucide-react";
-
 const SECTIONS: { id: string; title: string; items: string[] }[] = [
   {
     id: "general",
@@ -74,14 +72,14 @@ const SECTIONS: { id: string; title: string; items: string[] }[] = [
 
 export default function TermsDetails() {
   return (
-    <div className="grid gap-10 lg:grid-cols-[220px_1fr]">
+    <div className="grid gap-12 lg:grid-cols-[200px_1fr] lg:gap-16">
       <nav aria-label="Sections" className="hidden lg:block">
-        <ol className="sticky top-24 space-y-1 text-sm">
+        <ol className="sticky top-24 space-y-2 text-sm">
           {SECTIONS.map((s, i) => (
             <li key={s.id}>
               <a
                 href={`#${s.id}`}
-                className="block rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                className="text-muted-foreground transition-colors hover:text-foreground"
               >
                 {i + 1}. {s.title}
               </a>
@@ -89,22 +87,20 @@ export default function TermsDetails() {
           ))}
         </ol>
       </nav>
-      <div className="space-y-6">
+      <div className="max-w-2xl divide-y">
         {SECTIONS.map((section, i) => (
           <section
             key={section.id}
             id={section.id}
-            className="scroll-mt-24 rounded-2xl border bg-card p-6 md:p-8"
+            className="scroll-mt-24 py-10 first:pt-0"
           >
-            <h2 className="mb-4 text-xl font-bold md:text-2xl">
-              <span className="text-primary">{i + 1}.</span> {section.title}
+            <h2 className="mb-5 text-lg font-medium">
+              <span className="text-muted-foreground">{i + 1}.</span>{" "}
+              {section.title}
             </h2>
-            <ul className="space-y-3">
+            <ul className="list-disc space-y-2.5 pl-5 text-muted-foreground marker:text-border">
               {section.items.map((item) => (
-                <li key={item} className="flex gap-3 text-muted-foreground">
-                  <CircleCheck className="mt-0.5 size-5 shrink-0 text-primary" />
-                  <span>{item}</span>
-                </li>
+                <li key={item}>{item}</li>
               ))}
             </ul>
           </section>

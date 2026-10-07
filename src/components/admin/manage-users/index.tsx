@@ -75,7 +75,7 @@ export default function CustomersOverview({ user }: { user: IUser }) {
             placeholder="Search name, username, or email…"
             className="w-full max-w-sm"
           />
-          <Button iconType="search" onClick={() => refetch()} variant="outline">
+          <Button onClick={() => refetch()} variant="outline">
             Search
           </Button>
         </div>
