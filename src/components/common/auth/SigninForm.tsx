@@ -1,15 +1,15 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { MailWarning } from "lucide-react";
 import { signInSchema } from "@/lib/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
-
 import {
   Form,
   FormField,
@@ -18,15 +18,18 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import Image from "next/image";
 import { authClient } from "../../../../auth-client";
 import { useToast } from "@/hooks/use-toast";
+import { Divider, GoogleButton, PasswordInput, safeNext } from "./shared";
 
 export default function SigninForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const next = safeNext(searchParams?.get("next"));
   const { toast } = useToast();
   const [pending, setPending] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
@@ -38,23 +41,30 @@ export default function SigninForm() {
 
   const onSubmit = async (values: z.infer<typeof signInSchema>) => {
     const { email, password } = values;
+    setUnverifiedEmail(null);
     await authClient.signIn.email(
       { email, password },
       {
         onRequest: () => {
           setPending(true);
         },
-        onSuccess: () => {
+        onSuccess: (ctx) => {
           toast({
             title: "Signed in successfully",
           });
-
-          router.push("/");
+          const role = ctx.data?.user?.role;
+          router.push(role === "admin" ? "/admin" : next);
+          router.refresh();
         },
         onError: (error) => {
+          if (error.error.code === "EMAIL_NOT_VERIFIED") {
+            setUnverifiedEmail(email);
+            return;
+          }
           toast({
             title: "Something went wrong",
             description: error.error.message ?? "Something went wrong.",
+            variant: "destructive",
           });
         },
       }
@@ -62,17 +72,40 @@ export default function SigninForm() {
     setPending(false);
   };
 
-  async function handleSiginInWithGoogle() {
+  const resendVerification = async () => {
+    if (!unverifiedEmail) return;
+    setResending(true);
+    const { error } = await authClient.sendVerificationEmail({
+      email: unverifiedEmail,
+      callbackURL: "/",
+    });
+    setResending(false);
+    toast(
+      error
+        ? {
+            title: "Could not send email",
+            description: error.message,
+            variant: "destructive",
+          }
+        : {
+            title: "Verification email sent",
+            description: `Check ${unverifiedEmail} for the link.`,
+          }
+    );
+  };
+
+  async function handleSignInWithGoogle() {
     await authClient.signIn.social(
       {
         provider: "google",
-        callbackURL: "/",
+        callbackURL: next,
       },
       {
         onError: (error) => {
           toast({
             title: "Something went wrong",
             description: error.error.message ?? "Something went wrong.",
+            variant: "destructive",
           });
         },
       }
@@ -80,8 +113,36 @@ export default function SigninForm() {
   }
 
   return (
-    <div>
-      <h2 className="mb-6 text-2xl font-bold">Welcome Back</h2>
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold">Welcome Back</h1>
+        <p className="text-muted-foreground">
+          Sign in to manage your trips and rewards.
+        </p>
+      </div>
+
+      {unverifiedEmail && (
+        <div className="flex gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
+          <MailWarning className="mt-0.5 size-5 shrink-0 text-amber-600" />
+          <div className="space-y-2">
+            <p>
+              Please verify your email before signing in. We sent a link to{" "}
+              <strong>{unverifiedEmail}</strong>.
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={resendVerification}
+              loading={resending}
+            >
+              Resend verification email
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <GoogleButton onClick={handleSignInWithGoogle} />
+      <Divider />
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -95,6 +156,8 @@ export default function SigninForm() {
                   <Input
                     placeholder="you@example.com"
                     type="email"
+                    autoComplete="email"
+                    className="h-11"
                     {...field}
                   />
                 </FormControl>
@@ -108,82 +171,49 @@ export default function SigninForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <div className="flex items-center justify-between">
+                  <FormLabel>Password</FormLabel>
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
                 <FormControl>
-                  <div className="relative">
-                    <Input
-                      placeholder="••••••••"
-                      type={showPassword ? "text" : "password"}
-                      {...field}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                      tabIndex={-1}
-                    >
-                      {showPassword ? (
-                        <IoEyeOffOutline size={18} />
-                      ) : (
-                        <IoEyeOutline size={18} />
-                      )}
-                    </button>
-                  </div>
+                  <PasswordInput
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    className="h-11"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <div className="text-right">
-            <a
-              href="/forgot-password"
-              className="text-sm text-blue-600 hover:underline"
-            >
-              Forgot Password?
-            </a>
-          </div>
-
           <Button
             type="submit"
+            size="lg"
             iconType="sign-in"
-            className="w-full"
+            className="h-11 w-full"
             disabled={pending}
             loading={pending}
           >
             {pending ? "Signing In... " : "Sign In"}
           </Button>
-
-          <div className="flex items-center">
-            <div className="h-px flex-1 bg-gray-300" />
-            <span className="px-2 text-sm text-gray-500">Or</span>
-            <div className="h-px flex-1 bg-gray-300" />
-          </div>
-
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              className="w-full justify-center gap-2"
-              type="button"
-              onClick={handleSiginInWithGoogle}
-            >
-              <Image
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google"
-                width={18}
-                height={18}
-              />
-              Sign up with Google
-            </Button>
-          </div>
         </form>
       </Form>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
+      <p className="text-center text-sm text-muted-foreground">
         Don’t have an account?{" "}
-        <a href="/signup" className="font-medium text-blue-600 hover:underline">
+        <Link
+          href="/signup"
+          className="font-semibold text-primary hover:underline"
+        >
           Sign Up
-        </a>
+        </Link>
       </p>
     </div>
   );

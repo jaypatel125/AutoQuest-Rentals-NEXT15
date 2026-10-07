@@ -52,7 +52,7 @@ export const CustomersTab: React.FC<CustomersTabProps> = ({ data }) => {
           <CardContent>
             <div className="grid grid-cols-2 gap-4">
               <div className="text-center p-4 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-primary">
                   {formatNumber(data.rewards.points_earned)}
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -60,7 +60,7 @@ export const CustomersTab: React.FC<CustomersTabProps> = ({ data }) => {
                 </div>
               </div>
               <div className="text-center p-4 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">
+                <div className="text-2xl font-bold text-sky-600 dark:text-sky-400">
                   {formatNumber(data.rewards.points_redeemed)}
                 </div>
                 <div className="text-sm text-muted-foreground">

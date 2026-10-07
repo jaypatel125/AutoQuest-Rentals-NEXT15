@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/toaster";
@@ -14,10 +14,39 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const display = Plus_Jakarta_Sans({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+});
+
+const appUrl =
+  process.env.NEXT_PUBLIC_APP_URL || "https://jay-capstone.vercel.app";
+
 export const metadata: Metadata = {
-  title: "AutoQuest – Fast & Reliable Vehicle Rentals",
+  metadataBase: new URL(appUrl),
+  title: {
+    default: "AutoQuest | Electric & Eco-Friendly Car Rentals",
+    template: "%s | AutoQuest",
+  },
   description:
-    "Book cars effortlessly in your city. Choose from a wide selection of vehicles and enjoy convenient, reliable rentals at competitive prices.",
+    "Rent electric, hybrid, and gas vehicles across Canada. Compare cars, see each trip's carbon footprint, and earn double reward points when you drive electric.",
+  applicationName: "AutoQuest",
+  openGraph: {
+    type: "website",
+    siteName: "AutoQuest",
+    title: "AutoQuest | Electric & Eco-Friendly Car Rentals",
+    description:
+      "Find, book, and drive green. Earn 2x reward points on every electric rental.",
+  },
+  twitter: { card: "summary_large_image" },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fbfdfc" },
+    { media: "(prefers-color-scheme: dark)", color: "#0d1117" },
+  ],
 };
 
 export default function RootLayout({
@@ -26,12 +55,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="antialiased">
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} ${display.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen antialiased">
         <Providers>
-          <main className="min-h-screen flex flex-col">
-            <div className="flex-1">{children}</div>
-          </main>
+          {children}
           <Toaster />
         </Providers>
       </body>

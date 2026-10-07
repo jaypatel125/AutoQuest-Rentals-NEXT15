@@ -1,156 +1,115 @@
-"use client";
+import { CircleCheck } from "lucide-react";
 
-import React from "react";
+const SECTIONS: { id: string; title: string; items: string[] }[] = [
+  {
+    id: "general",
+    title: "General Terms",
+    items: [
+      "All renters must be at least 21 years old. Additional fees may apply for drivers under 25.",
+      "A valid driver’s license and a government-issued photo ID must be presented at the time of pickup.",
+      "The renter is responsible for verifying that the vehicle is in acceptable condition before leaving the branch.",
+      "Vehicles may only be driven by the renter and approved additional drivers listed in the booking.",
+    ],
+  },
+  {
+    id: "payment",
+    title: "Booking & Payment",
+    items: [
+      "Full payment or authorization hold is required at the time of booking confirmation.",
+      "Accepted payment methods include credit card, debit card, or other approved payment options listed on our platform.",
+      "Prices shown at checkout include the rental charge, a service fee, and HST.",
+      "Modifications to existing bookings are subject to availability and may affect pricing.",
+    ],
+  },
+  {
+    id: "cancellations",
+    title: "Cancellations & Refunds",
+    items: [
+      "Cancellations made more than 24 hours before the scheduled pickup are eligible for a full refund.",
+      "Cancellations within 24 hours of pickup are subject to a one-day rental fee (plus tax); the rest is refunded.",
+      "Bookings cannot be cancelled online once the rental period has started.",
+      "No-shows without cancellation will result in forfeiture of the full rental amount.",
+      "Refunds will be issued to the original payment method within 5 to 7 business days.",
+      "Reward points earned on a cancelled booking are removed, and points redeemed on it are returned.",
+    ],
+  },
+  {
+    id: "use",
+    title: "Vehicle Use & Responsibilities",
+    items: [
+      "Vehicles must be used responsibly and returned in the same condition as at pickup.",
+      "Smoking, vaping, or carrying hazardous materials inside the vehicle is strictly prohibited.",
+      "Renters are responsible for all traffic violations, tolls, parking tickets, and penalties incurred during the rental period.",
+      "In case of an accident, renters must immediately inform both local authorities and our support team.",
+    ],
+  },
+  {
+    id: "return",
+    title: "Vehicle Return",
+    items: [
+      "Vehicles must be returned to the same branch where they were picked up unless otherwise arranged.",
+      "Late returns may result in additional hourly or daily charges.",
+      "Vehicles returned excessively dirty or damaged may incur a cleaning or repair fee.",
+    ],
+  },
+  {
+    id: "insurance",
+    title: "Insurance & Liability",
+    items: [
+      "Basic insurance coverage is included with every rental, but additional protection options are available.",
+      "Renters are liable for damages not covered by insurance or caused by negligence.",
+      "The deductible amount for covered incidents will vary based on vehicle category and coverage selected.",
+    ],
+  },
+  {
+    id: "legal",
+    title: "Legal & Policy Updates",
+    items: [
+      "The company reserves the right to modify these terms at any time without prior notice.",
+      "Continued use of our platform constitutes acceptance of any updated terms.",
+      "For disputes, local laws and jurisdictions in the province of operation will apply.",
+    ],
+  },
+];
 
 export default function TermsDetails() {
   return (
-    <div className="py-6 space-y-10">
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">1. General Terms</h2>
-        <ul className="list-disc list-inside text-muted-foreground space-y-2">
-          <li>
-            All renters must be at least{" "}
-            <span className="font-medium">21 years old</span>. Additional fees
-            may apply for drivers under 25.
-          </li>
-          <li>
-            A valid driver’s license and a government-issued photo ID must be
-            presented at the time of pickup.
-          </li>
-          <li>
-            The renter is responsible for verifying that the vehicle is in
-            acceptable condition before leaving the branch.
-          </li>
-          <li>
-            Vehicles may only be driven by the renter and approved additional
-            drivers listed in the booking.
-          </li>
-        </ul>
-      </section>
-
-      {/* Booking & Payment */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">2. Booking & Payment</h2>
-        <ul className="list-disc list-inside text-muted-foreground space-y-2">
-          <li>
-            Full payment or authorization hold is required at the time of
-            booking confirmation.
-          </li>
-          <li>
-            Accepted payment methods include credit card, debit card, or other
-            approved payment options listed on our platform.
-          </li>
-          <li>Prices are inclusive of taxes unless otherwise stated.</li>
-          <li>
-            Modifications to existing bookings are subject to availability and
-            may affect pricing.
-          </li>
-        </ul>
-      </section>
-
-      {/* Cancellation Policy */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">3. Cancellations & Refunds</h2>
-        <ul className="list-disc list-inside text-muted-foreground space-y-2">
-          <li>
-            Cancellations made more than 24 hours before the scheduled pickup
-            are eligible for a full refund.
-          </li>
-          <li>
-            Cancellations within 24 hours of pickup may be subject to a one-day
-            rental fee.
-          </li>
-          <li>
-            No-shows without cancellation will result in forfeiture of the full
-            rental amount.
-          </li>
-          <li>
-            Refunds will be issued to the original payment method within 5–7
-            business days.
-          </li>
-        </ul>
-      </section>
-
-      {/* Vehicle Use */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">
-          4. Vehicle Use & Responsibilities
-        </h2>
-        <ul className="list-disc list-inside text-muted-foreground space-y-2">
-          <li>
-            Vehicles must be used responsibly and returned in the same condition
-            as at pickup.
-          </li>
-          <li>
-            Smoking, vaping, or carrying hazardous materials inside the vehicle
-            is strictly prohibited.
-          </li>
-          <li>
-            Renters are responsible for all traffic violations, tolls, parking
-            tickets, and penalties incurred during the rental period.
-          </li>
-          <li>
-            In case of an accident, renters must immediately inform both local
-            authorities and our support team.
-          </li>
-        </ul>
-      </section>
-
-      {/* Vehicle Return */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">5. Vehicle Return</h2>
-        <ul className="list-disc list-inside text-muted-foreground space-y-2">
-          <li>
-            Vehicles must be returned to the same branch where they were picked
-            up unless otherwise arranged.
-          </li>
-          <li>
-            Late returns may result in additional hourly or daily charges.
-          </li>
-          <li>
-            Vehicles returned excessively dirty or damaged may incur a cleaning
-            or repair fee.
-          </li>
-        </ul>
-      </section>
-
-      {/* Insurance and Liability */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">6. Insurance & Liability</h2>
-        <ul className="list-disc list-inside text-muted-foreground space-y-2">
-          <li>
-            Basic insurance coverage is included with every rental, but
-            additional protection options are available.
-          </li>
-          <li>
-            Renters are liable for damages not covered by insurance or caused by
-            negligence.
-          </li>
-          <li>
-            The deductible amount for covered incidents will vary based on
-            vehicle category and coverage selected.
-          </li>
-        </ul>
-      </section>
-
-      {/* Legal & Modifications */}
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold">7. Legal & Policy Updates</h2>
-        <ul className="list-disc list-inside text-muted-foreground space-y-2">
-          <li>
-            The company reserves the right to modify these terms at any time
-            without prior notice.
-          </li>
-          <li>
-            Continued use of our platform constitutes acceptance of any updated
-            terms.
-          </li>
-          <li>
-            For disputes, local laws and jurisdictions in the province of
-            operation will apply.
-          </li>
-        </ul>
-      </section>
+    <div className="grid gap-10 lg:grid-cols-[220px_1fr]">
+      <nav aria-label="Sections" className="hidden lg:block">
+        <ol className="sticky top-24 space-y-1 text-sm">
+          {SECTIONS.map((s, i) => (
+            <li key={s.id}>
+              <a
+                href={`#${s.id}`}
+                className="block rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                {i + 1}. {s.title}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+      <div className="space-y-6">
+        {SECTIONS.map((section, i) => (
+          <section
+            key={section.id}
+            id={section.id}
+            className="scroll-mt-24 rounded-2xl border bg-card p-6 md:p-8"
+          >
+            <h2 className="mb-4 text-xl font-bold md:text-2xl">
+              <span className="text-primary">{i + 1}.</span> {section.title}
+            </h2>
+            <ul className="space-y-3">
+              {section.items.map((item) => (
+                <li key={item} className="flex gap-3 text-muted-foreground">
+                  <CircleCheck className="mt-0.5 size-5 shrink-0 text-primary" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
     </div>
   );
 }

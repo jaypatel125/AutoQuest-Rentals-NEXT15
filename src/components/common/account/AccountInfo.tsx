@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Disclosure } from "@headlessui/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type AccountInfoProps = {
   label: string;
   currentInfo: string | React.ReactNode;
+  icon?: React.ReactNode;
   isSuccess?: boolean;
   isError?: boolean;
   errorMessage?: string;
@@ -18,6 +18,7 @@ type AccountInfoProps = {
 const AccountInfo = ({
   label,
   currentInfo,
+  icon,
   isSuccess,
   clearState,
   children,
@@ -39,58 +40,61 @@ const AccountInfo = ({
 
   return (
     <div data-testid={dataTestid} className="w-full">
-      <div className="flex items-center justify-between py-2">
-        <div className="space-y-1 flex-1">
-          <span className="text-base font-medium">{label}</span>
-          <div className="text-muted-foreground text-sm">
-            {typeof currentInfo === "string" ? (
-              <span data-testid="current-info">{currentInfo}</span>
-            ) : (
-              currentInfo
-            )}
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-3">
+          {icon && (
+            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-accent-foreground">
+              {icon}
+            </span>
+          )}
+          <div className="min-w-0 space-y-0.5">
+            <span className="text-sm font-semibold">{label}</span>
+            <div className="truncate text-sm text-muted-foreground">
+              {typeof currentInfo === "string" ? (
+                <span data-testid="current-info">{currentInfo}</span>
+              ) : (
+                currentInfo
+              )}
+            </div>
           </div>
         </div>
-        <div>
-          <Button
-            variant="outline"
-            iconType={isOpen ? "close" : "edit"}
-            onClick={handleToggle}
-            type={isOpen ? "reset" : "button"}
-            data-testid="edit-button"
-            data-active={isOpen}
-          >
-            {isOpen ? "Cancel" : "Edit"}
-          </Button>
-        </div>
+        <Button
+          variant={isOpen ? "ghost" : "outline"}
+          size="sm"
+          iconType={isOpen ? "close" : "edit"}
+          onClick={handleToggle}
+          type={isOpen ? "reset" : "button"}
+          data-testid="edit-button"
+          data-active={isOpen}
+        >
+          {isOpen ? "Cancel" : "Edit"}
+        </Button>
       </div>
 
-      {/* Editable state */}
-      <Disclosure>
-        <Disclosure.Panel
-          static
-          className={cn(
-            "transition-[max-height,opacity] duration-300 ease-in-out overflow-hidden",
-            {
-              "max-h-[1000px] opacity-100": isOpen,
-              "max-h-0 opacity-0": !isOpen,
-            }
-          )}
-        >
-          <div className="py-4 space-y-4">
+      <div
+        className={cn(
+          "grid transition-all duration-300 ease-in-out",
+          isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+        )}
+        aria-hidden={!isOpen}
+      >
+        <div className="overflow-hidden">
+          <div className="space-y-4 pt-5">
             <div className="w-full">{children}</div>
             <Button
               iconType="submit"
               className="w-full sm:w-auto"
-              variant="default"
               type="submit"
               data-testid="save-button"
               disabled={isLoading}
+              loading={isLoading}
+              tabIndex={isOpen ? 0 : -1}
             >
               Save changes
             </Button>
           </div>
-        </Disclosure.Panel>
-      </Disclosure>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,11 +1,17 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import AuthLayout from "@/components/common/auth/AuthLayout";
 import VerificationPage from "@/components/common/auth/Verification";
+import Loader from "@/components/utility/Loader";
+
+export const metadata: Metadata = { title: "Verify your email" };
 
 export default function Verification() {
   return (
-    <div>
-      <div className="flex items-center justify-center min-h-[90vh]">
+    <AuthLayout>
+      <Suspense fallback={<Loader />}>
         <VerificationPage />
-      </div>
-    </div>
+      </Suspense>
+    </AuthLayout>
   );
 }

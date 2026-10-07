@@ -1,309 +1,242 @@
 "use client";
 
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Image from "next/image";
-import { Cars as CarType } from "@/lib/database/table-types";
-import { useSearchStore } from "@/context/searchStore";
-import { Button } from "../../ui/button";
+import Link from "next/link";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Label, Separator } from "@radix-ui/react-dropdown-menu";
-import { CheckCircle, Calendar, CalendarDays, CarIcon } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "../../ui/card";
-import Loader from "../../utility/Loader";
-import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import {
+  ArrowRight,
+  CalendarDays,
+  Check,
+  Gift,
+  Loader2,
+  MapPin,
+  Navigation,
+  Receipt,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
+import { VehicleImage } from "@/components/vehicles/VehicleImage";
+import { FuelBadge, GreenScoreBadge } from "@/components/vehicles/badges";
+import { AddToCalendarButton } from "@/components/main/AddToCalendarButton";
+import type { ConfirmationData } from "@/app/(main)/confirmation/action";
+import { useSearchStore } from "@/context/searchStore";
+import { isElectric, rentalDays } from "@/lib/pricing";
+import { mapsUrl } from "@/lib/ics";
 import { formatPrice } from "@/lib/utils";
 
-interface ConfirmationDetailsProps {
-  status: string;
-  customerEmail: string;
-  amountTotal: number | null;
-  currency: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  metadata: Record<string, any>;
-}
-
-// Query function to fetch vehicle details
-async function fetchVehicle(id: string) {
-  const res = await fetch(`/api/vehicles/${id}`);
-  if (!res.ok) throw new Error("Failed to fetch vehicle details");
-  return res.json();
-}
-
 export default function ConfirmationDetails({
-  status,
-  customerEmail,
-  amountTotal,
-  metadata,
-}: ConfirmationDetailsProps) {
-  const { branch } = useSearchStore();
+  data,
+}: {
+  data: ConfirmationData;
+}) {
   const router = useRouter();
-
-  const {
-    data: Car,
-    isLoading,
-    error,
-  } = useQuery<CarType>({
-    queryKey: ["vehicle", metadata?.carId],
-    queryFn: () => fetchVehicle(metadata.carId),
-    enabled: !!metadata?.carId,
-  });
-
   const queryClient = useQueryClient();
+  const refreshes = useRef(0);
+  const { car, branch } = data;
+  const start = new Date(data.startDate);
+  const end = new Date(data.endDate);
+  const ev = isElectric(car?.fuel_type);
+  const vehicleName = car ? `${car.brand} ${car.model}` : "Your vehicle";
+  const address = branch
+    ? [
+        branch.name,
+        branch.address,
+        branch.city,
+        branch.province,
+        branch.postal_code,
+      ]
+        .filter(Boolean)
+        .join(", ")
+    : "";
 
   useEffect(() => {
-    if (status === "complete" || status === "paid") {
-      queryClient.invalidateQueries({ queryKey: ["get-bookings"] });
-      queryClient.invalidateQueries({ queryKey: ["booking"] });
-    }
-  }, [status, queryClient]);
+    queryClient.invalidateQueries({ queryKey: ["get-bookings"] });
+    queryClient.invalidateQueries({ queryKey: ["rewards"] });
+    useSearchStore.setState({ selectedCar: undefined });
+  }, [queryClient]);
 
-  if (status !== "complete") {
-    return (
-      <p>
-        We appreciate your business! A confirmation email will be sent to{" "}
-        {customerEmail || "your email"}.
-      </p>
-    );
-  }
+  // The booking is written by the Stripe webhook, which can lag a few seconds.
+  useEffect(() => {
+    if (data.bookingId || refreshes.current >= 6) return;
+    const timer = setTimeout(() => {
+      refreshes.current += 1;
+      router.refresh();
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [data.bookingId, router]);
 
-  const branchMatch =
-    branch &&
-    (metadata.branch === branch.id || metadata.branch === branch.name);
-
-  let fuelType = "";
-  let isEV = false;
-  let redeemedPoints = 0;
-  let totalPrice = 0;
-  let pointsEarned = 0;
-
-  if (Car) {
-    fuelType = Car.fuel_type?.toLowerCase() || "";
-    isEV = fuelType === "electric";
-  }
-
-  redeemedPoints = Number(metadata.redeemedPoints ?? 0);
-  totalPrice = Number(metadata.total ?? 0);
-  pointsEarned = Math.floor(isEV ? totalPrice * 2 : totalPrice * 1);
-
-  const rewardMessage = isEV
-    ? {
-        text: (
-          <>
-            Thank you for choosing an <strong>Electric Vehicle</strong>! You’ve
-            earned <strong>2× reward points</strong> on this booking.
-          </>
-        ),
-        style: "bg-green-50 border border-green-200 text-green-700",
-      }
-    : {
-        text: (
-          <>
-            You’ve earned standard reward points for this rental. Next time,
-            rent an EV and earn <strong>2× rewards!</strong>{" "}
-          </>
-        ),
-        style: "bg-blue-50 border border-blue-200 text-blue-700",
-      };
-
-  // ====== RETURN JSX ======
   return (
-    <section id="success" className="space-y-8 my-8">
-      {/* Booking Confirmation */}
-      <Card className="border-l-4 border-l-green-500">
-        <CardHeader className="pb-2">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-6 w-6 text-green-500" />
-            <CardTitle className="text-xl">Booking Confirmed</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Thank you for your booking! A confirmation email has been sent to{" "}
-            <span className="font-semibold text-foreground">
-              {customerEmail || "your email"}
-            </span>
-            .
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Car Details */}
-      {isLoading ? (
-        <Loader />
-      ) : error ? (
-        <div className="text-center py-10">
-          <h2 className="text-xl font-bold">Vehicle not found</h2>
-          <p className="text-muted-foreground mt-2">
-            Try going back and selecting a different vehicle.
-          </p>
+    <MaxWidthWrapper className="max-w-4xl animate-fade-up py-10 md:py-14">
+      <div className="mb-10 text-center">
+        <div className="relative mx-auto mb-6 size-20">
+          <span className="absolute inset-0 animate-ping rounded-full bg-primary/20 [animation-iteration-count:2]" />
+          <span className="relative inline-flex size-20 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/30">
+            <Check className="size-10" strokeWidth={3} />
+          </span>
         </div>
-      ) : Car ? (
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <CarIcon className="h-5 w-5" />
-              <CardTitle className="text-lg">Car Details</CardTitle>
+        <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-primary">
+          Booking Confirmed
+        </p>
+        <h1 className="text-3xl font-bold md:text-4xl">You&apos;re all set!</h1>
+        <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
+          Thank you for your booking! A confirmation email has been sent to{" "}
+          <span className="font-semibold text-foreground">
+            {data.customerEmail || "your email"}
+          </span>
+          .
+        </p>
+      </div>
+
+      <div className="overflow-hidden rounded-3xl border bg-card shadow-xl shadow-emerald-950/5">
+        <div className="grid md:grid-cols-[1fr_1.2fr]">
+          <VehicleImage
+            src={car?.image}
+            brand={car?.brand}
+            model={car?.model}
+            bodyType={car?.body_type}
+            className="h-full md:aspect-auto"
+          />
+          <div className="space-y-5 p-6">
+            <div className="flex flex-wrap gap-2">
+              <FuelBadge fuelType={car?.fuel_type} />
+              {car && <GreenScoreBadge emissions={car.carbon_emissions} />}
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row gap-6">
-              {/* Image */}
-              <div className="relative w-full md:w-48 h-32 rounded-lg overflow-hidden flex-shrink-0">
-                <Image
-                  src={Car.image || "/car-placeholder.png"}
-                  alt={`${Car.brand} ${Car.model}`}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-lg">
-                    {Car.brand} {Car.model}
-                  </h4>
-                </div>
-
-                <div className="space-y-2">
-                  {[
-                    [
-                      "Passenger Capacity",
-                      Car.passenger_capacity
-                        ? `${Car.passenger_capacity} people`
-                        : "Not specified",
-                    ],
-                    ["Body Type", Car.body_type || "Not specified"],
-                    ["Transmission", Car.transmission || "Not specified"],
-                    ["Fuel Type", Car.fuel_type || "Not specified"],
-                  ].map(([label, value]) => (
-                    <div key={label} className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        {label}:
-                      </span>
-                      <span className="text-sm font-medium capitalize">
-                        {value}
-                      </span>
-                    </div>
-                  ))}
+            <h2 className="text-2xl font-bold">{vehicleName}</h2>
+            <div className="space-y-3 text-sm">
+              <div className="flex gap-3">
+                <CalendarDays className="mt-0.5 size-4 shrink-0 text-primary" />
+                <div>
+                  <p className="font-semibold">
+                    {format(start, "EEE, MMM d, yyyy")} to{" "}
+                    {format(end, "EEE, MMM d, yyyy")}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {rentalDays(start, end)} day rental
+                  </p>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      {/* Booking Details */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Booking Details
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Branch + Price */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <Label className="text-sm font-medium text-muted-foreground">
-                Branch
-              </Label>
-              <p className="text-foreground">
-                {branchMatch
-                  ? `${branch?.name}, ${branch?.address}, ${branch?.city}, ${branch?.province}`
-                  : metadata.branch}
-              </p>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-sm font-medium text-muted-foreground">
-                Total Price
-              </Label>
-              <p className="font-semibold text-foreground">
-                {formatPrice(Number(amountTotal) / 100)}
-              </p>
+              {branch && (
+                <div className="flex gap-3">
+                  <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
+                  <div>
+                    <p className="font-semibold">{branch.name}</p>
+                    <p className="text-muted-foreground">
+                      {[branch.address, branch.city, branch.province]
+                        .filter(Boolean)
+                        .join(", ")}
+                    </p>
+                    <a
+                      href={mapsUrl(address)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-1 inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                    >
+                      <Navigation className="size-3.5" /> Get directions
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+        </div>
 
-          <Separator />
+        <Separator />
 
-          {/* Dates */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              ["Pickup Date", metadata.startDate],
-              ["Return Date", metadata.endDate],
-            ].map(([label, date]) => (
-              <div key={label} className="space-y-1">
-                <Label className="text-sm font-medium text-muted-foreground">
-                  {label}
-                </Label>
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-foreground">
-                    {new Date(date as string).toLocaleDateString("en-US", {
-                      weekday: "short",
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </span>
-                </div>
-              </div>
-            ))}
+        <div className="grid gap-6 p-6 sm:grid-cols-3">
+          <div>
+            <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Receipt className="size-4" /> Total paid
+            </p>
+            <p className="font-display text-2xl font-bold">
+              {formatPrice(data.amountTotal)}
+            </p>
+            <p className="text-xs text-muted-foreground">{data.currency}</p>
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Gift className="size-4" /> Points earned
+            </p>
+            <p className="font-display text-2xl font-bold text-primary">
+              +
+              {(
+                data.pointsEarned ?? Math.floor(data.amountTotal * (ev ? 2 : 1))
+              ).toLocaleString()}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {ev ? "2x EV bonus applied" : "1 pt per dollar"}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-muted-foreground">Points redeemed</p>
+            <p className="font-display text-2xl font-bold">
+              {data.redeemedPoints > 0
+                ? `-${data.redeemedPoints.toLocaleString()}`
+                : "0"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {data.redeemedPoints > 0
+                ? `Saved ${formatPrice(data.redeemedPoints / 10)}`
+                : "Saved for next time"}
+            </p>
+          </div>
+        </div>
 
-      {/* Rewards Summary */}
-      {Car && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <CheckCircle className="h-5 w-5" />
-              Rewards Summary
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {redeemedPoints > 0 && (
-              <div className="flex justify-between text-muted-foreground">
-                <span>Redeemed Points:</span>
-                <span className="text-red-600 font-medium">
-                  -{redeemedPoints.toLocaleString()} pts
-                </span>
-              </div>
-            )}
+        <div
+          className={
+            ev
+              ? "bg-accent px-6 py-4 text-sm text-accent-foreground"
+              : "bg-muted/60 px-6 py-4 text-sm text-muted-foreground"
+          }
+        >
+          {ev ? (
+            <>
+              Thank you for choosing an <strong>Electric Vehicle</strong>!
+              You&apos;ve earned <strong>2x reward points</strong> on this
+              booking.
+            </>
+          ) : (
+            <>
+              You&apos;ve earned standard reward points for this rental. Next
+              time, rent an EV and earn <strong>2x rewards!</strong>
+            </>
+          )}
+        </div>
+      </div>
 
-            <div className="flex justify-between text-muted-foreground">
-              <span>Earned Points:</span>
-              <span className="text-green-600 font-medium">
-                +{pointsEarned.toLocaleString()} pts
-              </span>
-            </div>
-
-            <div className={`mt-3 p-3 rounded-md ${rewardMessage.style}`}>
-              {rewardMessage.text}
-            </div>
-          </CardContent>
-        </Card>
+      {!data.bookingId && (
+        <p className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" /> Finalizing your booking.
+          It will appear in My Bookings in a moment.
+        </p>
       )}
 
-      {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button
-          onClick={() => router.push("/bookings")}
-          className="flex items-center gap-2"
-          iconType="list"
-        >
-          View My Bookings
-        </Button>
-        <Button
-          onClick={() => router.push("/")}
-          variant="outline"
-          className="flex items-center gap-2"
-          iconType="home"
-        >
+      <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+        {data.bookingId ? (
+          <Button asChild size="lg">
+            <Link href={`/bookings/${data.bookingId}`}>
+              View booking <ArrowRight />
+            </Link>
+          </Button>
+        ) : (
+          <Button size="lg" onClick={() => router.push("/bookings")}>
+            View My Bookings <ArrowRight />
+          </Button>
+        )}
+        <AddToCalendarButton
+          id={data.bookingId ?? data.startDate}
+          vehicle={vehicleName}
+          start={start}
+          end={end}
+          location={address}
+          className="h-11"
+        />
+        <Button variant="ghost" size="lg" onClick={() => router.push("/")}>
           Back to Home
         </Button>
       </div>
-    </section>
+    </MaxWidthWrapper>
   );
 }

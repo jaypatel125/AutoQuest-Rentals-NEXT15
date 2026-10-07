@@ -29,7 +29,7 @@ export const AdminDashboard: React.FC = () => {
     refetchInterval: 60000,
   });
 
-  if (isLoading) return <Loader title="Fetching latetst dashboard data" />;
+  if (isLoading) return <Loader title="Fetching the latest dashboard data" />;
 
   if (error || !data) {
     return <Error />;
@@ -72,7 +72,7 @@ export const AdminDashboard: React.FC = () => {
         {/* Mobile Dropdown */}
         <div className="md:hidden">
           <Select value={activeTab} onValueChange={setActiveTab}>
-            <div className="text-sm font-medium text-gray-700 mb-2">
+            <div className="text-sm font-medium text-muted-foreground mb-2">
               Select Section
             </div>
             <SelectTrigger className="w-full">

@@ -1,17 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
+import { ChevronRight } from "lucide-react";
 
 import Loader from "@/components/utility/Loader";
 import { EVPromotionDialog } from "@/components/main/select-vehicle/EVPromotionDialog";
 import { useSearchStore } from "@/context/searchStore";
-import { Cars as CarType } from "@/lib/database/table-types";
 import { fetchVehicle } from "./actions";
-import VehicleDetails from "@/components/main/select-vehicle-details";
-import PageLayout from "@/components/utility/page-layout";
+import VehicleDetails, {
+  type VehicleDetail,
+} from "@/components/main/select-vehicle-details";
+import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
 import Error from "@/components/utility/Error";
+import type { Branches } from "@/lib/database/table-types";
 
 export default function VehicleDetailPage() {
   const params = useParams();
@@ -19,12 +23,11 @@ export default function VehicleDetailPage() {
   const vehicleId = params.vehicleId as string;
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Queries
   const {
-    data: Car,
+    data: car,
     isLoading,
     error,
-  } = useQuery<CarType>({
+  } = useQuery<VehicleDetail>({
     queryKey: ["vehicle", vehicleId],
     queryFn: () => fetchVehicle(vehicleId),
     enabled: !!vehicleId,
@@ -34,31 +37,48 @@ export default function VehicleDetailPage() {
     return <Loader title="Fetching vehicle details" />;
   }
 
-  if (error || !Car) {
+  if (error || !car) {
     return <Error error="Vehicle not found" />;
   }
 
+  const handleRent = () => {
+    const store = useSearchStore.getState();
+    store.setSelectedCar(car);
+    // Pick-up happens at the car's own branch.
+    if (car.branch_id) {
+      store.setBranch({
+        id: car.branch_id,
+        name: car.branch_name ?? "",
+        address: car.branch_address ?? null,
+        city: car.branch_city ?? null,
+        province: car.branch_province ?? null,
+        postal_code: car.branch_postal_code ?? null,
+      } as Branches);
+    }
+    if (car.fuel_type === "Electric") {
+      router.push(`/checkout`);
+      return;
+    }
+    setDialogOpen(true);
+  };
+
   return (
     <>
-      <PageLayout
-        title="Rent Now"
-        description="
-        Rent your perfect vehicle easily and quickly with our seamless booking process.
-      "
-      >
-        <VehicleDetails
-          car={Car}
-          onRentNow={() => {
-            useSearchStore.getState().setSelectedCar(Car);
-            if (Car.fuel_type === "Electric") {
-              router.push(`/checkout`);
-              return;
-            }
-
-            setDialogOpen(true);
-          }}
-        />
-      </PageLayout>
+      <MaxWidthWrapper className="animate-fade-up py-8 md:py-10">
+        <nav
+          aria-label="Breadcrumb"
+          className="mb-6 flex items-center gap-1 text-sm text-muted-foreground"
+        >
+          <Link href="/select-vehicle" className="hover:text-foreground">
+            Browse cars
+          </Link>
+          <ChevronRight className="size-4" />
+          <span className="font-medium text-foreground">
+            {car.brand} {car.model}
+          </span>
+        </nav>
+        <VehicleDetails car={car} onRentNow={handleRent} />
+      </MaxWidthWrapper>
 
       <EVPromotionDialog
         open={dialogOpen}

@@ -1,8 +1,10 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import SettingsProfilePage from "@/components/common/account";
 import PageLayout from "@/components/utility/page-layout";
 import { getServerSideSession } from "@/hooks/SessionHandler";
-import { notFound } from "next/navigation";
-import React from "react";
+
+export const metadata: Metadata = { title: "Account settings" };
 
 const AccountPage = async () => {
   const { user } = await getServerSideSession();
@@ -13,8 +15,8 @@ const AccountPage = async () => {
   return (
     <PageLayout
       title="Profile Settings"
-      description=" Update your profile information to personalize your shopping
-            experience."
+      description="Manage your personal details, sign-in, and account."
+      goBack={false}
     >
       <SettingsProfilePage user={user} />
     </PageLayout>

@@ -1,8 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { CalendarDays, Check, MapPin, Search } from "lucide-react";
+import { format } from "date-fns";
+import type { DateRange } from "react-day-picker";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -18,17 +21,12 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Popover as CommandPopover,
-  PopoverContent as CommandPopoverContent,
-  PopoverTrigger as CommandPopoverTrigger,
-} from "@/components/ui/popover";
-import { ChevronsUpDown, Check } from "lucide-react";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useSearchStore } from "@/context/searchStore";
-import { Label } from "@/components/ui/label";
+import { toDate, useSearchStore } from "@/context/searchStore";
 import { Branches } from "@/lib/database/table-types";
+import { rentalDays, MAX_RENTAL_DAYS } from "@/lib/pricing";
+import { nextRange } from "@/lib/date-range";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 async function fetchBranches(): Promise<Branches[]> {
   const response = await fetch("/api/branch");
@@ -38,44 +36,50 @@ async function fetchBranches(): Promise<Branches[]> {
   return response.json();
 }
 
-export function SearchBar() {
+function startOfToday() {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+export function SearchBar({
+  variant = "default",
+  onSearch,
+  className,
+}: {
+  variant?: "default" | "hero";
+  onSearch?: () => void;
+  className?: string;
+}) {
   const router = useRouter();
+  const isMobile = useIsMobile();
   const {
-    branch: branch,
+    branch,
     startDate: storeStartDate,
     endDate: storeEndDate,
     setBranch,
     setDates,
   } = useSearchStore();
 
-  const [open, setOpen] = useState(false);
-  const [localLoading, setLocalLoading] = useState(false);
-  const [localCity, setLocalCity] = useState(branch?.city || "");
-  const [localStartDate, setLocalStartDate] = useState<Date | null>(
-    storeStartDate || null
-  );
-  const [localEndDate, setLocalEndDate] = useState<Date | null>(
-    storeEndDate || null
-  );
+  const [cityOpen, setCityOpen] = useState(false);
+  const [datesOpen, setDatesOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [localBranch, setLocalBranch] = useState<Branches | null>(
     branch || null
   );
+  const [range, setRange] = useState<DateRange | undefined>(() => {
+    const from = toDate(storeStartDate);
+    return from ? { from, to: toDate(storeEndDate) } : undefined;
+  });
 
+  // The store rehydrates from localStorage after the first render.
   useEffect(() => {
-    setLocalStartDate(storeStartDate || null);
-  }, [storeStartDate]);
-
-  useEffect(() => {
-    setLocalEndDate(storeEndDate || null);
-  }, [storeEndDate]);
-
-  useEffect(() => {
-    setLocalCity(branch?.city || "");
+    if (branch) setLocalBranch(branch);
   }, [branch]);
-
   useEffect(() => {
-    setLocalBranch(branch || null);
-  }, [branch]);
+    const from = toDate(storeStartDate);
+    if (from) setRange({ from, to: toDate(storeEndDate) });
+  }, [storeStartDate, storeEndDate]);
 
   const {
     data: branches = [],
@@ -86,166 +90,219 @@ export function SearchBar() {
     queryFn: fetchBranches,
   });
 
+  // One entry per city; the first branch stands in for the city.
+  const cities = useMemo(() => {
+    const map = new Map<string, { branch: Branches; count: number }>();
+    for (const b of branches) {
+      if (!b.city) continue;
+      const entry = map.get(b.city);
+      if (entry) entry.count += 1;
+      else map.set(b.city, { branch: b, count: 1 });
+    }
+    return [...map.entries()].map(([city, v]) => ({ city, ...v }));
+  }, [branches]);
+
+  const from = range?.from;
+  const to = range?.to;
+  const days = from && to ? rentalDays(from, to) : null;
+  const tooLong = days !== null && days > MAX_RENTAL_DAYS;
+  const ready = !!localBranch?.city && !!from && !!to && !tooLong;
+
   const handleSearch = async () => {
-    if (!localBranch || !localStartDate || !localEndDate) return;
-
-    setLocalLoading(true);
-    setDates(localStartDate, localEndDate);
-    setBranch(localBranch);
-
+    if (!ready) return;
+    setLoading(true);
+    setDates(from, to);
+    setBranch(localBranch!);
     try {
-      await router.push("/select-vehicle");
+      if (onSearch) onSearch();
+      else await router.push("/select-vehicle");
     } finally {
-      // optional small delay to make loader visible briefly
-      setTimeout(() => setLocalLoading(false), 300);
+      setTimeout(() => setLoading(false), 300);
     }
   };
 
-  const handleStartDateSelect = (date: Date | undefined) => {
-    setLocalStartDate(date || null);
-    if (date && localEndDate && localEndDate < date) {
-      setLocalEndDate(null);
-    }
+  const handleRangeSelect = (_next: DateRange | undefined, clicked: Date) => {
+    const next = nextRange(range, clicked);
+    setRange(next);
+    if (next.to) setDatesOpen(false);
   };
 
-  const handleEndDateSelect = (date: Date | undefined) => {
-    setLocalEndDate(date || null);
-  };
+  const hero = variant === "hero";
+  const field =
+    "group flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-muted/70 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50";
+  const label =
+    "block text-xs font-semibold uppercase tracking-wide text-muted-foreground";
 
   return (
-    <section className="bg-muted rounded-xl p-6 my-6 shadow-sm grid md:grid-cols-4 gap-4 items-end">
-      <div className="space-y-2">
-        <Label>Location</Label>
-        <CommandPopover open={open} onOpenChange={setOpen}>
-          <CommandPopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={open}
-              className="w-full justify-between bg-white"
-            >
-              {localCity || "Select a city..."}
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-            </Button>
-          </CommandPopoverTrigger>
-          <CommandPopoverContent className="w-full p-0">
-            <Command>
-              <CommandInput placeholder="Search city..." />
-              <CommandList>
-                {isLoading && (
-                  <CommandItem disabled>Loading cities...</CommandItem>
+    <section
+      aria-label="Search vehicles"
+      className={cn(
+        "grid gap-1 rounded-2xl border bg-card p-2 text-card-foreground md:grid-cols-[1.1fr_1.6fr_auto] md:items-center",
+        hero
+          ? "shadow-2xl shadow-emerald-950/20 ring-1 ring-black/5"
+          : "shadow-sm",
+        className
+      )}
+    >
+      <Popover open={cityOpen} onOpenChange={setCityOpen}>
+        <PopoverTrigger asChild>
+          <button type="button" className={field}>
+            <MapPin className="size-5 shrink-0 text-primary" />
+            <span className="min-w-0">
+              <span className={label}>Location</span>
+              <span
+                className={cn(
+                  "block truncate font-medium",
+                  !localBranch?.city && "text-muted-foreground"
                 )}
-                {error && (
-                  <CommandItem disabled>Failed to load cities</CommandItem>
-                )}
-                <CommandEmpty>No city found.</CommandEmpty>
-                <CommandGroup>
-                  {branches.map((branch) => (
-                    <CommandItem
-                      key={branch.id}
-                      value={branch.city ?? undefined}
-                      onSelect={() => {
-                        setLocalCity(branch.city || "");
-                        setLocalBranch(branch);
-                        setOpen(false);
-                      }}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          localCity === branch.city
-                            ? "opacity-100"
-                            : "opacity-0"
-                        )}
-                      />
-                      {branch.city}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </CommandList>
-            </Command>
-          </CommandPopoverContent>
-        </CommandPopover>
-      </div>
+              >
+                {localBranch?.city || "Where are you going?"}
+              </span>
+            </span>
+          </button>
+        </PopoverTrigger>
+        <PopoverContent className="w-72 p-0" align="start">
+          <Command>
+            <CommandInput placeholder="Search city..." />
+            <CommandList>
+              {isLoading && (
+                <CommandItem disabled>Loading cities...</CommandItem>
+              )}
+              {error && (
+                <CommandItem disabled>Failed to load cities</CommandItem>
+              )}
+              <CommandEmpty>No city found.</CommandEmpty>
+              <CommandGroup heading="Cities">
+                {cities.map(({ city, branch: b, count }) => (
+                  <CommandItem
+                    key={city}
+                    value={city}
+                    onSelect={() => {
+                      setLocalBranch(b);
+                      setCityOpen(false);
+                      if (!from) setDatesOpen(true);
+                    }}
+                    className="py-2.5"
+                  >
+                    <MapPin className="text-muted-foreground" />
+                    <span className="flex-1">
+                      <span className="block font-medium">{city}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {count > 1 ? `${count} locations` : b.name}
+                      </span>
+                    </span>
+                    <Check
+                      className={cn(
+                        "size-4",
+                        localBranch?.city === city ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
 
-      {/* Pickup Date */}
-      <div className="space-y-2">
-        <Label>Pickup Date</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              iconType="calendar"
-              variant="outline"
+      <Popover open={datesOpen} onOpenChange={setDatesOpen}>
+        <PopoverTrigger asChild>
+          <div
+            className="grid grid-cols-2 gap-1 md:border-l md:pl-1"
+            role="group"
+            aria-label="Rental dates"
+          >
+            <button type="button" className={field}>
+              <CalendarDays className="size-5 shrink-0 text-primary" />
+              <span className="min-w-0">
+                <span className={label}>Pick-up date</span>
+                <span
+                  className={cn(
+                    "block truncate font-medium",
+                    !from && "text-muted-foreground"
+                  )}
+                >
+                  {from ? format(from, "EEE, MMM d") : "Add date"}
+                </span>
+              </span>
+            </button>
+            <button
+              type="button"
+              className={cn(field, "border-l md:border-l-0")}
+            >
+              <span className="min-w-0">
+                <span className={label}>Return date</span>
+                <span
+                  className={cn(
+                    "block truncate font-medium",
+                    !to && "text-muted-foreground"
+                  )}
+                >
+                  {to ? format(to, "EEE, MMM d") : "Add date"}
+                </span>
+              </span>
+              {days !== null && (
+                <span
+                  className={cn(
+                    "ml-auto hidden shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold sm:inline",
+                    tooLong
+                      ? "bg-destructive/10 text-destructive"
+                      : "bg-accent text-accent-foreground"
+                  )}
+                >
+                  {days} day{days === 1 ? "" : "s"}
+                </span>
+              )}
+            </button>
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-2" align="center">
+          <Calendar
+            mode="range"
+            numberOfMonths={isMobile ? 1 : 2}
+            selected={range}
+            onSelect={handleRangeSelect}
+            defaultMonth={from}
+            disabled={{ before: startOfToday() }}
+            className="[--cell-size:--spacing(9)]"
+          />
+          <div className="flex items-center justify-between gap-3 border-t px-2 pt-2 text-sm">
+            <span
               className={cn(
-                "w-full justify-start text-left font-normal",
-                !localStartDate && "text-muted-foreground"
+                "text-muted-foreground",
+                tooLong && "text-destructive"
               )}
             >
-              {localStartDate ? (
-                format(localStartDate, "PPP")
-              ) : (
-                <span>Pick-up date</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={localStartDate || undefined}
-              onSelect={handleStartDateSelect}
-              disabled={(date) =>
-                date < new Date(new Date().setHours(0, 0, 0, 0))
-              }
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
+              {tooLong
+                ? `Rentals are limited to ${MAX_RENTAL_DAYS} days`
+                : from && !to
+                  ? "Now pick your return date"
+                  : days
+                    ? `${days} day rental`
+                    : "Pick your pick-up date"}
+            </span>
+            {range?.from && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setRange(undefined)}
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
 
-      {/* Return Date */}
-      <div className="space-y-2">
-        <Label>Return Date</Label>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              iconType="calendar"
-              variant="outline"
-              className={cn(
-                "w-full justify-start text-left font-normal",
-                !localEndDate && "text-muted-foreground"
-              )}
-            >
-              {localEndDate ? (
-                format(localEndDate, "PPP")
-              ) : (
-                <span>Return date</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={localEndDate || undefined}
-              onSelect={handleEndDateSelect}
-              disabled={(date) =>
-                date < new Date(new Date().setHours(0, 0, 0, 0)) ||
-                (localStartDate ? date < localStartDate : false)
-              }
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
-
-      {/* Search Button */}
       <Button
-        className="w-full"
-        iconType="search"
+        size="lg"
+        className={cn("h-12 w-full px-6 md:w-auto", hero && "md:px-8")}
         onClick={handleSearch}
-        disabled={
-          !localStartDate || !localEndDate || !localCity || !localBranch
-        }
-        loading={localLoading}
+        disabled={!ready}
+        loading={loading}
       >
-        {localLoading ? "Searching..." : "Search Vehicles"}
+        {!loading && <Search className="size-4" />}
+        {loading ? "Searching..." : "Search Vehicles"}
       </Button>
     </section>
   );

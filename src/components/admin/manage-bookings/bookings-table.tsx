@@ -18,6 +18,8 @@ import {
 } from "@tanstack/react-table";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateBookingStatus } from "@/app/(admin)/admin/manage-bookings/actions";
+import { ADMIN_TRANSITIONS } from "@/lib/cancellation";
+import { StatusBadge } from "@/components/vehicles/badges";
 import {
   Select,
   SelectContent,
@@ -57,29 +59,55 @@ function BookingStatusCell({
   const { mutate, isPending } = useMutation({
     mutationFn: (newStatus: string) =>
       updateBookingStatus(bookingId, newStatus),
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
         title: "Status Updated",
-        description: "The booking status has been updated successfully.",
+        description:
+          typeof data?.refund === "number"
+            ? `Booking cancelled. Refund: $${data.refund.toFixed(2)}${data.refundedAutomatically ? "" : " (process manually in Stripe)"}.`
+            : "The booking status has been updated successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ["get-bookings"] });
     },
+    onError: (err: Error) => {
+      toast({
+        title: "Could not update status",
+        description: err.message,
+        variant: "destructive",
+      });
+    },
   });
+
+  const allowed = ADMIN_TRANSITIONS[currentStatus] ?? [];
+  if (allowed.length === 0) {
+    return <StatusBadge status={currentStatus} />;
+  }
 
   return (
     <Select
-      defaultValue={currentStatus}
-      onValueChange={(newStatus) => mutate(newStatus)}
+      value={currentStatus}
+      onValueChange={(newStatus) => {
+        if (
+          newStatus === "Cancelled" &&
+          !window.confirm(
+            "Cancel this booking? The customer will be refunded in full and their points reversed."
+          )
+        ) {
+          return;
+        }
+        mutate(newStatus);
+      }}
       disabled={isPending}
     >
-      <SelectTrigger className="border-0 shadow-none">
+      <SelectTrigger size="sm" className="w-36 rounded-full">
         <SelectValue placeholder="Select status" />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="Pending">Pending</SelectItem>
-        <SelectItem value="Confirmed">Confirmed</SelectItem>
-        <SelectItem value="Completed">Completed</SelectItem>
-        <SelectItem value="Cancelled">Cancelled</SelectItem>
+        {[currentStatus, ...allowed].map((s) => (
+          <SelectItem key={s} value={s}>
+            {s === "Cancelled" && s !== currentStatus ? "Cancel & refund" : s}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );
@@ -133,7 +161,7 @@ const columns: ColumnDef<Booking>[] = [
   {
     accessorKey: "total_price",
     header: "Total Price ($)",
-    cell: ({ row }) => `$${row.getValue("total_price")}`,
+    cell: ({ row }) => `$${Number(row.getValue("total_price")).toFixed(2)}`,
   },
   {
     accessorKey: "status",
@@ -150,7 +178,7 @@ const columns: ColumnDef<Booking>[] = [
 function BookingsTable({ table }: { table: TableType<Booking> }) {
   return (
     <>
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
@@ -199,8 +227,7 @@ function BookingsTable({ table }: { table: TableType<Booking> }) {
 
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredRowModel().rows.length} bookings
         </div>
         <div className="space-x-2">
           <Button

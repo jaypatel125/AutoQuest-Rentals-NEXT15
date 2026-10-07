@@ -1,22 +1,14 @@
 "use client";
 
-import { motion, AnimatePresence } from "framer-motion";
 import { usePathname } from "next/navigation";
 
+/** Fades each page in on navigation (CSS only, respects reduced motion). */
 export function PageWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={pathname}
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -30 }}
-        transition={{ duration: 0.4 }}
-      >
-        {children}
-      </motion.div>
-    </AnimatePresence>
+    <div key={pathname} className="flex flex-1 flex-col animate-fade-in">
+      {children}
+    </div>
   );
 }
