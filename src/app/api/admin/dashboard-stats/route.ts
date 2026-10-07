@@ -27,8 +27,10 @@ export async function GET(request: NextRequest) {
     new Date(Date.now() - 29 * 24 * 60 * 60 * 1000)
   ); // last 30 days
 
-  const startDate = startParam ?? defaultStart;
-  const endDate = endParam ?? defaultEnd;
+  const isDay = (v: string | null): v is string =>
+    !!v && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(v));
+  const startDate = isDay(startParam) ? startParam : defaultStart;
+  const endDate = isDay(endParam) ? endParam : defaultEnd;
 
   const client = await pool.connect();
   try {

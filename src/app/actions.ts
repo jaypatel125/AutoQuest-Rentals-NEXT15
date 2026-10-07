@@ -1,32 +1,67 @@
-"use server";
-import { Branches } from "@/lib/database/table-types";
-import { neon } from "@neondatabase/serverless";
+// Browser-side data helpers shared by several pages.
+import { Branches, Cars } from "@/lib/database/table-types";
 
-export async function getData() {
-  const sql = neon(process.env.DATABASE_URL!);
-  const data = await sql`...`;
-  return data;
-}
-
-export async function fetchCarBrands() {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/vehicles/get-brands`
-  );
-  const data = await response.json();
-  return data;
-}
-export async function fetchCarBodyTypes() {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/vehicles/get-body-types`
-  );
-  const data = await response.json();
-  return data;
-}
-
-export async function fetchBranches(): Promise<Branches[]> {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/branch`);
+async function getJson<T>(url: string): Promise<T> {
+  const response = await fetch(url);
   if (!response.ok) {
-    throw new Error("Failed to fetch cities");
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data?.error || `Request failed (${response.status})`);
   }
   return response.json();
+}
+
+export function fetchCarBrands() {
+  return getJson<string[]>("/api/vehicles/get-brands");
+}
+
+export function fetchCarBodyTypes() {
+  return getJson<string[]>("/api/vehicles/get-body-types");
+}
+
+export function fetchBranches() {
+  return getJson<Branches[]>("/api/branch");
+}
+
+export type FeaturedCar = Cars & {
+  branch_city: string | null;
+  branch_name: string | null;
+};
+
+export function fetchFeaturedCars() {
+  return getJson<FeaturedCar[]>("/api/vehicles/featured");
+}
+
+export interface FleetStats {
+  vehicles: number;
+  electric: number;
+  low_emission: number;
+  brands: number;
+  branches: number;
+  cities: number;
+}
+
+export function fetchFleetStats() {
+  return getJson<FleetStats>("/api/stats");
+}
+
+export interface RewardsSummary {
+  balance: number;
+  lifetimeEarned: number;
+  totalRedeemed: number;
+  co2SavedKg: number;
+  greenTrips: number;
+  trips: number;
+  history: {
+    id: string;
+    points: number;
+    type: "Earned" | "Redeemed" | "Adjusted";
+    createdAt: string;
+    bookingId: string | null;
+    vehicle: string | null;
+    electric: boolean;
+  }[];
+}
+
+export function fetchRewards() {
+  return getJson<RewardsSummary>("/api/rewards");
 }

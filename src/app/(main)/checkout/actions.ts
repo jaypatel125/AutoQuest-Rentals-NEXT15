@@ -1,32 +1,31 @@
 "use client";
 
-import { Branches, Cars } from "@/lib/database/table-types";
-import { IUser } from "../../../../auth-client";
+/**
+ * Starts a Stripe Checkout session. Only ids, dates, and the points choice
+ * are sent; the server prices the booking itself.
+ */
+export async function handleCheckout(input: {
+  carId: string;
+  startDate: Date | string;
+  endDate: Date | string;
+  redeemPoints: boolean;
+}): Promise<{ url: string }> {
+  const res = await fetch("/api/checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      carId: input.carId,
+      startDate: new Date(input.startDate).toISOString(),
+      endDate: new Date(input.endDate).toISOString(),
+      redeemPoints: input.redeemPoints,
+    }),
+  });
 
-export const handleCheckout = async (
-  currentUser: IUser,
-  selectedCar: Cars,
-  startDate: Date | null,
-  endDate: Date | null,
-  branch: Branches
-) => {
-  try {
-    const res = await fetch("/api/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        currentUser,
-        selectedCar,
-        startDate,
-        endDate,
-        branch,
-      }),
-    });
-
-    const data = await res.json();
-    return data;
-  } catch (error) {
-    console.error(error);
-    throw error;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data?.url) {
+    throw new Error(
+      data?.error || "Could not start checkout. Please try again."
+    );
   }
-};
+  return data;
+}

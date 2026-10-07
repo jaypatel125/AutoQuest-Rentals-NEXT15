@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { getServerSideSession } from "@/hooks/SessionHandler";
+import { ensureSchema } from "@/lib/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -16,6 +17,7 @@ export async function GET() {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    await ensureSchema();
     const client = await pool.connect();
 
     try {
@@ -29,6 +31,8 @@ export async function GET() {
         b.total_price,
         b.status,
         b.created_at,
+        b.refund_amount,
+        b.cancelled_at,
         u.name,
         u.email,
         c.brand AS vehicle_brand,
@@ -50,9 +54,8 @@ export async function GET() {
     }
   } catch (error: unknown) {
     console.error("Error fetching bookings:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to fetch bookings", details: message },
+      { error: "Failed to fetch bookings" },
       { status: 500 }
     );
   }

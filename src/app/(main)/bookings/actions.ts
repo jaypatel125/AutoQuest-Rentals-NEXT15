@@ -7,14 +7,20 @@ export type Booking = {
   car_id: string;
   start_date: string;
   end_date: string;
+  sub_total: string | null;
   total_price: string;
   status: string;
   created_at: string;
   updated_at: string;
+  refund_amount: string | null;
+  cancelled_at: string | null;
   brand: string;
   model: string;
   image: string;
   price_per_day: string;
+  fuel_type: string;
+  body_type: string;
+  carbon_emissions: number;
   branch_id: string;
   branch_name: string;
   city: string;
@@ -25,7 +31,7 @@ export type Booking = {
 };
 
 export async function getAllBookingsByUserId(): Promise<Booking[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/bookings`);
+  const res = await fetch("/api/bookings");
 
   if (!res.ok) {
     throw new Error("Failed to fetch bookings");

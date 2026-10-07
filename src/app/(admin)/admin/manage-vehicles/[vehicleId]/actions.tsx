@@ -1,6 +1,7 @@
 "use client";
 
 import { Cars } from "@/lib/database/table-types";
+import { compressImage } from "@/lib/compress-image";
 
 export interface CarWithBranchDetails extends Cars {
   branch_name: string;
@@ -8,69 +9,57 @@ export interface CarWithBranchDetails extends Cars {
   branch_id: string;
 }
 
+async function readError(res: Response, fallback: string) {
+  const data = await res.json().catch(() => ({}));
+  const field = data?.fields
+    ? (Object.values(data.fields).flat()[0] as string)
+    : null;
+  return new Error(field || data?.error || fallback);
+}
+
 export async function fetchVehicle(
   vehicleId: string
 ): Promise<CarWithBranchDetails> {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/all-vehicles/${vehicleId}`,
-      {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-        cache: "no-store",
-      }
-    );
-    if (!res.ok) throw new Error("Failed to fetch vehicle");
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching vehicle:", error);
-    throw error;
-  }
+  const res = await fetch(
+    `/api/admin/all-vehicles/${encodeURIComponent(vehicleId)}`,
+    {
+      cache: "no-store",
+    }
+  );
+  if (!res.ok) throw await readError(res, "Failed to fetch vehicle");
+  return res.json();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function updateVehicle(vehicleId: string, data: any) {
-  try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/update-vehicle/${vehicleId}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      }
-    );
-
-    if (!res.ok) throw new Error("Failed to update vehicle");
-
-    // revalidatePath("/admin/manage-vehicles"); // revalidate listing page if needed
-
-    return await res.json();
-  } catch (error) {
-    console.error("Error updating vehicle:", error);
-    throw error;
-  }
+export async function updateVehicle(
+  vehicleId: string,
+  data: Record<string, unknown>
+) {
+  const res = await fetch(
+    `/api/admin/update-vehicle/${encodeURIComponent(vehicleId)}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    }
+  );
+  if (!res.ok) throw await readError(res, "Failed to update vehicle");
+  return res.json();
 }
 
+/** Uploads a new photo for the vehicle (resized in the browser first). */
 export async function replaceVehiclePhoto(
   vehicleId: string,
-  file: File,
-  currentImage: string
-) {
+  file: File
+): Promise<{ success: boolean; image: string }> {
   const form = new FormData();
-  form.append("file", file);
+  form.append("file", await compressImage(file));
   form.append("carId", vehicleId);
-  form.append("image", currentImage);
 
   const res = await fetch("/api/admin/update-image", {
     method: "POST",
     body: form,
     credentials: "include",
   });
-
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error || "Failed to upload image");
-  }
-
+  if (!res.ok) throw await readError(res, "Failed to upload image");
   return res.json();
 }

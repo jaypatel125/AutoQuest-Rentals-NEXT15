@@ -17,14 +17,11 @@ export interface AdminBooking {
 
 export async function getAllBookings(): Promise<AdminBooking[]> {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/all-bookings`,
-      {
-        method: "GET",
-        cache: "no-store",
-        credentials: "include",
-      }
-    );
+    const res = await fetch("/api/admin/all-bookings", {
+      method: "GET",
+      cache: "no-store",
+      credentials: "include",
+    });
 
     if (!res.ok) {
       const errorText = await res.text();

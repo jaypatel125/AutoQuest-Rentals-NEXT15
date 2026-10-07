@@ -1,12 +1,9 @@
 export async function getBranchById(branchId: string) {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/all-branches/${branchId}`,
-      {
-        method: "GET",
-        cache: "no-store",
-      }
-    );
+    const res = await fetch(`/api/admin/all-branches/${branchId}`, {
+      method: "GET",
+      cache: "no-store",
+    });
 
     if (!res.ok) throw new Error("Failed to fetch branch");
     return await res.json();
@@ -25,17 +22,20 @@ export async function updateBranch(
     if (!branchId) {
       throw new Error("branchId is required");
     }
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/update-branch/${branchId}`,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
-      }
-    );
+    const res = await fetch(`/api/admin/update-branch/${branchId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updates),
+    });
 
-    if (!res.ok) throw new Error("Failed to update branch");
-    return await res.json();
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const field = body?.fields
+        ? (Object.values(body.fields).flat()[0] as string)
+        : null;
+      throw new Error(field || body?.error || "Failed to update branch");
+    }
+    return body;
   } catch (error) {
     console.error("Error updating branch:", error);
     throw error;
@@ -44,16 +44,13 @@ export async function updateBranch(
 
 export async function deleteBranch(branchId: string) {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/all-branches/${branchId}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      }
-    );
+    const res = await fetch(`/api/admin/all-branches/${branchId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
 
     if (!res.ok) {
       const error = await res.json();

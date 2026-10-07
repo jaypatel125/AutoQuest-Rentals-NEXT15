@@ -1,83 +1,49 @@
 import { NextResponse } from "next/server";
 import { sendEmail } from "@/lib/email";
+import { renderEmail } from "@/lib/email-templates";
+import { contactSchema } from "@/lib/zod";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
+
+const SUPPORT_INBOX = process.env.SUPPORT_EMAIL || "autoquest.rental@gmail.com";
 
 export async function POST(req: Request) {
   try {
-    const { name, email, message } = await req.json();
-
-    if (!name || !email || !message) {
+    const limit = rateLimit(`contact:${clientIp(req)}`, 5, 10 * 60 * 1000);
+    if (!limit.ok) {
       return NextResponse.json(
-        { error: "All fields are required" },
-        { status: 400 }
+        { error: "Too many messages. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(limit.retryAfter) } }
       );
     }
 
-    // Send email to AutoQuest admin
+    const body = await req.json().catch(() => null);
+    const parsed = contactSchema.safeParse(body ?? {});
+    if (!parsed.success) {
+      const fields = parsed.error.flatten().fieldErrors;
+      // Bots that fill the hidden field get a quiet success.
+      if (fields.website) return NextResponse.json({ success: true });
+      return NextResponse.json(
+        { error: "All fields are required", fields },
+        { status: 400 }
+      );
+    }
+    const { name, email, message } = parsed.data;
+
     await sendEmail({
-      to: "autoquest.rental@gmail.com",
-      subject: `New Contact Message from ${name}`,
-      text: `
-    You have received a new message from the contact form.
-
-    Name: ${name}
-    Email: ${email}
-    Message: ${message}
-  `,
-      html: `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
-    <body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #f8fafc; line-height: 1.6;">
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #f8fafc;">
-        <tr>
-          <td align="center" style="padding: 40px 20px;">
-            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-
-              <!-- Header -->
-              <tr>
-                <td style="background: linear-gradient(135deg, #059669, #047857); padding: 30px 20px; text-align: center;">
-                  <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 600;">New Contact Message</h1>
-                </td>
-              </tr>
-
-              <!-- Content -->
-              <tr>
-                <td style="padding: 30px 20px; color: #374151; font-size: 16px;">
-                  <p style="margin: 0 0 15px 0;">You have received a new contact message from your website.</p>
-
-                  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0; border-collapse: collapse;">
-                    <tr>
-                      <td style="padding: 10px; background-color: #f9fafb; border-radius: 6px;">
-                        <p style="margin: 0 0 10px 0;"><strong style="color: #059669;">Name:</strong> ${name}</p>
-                        <p style="margin: 0 0 10px 0;"><strong style="color: #059669;">Email:</strong> ${email}</p>
-                        <p style="margin: 0;"><strong style="color: #059669;">Message:</strong></p>
-                        <p style="margin: 10px 0 0 0; white-space: pre-wrap;">${message}</p>
-                      </td>
-                    </tr>
-                  </table>
-
-                  <p style="margin: 25px 0 0 0;">Please follow up with the sender at <a href="mailto:${email}" style="color: #059669; text-decoration: none;">${email}</a>.</p>
-                </td>
-              </tr>
-
-              <!-- Footer -->
-              <tr>
-                <td style="background-color: #f1f5f9; padding: 20px; text-align: center; color: #6b7280; font-size: 12px;">
-                  <p style="margin: 0 0 10px 0;">&copy; ${new Date().getFullYear()} AutoQuest. All rights reserved.</p>
-                  <p style="margin: 0; font-size: 11px;">This is an automated message from your website contact form.</p>
-                </td>
-              </tr>
-
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `,
+      to: SUPPORT_INBOX,
+      replyTo: email,
+      subject: `New contact message from ${name.slice(0, 80)}`,
+      text: `New message from the contact form.\n\nName: ${name}\nEmail: ${email}\n\n${message}`,
+      html: renderEmail({
+        title: "New contact message",
+        paragraphs: ["Someone reached out through the website contact form."],
+        details: [
+          ["Name", name],
+          ["Email", email],
+        ],
+        callout: { title: "Message", body: message },
+        footnote: "Reply to this email to answer the sender directly.",
+      }),
     });
 
     return NextResponse.json({
