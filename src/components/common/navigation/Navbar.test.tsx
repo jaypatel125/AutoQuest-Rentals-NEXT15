@@ -1,77 +1,72 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import Navbar from "./NavBar";
-import { useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
-// Mock next/navigation
 jest.mock("next/navigation", () => ({
-  useRouter: jest.fn(),
-  usePathname: jest.fn().mockReturnValue("/"),
+  useRouter: jest.fn(() => ({ push: jest.fn() })),
+  usePathname: jest.fn(() => "/"),
 }));
 
-// Mock Dropdown
-jest.mock("./Dropdown", () => ({
-  Dropdown: ({ user }: { user: any }) => (
-    <div data-testid="dropdown">{user ? "User Dropdown" : "No User"}</div>
-  ),
+jest.mock("next-themes", () => ({
+  useTheme: () => ({ resolvedTheme: "light", setTheme: jest.fn() }),
 }));
+
+jest.mock("./Dropdown", () => ({
+  Dropdown: () => <div data-testid="dropdown" />,
+}));
+
+const customer = {
+  id: "u1",
+  name: "Jordan Rivers",
+  email: "jordan@example.com",
+  role: "user",
+  reward_points: 1340,
+} as any;
 
 describe("Navbar component", () => {
-  const pushMock = jest.fn();
-
   beforeEach(() => {
-    (useRouter as jest.Mock).mockReturnValue({ push: pushMock });
+    (usePathname as jest.Mock).mockReturnValue("/");
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
-
-  const mockUser = {
-    id: "1",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    email: "user@example.com",
-    emailVerified: true,
-    name: "John Doe",
-    role: "user",
-    reward_points: 100,
-    banned: false,
-    image: null,
-    banReason: null,
-    banExpires: null,
-  };
-
-  const mockSession = {
-    id: "session-1",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    userId: "1",
-    expiresAt: new Date(Date.now() + 3600 * 1000),
-    token: "abc123",
-  };
-
-  it("renders logo", () => {
+  it("renders the logo linking home", () => {
     render(<Navbar user={null} session={null} />);
-    expect(screen.getByAltText("AutoQuest logo")).toBeInTheDocument();
+    expect(screen.getByLabelText("AutoQuest home")).toHaveAttribute(
+      "href",
+      "/"
+    );
   });
 
-  it("renders sign-in button when no user or session", () => {
+  it("shows sign-in and sign-up links to visitors", () => {
     render(<Navbar user={null} session={null} />);
-    const signInBtn = screen.getByRole("button", { name: /sign in/i });
-    expect(signInBtn).toBeInTheDocument();
-
-    fireEvent.click(signInBtn);
-    expect(pushMock).toHaveBeenCalledWith("/signin");
+    expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute(
+      "href",
+      "/signin"
+    );
+    expect(
+      screen.getByRole("link", { name: /create account/i })
+    ).toHaveAttribute("href", "/signup");
+    expect(screen.queryByTestId("dropdown")).not.toBeInTheDocument();
   });
 
-  it("renders reward points for regular user", () => {
-    render(<Navbar user={mockUser} session={mockSession} />);
-    expect(screen.getByText("100 pts")).toBeInTheDocument();
-  });
-
-  it("renders Dropdown component", () => {
-    render(<Navbar user={mockUser} session={mockSession} />);
+  it("shows reward points and the account menu to customers", () => {
+    render(<Navbar user={customer} session={null} />);
+    expect(screen.getByText("1,340 pts")).toBeInTheDocument();
     expect(screen.getByTestId("dropdown")).toBeInTheDocument();
+  });
+
+  it("highlights the current section", () => {
+    (usePathname as jest.Mock).mockReturnValue("/rewards");
+    render(<Navbar user={customer} session={null} />);
+    const nav = screen.getByRole("navigation", { name: "Main" });
+    expect(nav.querySelector('[aria-current="page"]')).toHaveTextContent(
+      "Rewards"
+    );
+  });
+
+  it("is hidden on auth pages", () => {
+    (usePathname as jest.Mock).mockReturnValue("/signin");
+    const { container } = render(<Navbar user={null} session={null} />);
+    expect(container).toBeEmptyDOMElement();
   });
 });

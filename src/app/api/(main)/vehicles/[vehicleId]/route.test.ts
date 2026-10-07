@@ -43,7 +43,7 @@ describe("/api/vehicles/[vehicleId] GET", () => {
     });
 
     expect(pool.query).toHaveBeenCalledWith(
-      expect.stringContaining("SELECT * FROM cars WHERE id = $1"),
+      expect.stringContaining("WHERE c.id = $1"),
       ["123"]
     );
     expect(NextResponse.json).toHaveBeenCalledWith(
@@ -62,7 +62,7 @@ describe("/api/vehicles/[vehicleId] GET", () => {
     });
 
     expect(pool.query).toHaveBeenCalledWith(
-      expect.stringContaining("SELECT * FROM cars WHERE id = $1"),
+      expect.stringContaining("WHERE c.id = $1"),
       ["1"]
     );
     expect(NextResponse.json).toHaveBeenCalledWith(mockVehicle);

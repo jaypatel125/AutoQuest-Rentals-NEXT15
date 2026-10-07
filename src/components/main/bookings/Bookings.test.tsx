@@ -1,67 +1,137 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import Bookings from "./index";
-import { useRouter } from "next/navigation";
+import type { Booking } from "@/app/(main)/bookings/actions";
 
 jest.mock("next/navigation", () => ({
-  useRouter: jest.fn(),
+  useRouter: jest.fn(() => ({ push: jest.fn(), refresh: jest.fn() })),
 }));
 
-const pushMock = jest.fn();
-(useRouter as jest.Mock).mockReturnValue({ push: pushMock });
+const day = 24 * 60 * 60 * 1000;
+const isoIn = (days: number) =>
+  new Date(Date.now() + days * day).toISOString().slice(0, 10);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockData: any[] = [
-  {
-    id: "1",
+function booking(overrides: Partial<Booking>): Booking {
+  return {
     booking_id: "1",
+    id: "1",
     user_id: "user1",
     car_id: "car1",
+    start_date: isoIn(5),
+    end_date: isoIn(8),
+    sub_total: "165.00",
+    total_price: "186.45",
+    status: "Confirmed",
+    created_at: isoIn(-1),
+    updated_at: isoIn(-1),
+    refund_amount: null,
+    cancelled_at: null,
     brand: "Toyota",
     model: "Camry",
-    image: "/car.png",
+    image: "",
+    price_per_day: "50.00",
+    fuel_type: "Hybrid",
+    body_type: "Sedan",
+    carbon_emissions: 95,
+    branch_id: "b1",
     branch_name: "Main Branch",
     city: "Toronto",
     province: "ON",
-    start_date: "2025-11-12",
-    end_date: "2025-11-15",
-    status: "Confirmed",
-    created_at: "2025-11-10",
-    updated_at: "2025-11-11",
-    total_price: 150,
-    price_per_day: 50,
-    points_earned: 100,
-    points_redeemed: 20,
-  },
-];
+    postal_code: null,
+    points_earned: "186",
+    points_redeemed: "20",
+    ...overrides,
+  };
+}
 
-describe("Bookings component", () => {
-  it("renders loader when isLoading is true", () => {
-    render(<Bookings isLoading={true} isError={false} />);
-    expect(screen.getByText(/fetching your bookings/i)).toBeInTheDocument();
+const upcoming = booking({});
+const past = booking({
+  booking_id: "2",
+  id: "2",
+  brand: "Honda",
+  model: "Civic",
+  start_date: isoIn(-10),
+  end_date: isoIn(-7),
+  status: "Completed",
+});
+const cancelled = booking({
+  booking_id: "3",
+  id: "3",
+  brand: "Kia",
+  model: "EV6",
+  status: "Cancelled",
+  refund_amount: "120.50",
+  cancelled_at: isoIn(-2),
+});
+
+describe("Bookings", () => {
+  it("shows a loading state", () => {
+    render(<Bookings isLoading isError={false} />);
+    expect(
+      screen.getByRole("status", { name: /fetching your bookings/i })
+    ).toBeInTheDocument();
   });
 
-  it("renders error message when isError is true", () => {
-    render(<Bookings isLoading={false} isError={true} />);
+  it("shows an error message", () => {
+    render(<Bookings isLoading={false} isError />);
     expect(screen.getByText(/failed to load bookings/i)).toBeInTheDocument();
   });
 
-  it("renders empty state when no bookings", () => {
+  it("points new customers to the fleet", () => {
     render(<Bookings isLoading={false} isError={false} data={[]} />);
     expect(screen.getByText(/no bookings found/i)).toBeInTheDocument();
-    const browseBtn = screen.getByRole("button", { name: /browse cars/i });
-    fireEvent.click(browseBtn);
-    expect(pushMock).toHaveBeenCalledWith("/");
+    expect(screen.getByRole("link", { name: /browse cars/i })).toHaveAttribute(
+      "href",
+      "/select-vehicle"
+    );
   });
 
-  it("renders booking cards when data is provided", () => {
-    render(<Bookings isLoading={false} isError={false} data={mockData} />);
-    expect(screen.getByText(/toyota camry/i)).toBeInTheDocument();
-    expect(screen.getByText(/main branch, toronto, on/i)).toBeInTheDocument();
-    expect(screen.getByText(/confirmed/i)).toBeInTheDocument();
-    expect(screen.getByText(/\+100/i)).toBeInTheDocument();
+  it("lists upcoming trips with a countdown and links to details", () => {
+    render(
+      <Bookings
+        isLoading={false}
+        isError={false}
+        data={[upcoming, past, cancelled]}
+      />
+    );
+    expect(screen.getByRole("tab", { name: /upcoming/i })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    expect(screen.getByText("Toyota Camry")).toBeInTheDocument();
+    expect(screen.getByText(/Pick-up in [45] days/)).toBeInTheDocument();
+    expect(screen.getByText("$186.45")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /toyota camry/i })).toHaveAttribute(
+      "href",
+      "/bookings/1"
+    );
+    expect(screen.queryByText("Honda Civic")).not.toBeInTheDocument();
+  });
 
-    const viewBtn = screen.getByRole("button", { name: /view details/i });
-    fireEvent.click(viewBtn);
-    expect(pushMock).toHaveBeenCalledWith("/bookings/1");
+  it("separates past and cancelled trips into tabs", () => {
+    render(
+      <Bookings
+        isLoading={false}
+        isError={false}
+        data={[upcoming, past, cancelled]}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: /past/i }));
+    expect(screen.getByText("Honda Civic")).toBeInTheDocument();
+    expect(screen.queryByText("Toyota Camry")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: /cancelled/i }));
+    expect(screen.getByText("Kia EV6")).toBeInTheDocument();
+    expect(screen.getByText("Refunded")).toBeInTheDocument();
+    expect(screen.getByText("$120.50")).toBeInTheDocument();
+  });
+
+  it("opens on the past tab when nothing is upcoming", () => {
+    render(<Bookings isLoading={false} isError={false} data={[past]} />);
+    expect(screen.getByRole("tab", { name: /past/i })).toHaveAttribute(
+      "aria-selected",
+      "true"
+    );
+    expect(screen.getByText("Honda Civic")).toBeInTheDocument();
   });
 });

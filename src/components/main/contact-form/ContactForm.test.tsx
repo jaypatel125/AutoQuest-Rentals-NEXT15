@@ -46,6 +46,7 @@ describe("ContactForm component", () => {
         name: "John",
         email: "john@example.com",
         message: "Hello",
+        website: "",
       });
     });
   });
@@ -68,6 +69,21 @@ describe("ContactForm component", () => {
     await waitFor(() => {
       expect(
         screen.getByText(/Your message has been sent successfully!/i)
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("shows the server's error message when sending fails", async () => {
+    (sendContactMessage as jest.Mock).mockResolvedValueOnce({
+      success: false,
+      error: "Message must be at least 10 characters",
+    });
+    render(<ContactForm />);
+    fireEvent.submit(screen.getByRole("button", { name: /send message/i }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("Message must be at least 10 characters")
       ).toBeInTheDocument();
     });
   });

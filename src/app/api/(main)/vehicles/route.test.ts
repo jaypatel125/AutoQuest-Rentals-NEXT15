@@ -16,17 +16,11 @@ jest.mock("next/server", () => ({
   },
 }));
 
-// Polyfill global Request since Jest runs in Node
-if (typeof Request === "undefined") {
-  global.Request = class {
-    constructor(public url: string, public options?: any) {}
-    async json() {
-      return this.options?.body ? JSON.parse(this.options.body) : {};
-    }
-  } as any;
-}
+const day = 24 * 60 * 60 * 1000;
+const request = (body: unknown) =>
+  ({ json: async () => body }) as unknown as Request;
 
-describe("/api/get-available-cars POST", () => {
+describe("/api/vehicles POST", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -35,19 +29,18 @@ describe("/api/get-available-cars POST", () => {
     const mockCars = [{ id: 1, model: "Tesla Model 3" }];
     (pool.query as jest.Mock).mockResolvedValueOnce({ rows: mockCars });
 
-    const request = new Request("http://localhost", {
-      method: "POST",
-      body: JSON.stringify({
+    const res: any = await POST(
+      request({
         city: "Toronto",
-        startDate: "2025-10-21",
-        endDate: "2025-10-25",
-      }),
-    });
-
-    const res = await POST(request);
+        startDate: new Date(Date.now() + 5 * day).toISOString(),
+        endDate: new Date(Date.now() + 8 * day).toISOString(),
+      })
+    );
 
     expect(pool.query).toHaveBeenCalledTimes(1);
-    expect(NextResponse.json).toHaveBeenCalledWith(mockCars);
+    const [sql, params] = (pool.query as jest.Mock).mock.calls[0];
+    expect(sql).toContain("NOT EXISTS");
+    expect(params[0]).toBe("Toronto");
     expect(res.json).toEqual(mockCars);
   });
 
@@ -55,15 +48,31 @@ describe("/api/get-available-cars POST", () => {
     const mockCars = [{ id: 2, model: "BMW i4" }];
     (pool.query as jest.Mock).mockResolvedValueOnce({ rows: mockCars });
 
-    const request = new Request("http://localhost", {
-      method: "POST",
-      body: JSON.stringify({}),
-    });
-
-    const res = await POST(request);
+    const res: any = await POST(request({}));
 
     expect(pool.query).toHaveBeenCalledTimes(1);
     expect(NextResponse.json).toHaveBeenCalledWith(mockCars);
     expect(res.json).toEqual(mockCars);
+  });
+
+  it("rejects searches that start in the past", async () => {
+    const res: any = await POST(
+      request({ startDate: "2020-01-01", endDate: "2020-01-05" })
+    );
+
+    expect(res.status).toBe(400);
+    expect(pool.query).not.toHaveBeenCalled();
+  });
+
+  it("rejects a return date before the pick-up date", async () => {
+    const res: any = await POST(
+      request({
+        startDate: new Date(Date.now() + 9 * day).toISOString(),
+        endDate: new Date(Date.now() + 2 * day).toISOString(),
+      })
+    );
+
+    expect(res.status).toBe(400);
+    expect(pool.query).not.toHaveBeenCalled();
   });
 });

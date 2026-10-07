@@ -1,10 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import Loader from "@/components/utility/Loader";
 
-jest.mock("react-spinners", () => ({
-  HashLoader: jest.fn(() => <div data-testid="hash-loader" />),
-}));
-
 describe("Loader component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -12,7 +8,8 @@ describe("Loader component", () => {
 
   it("renders the loader spinner", () => {
     render(<Loader />);
-    expect(screen.getByTestId("hash-loader")).toBeInTheDocument();
+    expect(screen.getByTestId("loader-spinner")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toBeInTheDocument();
   });
 
   it("renders the provided title", () => {
