@@ -66,10 +66,9 @@ export async function GET(req: Request) {
   let p = 0;
 
   if (q) {
-    whereParts.push(
-      `(u.name ILIKE '%' || $${++p} || $${p} || '%' OR u.email ILIKE '%' || $${p} || '%')`
-    );
-    params.push(q);
+    whereParts.push(`(u.name ILIKE $${++p} OR u.email ILIKE $${p})`);
+    // Escape LIKE wildcards so the search is literal.
+    params.push(`%${q.slice(0, 100).replace(/[\\%_]/g, (c) => `\\${c}`)}%`);
   }
 
   if (cursorCreatedAt && cursorId) {
@@ -150,8 +149,4 @@ export async function GET(req: Request) {
   } finally {
     client.release();
   }
-}
-
-export async function POST() {
-  return NextResponse.json({ status: "API is running" });
 }

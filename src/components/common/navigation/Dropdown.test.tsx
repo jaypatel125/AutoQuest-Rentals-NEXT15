@@ -1,66 +1,58 @@
-const adminUser = {
-  id: "1",
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  email: "admin@test.com",
-  emailVerified: true,
-  name: "Admin",
-  role: "admin",
-  banned: false,
-  reward_points: 0,
-  image: null,
-};
-const regularUser = {
-  id: "2",
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  email: "user@test.com",
-  emailVerified: true,
-  name: "John Doe",
-  role: "user",
-  banned: false,
-  reward_points: 120,
-  image: null,
-};
-
-import { render, screen } from "@testing-library/react";
-import { Dropdown } from "@/components/common/navigation/Dropdown";
-import { useRouter } from "next/navigation";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { fireEvent, render, screen } from "@testing-library/react";
+import { Dropdown, initials } from "./Dropdown";
 
 jest.mock("next/navigation", () => ({
-  useRouter: jest.fn(),
+  useRouter: jest.fn(() => ({ push: jest.fn(), refresh: jest.fn() })),
 }));
 
 jest.mock("../../../../auth-client", () => ({
-  authClient: {
-    signOut: jest.fn(),
-  },
+  authClient: { signOut: jest.fn() },
 }));
 
+const user = {
+  id: "u1",
+  name: "John Doe",
+  email: "john@example.com",
+  role: "user",
+  reward_points: 250,
+} as any;
+
 describe("Dropdown Component", () => {
-  const mockPush = jest.fn();
-  const mockRefresh = jest.fn();
-
-  beforeEach(() => {
-    (useRouter as jest.Mock).mockReturnValue({
-      push: mockPush,
-      refresh: mockRefresh,
-    });
-    jest.clearAllMocks();
+  it("builds initials from a name", () => {
+    expect(initials("John Doe")).toBe("JD");
+    expect(initials("cher")).toBe("C");
+    expect(initials("")).toBe("?");
   });
 
-  it("renders sign-in trigger when no user is provided", () => {
-    render(<Dropdown />);
-    expect(screen.getByRole("button")).toBeInTheDocument();
-  });
-
-  it("renders admin dropdown items when admin user is provided", () => {
-    render(<Dropdown user={adminUser} />);
-    expect(screen.getByText("Admin")).toBeInTheDocument();
-  });
-
-  it("renders regular user dropdown items", () => {
-    render(<Dropdown user={regularUser} />);
+  it("shows the user's name on the trigger", () => {
+    render(<Dropdown user={user} />);
     expect(screen.getByText("John Doe")).toBeInTheDocument();
+  });
+
+  it("lists customer links when opened", async () => {
+    render(<Dropdown user={user} />);
+    fireEvent.keyDown(
+      screen.getByRole("button", { name: /open account menu/i }),
+      {
+        key: "Enter",
+      }
+    );
+    expect(await screen.findByText("My bookings")).toBeInTheDocument();
+    expect(screen.getByText("250 pts")).toBeInTheDocument();
+    expect(screen.getByText("Sign out")).toBeInTheDocument();
+  });
+
+  it("lists admin links for admins", async () => {
+    render(<Dropdown user={{ ...user, role: "admin" }} />);
+    fireEvent.keyDown(
+      screen.getByRole("button", { name: /open account menu/i }),
+      {
+        key: "Enter",
+      }
+    );
+    expect(await screen.findByText("Admin")).toBeInTheDocument();
+    expect(screen.getByText("Dashboard")).toBeInTheDocument();
+    expect(screen.queryByText("My bookings")).not.toBeInTheDocument();
   });
 });

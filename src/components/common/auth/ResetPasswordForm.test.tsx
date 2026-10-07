@@ -37,7 +37,7 @@ describe("ResetPasswordForm (basic)", () => {
     fireEvent.change(screen.getByLabelText(/Confirm Password/i), {
       target: { value: "87654321" },
     });
-    fireEvent.submit(screen.getByRole("button"));
+    fireEvent.submit(screen.getByRole("button", { name: /reset password/i }));
 
     await waitFor(() => {
       expect(screen.getByText(/Passwords do not match/i)).toBeInTheDocument();
@@ -59,10 +59,12 @@ describe("ResetPasswordForm (basic)", () => {
     fireEvent.change(screen.getByLabelText(/Confirm Password/i), {
       target: { value: "12345678" },
     });
-    fireEvent.submit(screen.getByRole("button"));
+    fireEvent.submit(screen.getByRole("button", { name: /reset password/i }));
 
     await waitFor(() => {
-      expect(screen.getByRole("button")).toBeDisabled();
+      expect(
+        screen.getByRole("button", { name: /resetting password/i })
+      ).toBeDisabled();
     });
   });
 });

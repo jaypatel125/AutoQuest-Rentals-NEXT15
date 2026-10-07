@@ -23,12 +23,12 @@ import {
 import { formatPrice } from "@/lib/utils";
 
 const COLORS = [
-  "#0088FE",
-  "#00C49F",
-  "#FFBB28",
-  "#FF8042",
-  "#8884D8",
-  "#82CA9D",
+  "var(--chart-2)",
+  "var(--chart-1)",
+  "var(--chart-3)",
+  "var(--chart-5)",
+  "var(--chart-4)",
+  "oklch(0.7 0.11 190)",
 ];
 
 interface OverviewTabProps {
@@ -72,9 +72,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
                   yAxisId="left"
                   type="monotone"
                   dataKey="rentals"
-                  stroke="#8884D8"
+                  stroke="var(--chart-4)"
                   strokeWidth={2}
-                  fill="#8884D8"
+                  fill="var(--chart-4)"
                   fillOpacity={0}
                   name="Rentals"
                 />
@@ -82,7 +82,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
                   yAxisId="right"
                   type="monotone"
                   dataKey="revenue"
-                  stroke="#00C49F"
+                  stroke="var(--chart-1)"
                   strokeWidth={2}
                   fillOpacity={0}
                   name="Revenue"
@@ -109,7 +109,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
                     `${status}: ${percentage}%`
                   }
                   outerRadius={80}
-                  fill="#8884d8"
+                  fill="var(--chart-4)"
                   dataKey="count"
                 >
                   {data.bookingStatus.map((entry, index) => (
@@ -143,13 +143,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({ data }) => {
                   yAxisId="left"
                   dataKey="rental_count"
                   name="Rental Count"
-                  fill="#0088FE"
+                  fill="var(--chart-2)"
                 />
                 <Bar
                   yAxisId="right"
                   dataKey="total_revenue"
                   name="Total Revenue"
-                  fill="#00C49F"
+                  fill="var(--chart-1)"
                 />
               </BarChart>
             </ResponsiveContainer>

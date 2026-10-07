@@ -14,9 +14,8 @@ test("UI login via /sign-in and save storageState", async ({
   await page
     .getByRole("textbox", { name: "Email address" })
     .fill(process.env.EMAIL as string);
-  await page.getByRole("textbox", { name: "••••••••" }).click();
   await page
-    .getByRole("textbox", { name: "••••••••" })
+    .getByLabel("Password", { exact: true })
     .fill(process.env.PASSWORD as string);
 
   await Promise.all([

@@ -12,12 +12,6 @@ export const adminCustomersKeys = {
   list: (q: string) => ["admin-customers", q] as const,
 };
 
-export type AdminSafeDeleteResponse = {
-  ok: true;
-  userId: string;
-  action: "anonymized_and_banned_permanently";
-};
-
 // Utility function to handle fetch with timeout
 async function fetchWithTimeout(
   url: string,
@@ -60,9 +54,7 @@ export async function fetchAdminCustomersPage({
 
   try {
     const res = await fetchWithTimeout(
-      `${
-        process.env.NEXT_PUBLIC_APP_URL
-      }/api/admin/all-users?${params.toString()}`,
+      `/api/admin/all-users?${params.toString()}`,
       { method: "GET", signal, timeout: 15000 }
     );
 
@@ -79,42 +71,5 @@ export async function fetchAdminCustomersPage({
         ? err.message
         : "Unknown error while fetching customers";
     throw new Error(`Failed to fetch customers: ${message}`);
-  }
-}
-
-export async function adminSafeDeleteUser({
-  userId,
-  anonymize = true,
-  banReason = "Admin-initiated deactivation",
-  signal,
-}: {
-  userId: string;
-  anonymize?: boolean;
-  banReason?: string | null;
-  signal?: AbortSignal;
-}): Promise<AdminSafeDeleteResponse> {
-  try {
-    const res = await fetchWithTimeout(
-      `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/delete-user`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, anonymize, banReason }),
-        signal,
-        timeout: 15000,
-      }
-    );
-
-    if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      const message = data.error || data.message || res.statusText;
-      throw new Error(`[${res.status}] Failed to delete user: ${message}`);
-    }
-
-    return (await res.json()) as AdminSafeDeleteResponse;
-  } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Unknown error while deleting user";
-    throw new Error(`Failed to delete user: ${message}`);
   }
 }

@@ -1,215 +1,191 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-require-imports */
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import { act } from "react-dom/test-utils"; // Import act for async updates
-import "@testing-library/jest-dom";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Checkout from "./index";
-import * as searchStore from "@/context/searchStore";
-import { IUser } from "../../../../auth-client";
-import * as checkoutActions from "@/app/(main)/checkout/actions";
+import { useSearchStore } from "@/context/searchStore";
+import { handleCheckout } from "@/app/(main)/checkout/actions";
+import { fetchRewards } from "@/app/actions";
+import { jsonResponse, renderWithClient } from "@/test-utils";
 
-// --- Mocks ---
-
-// Mock next/navigation (useRouter)
-const mockRouter = {
-  back: jest.fn(),
-  push: jest.fn(),
-};
 jest.mock("next/navigation", () => ({
-  useRouter: () => mockRouter,
+  useRouter: jest.fn(),
+  useSearchParams: jest.fn(),
 }));
 
-// Mock the checkout server action
-const mockHandleCheckout = jest.spyOn(checkoutActions, "handleCheckout");
-
-// Mock the useSearchStore hook
-const mockUseSearchStore = jest.spyOn(searchStore, "useSearchStore");
-
-// Mock next/image
-jest.mock("next/image", () => ({
-  __esModule: true,
-  default: (props: any) => {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img {...props} alt={props.alt} />;
-  },
+jest.mock("@/context/searchStore", () => ({
+  ...jest.requireActual("@/context/searchStore"),
+  useSearchStore: jest.fn(),
 }));
 
-// Mock helper functions
-jest.mock("@/lib/utils", () => ({
-  formatPrice: jest.fn((price) => `$${Number(price).toFixed(2)}`),
+jest.mock("@/app/(main)/checkout/actions", () => ({
+  handleCheckout: jest.fn(),
 }));
 
-// Mock lucide-react icons
-jest.mock("lucide-react", () => ({
-  ArrowLeft: () => <svg data-testid="arrow-left" />,
-  ArrowRight: () => <svg data-testid="arrow-right" />,
-  Info: () => <svg data-testid="info-icon" />,
+jest.mock("@/app/actions", () => ({
+  fetchRewards: jest.fn(),
 }));
 
-// Mock UI components
-jest.mock("@/components/ui/button", () => ({
-  Button: ({
-    children,
-    ...props
-  }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
-    <button {...props}>{children}</button>
-  ),
-}));
-jest.mock("@/components/ui/input", () => ({
-  Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
-    <input {...props} />
-  ),
-}));
-jest.mock("@/components/ui/separator", () => ({
-  Separator: () => <hr />,
-}));
-// Mock Tooltip components to just render their children
-jest.mock("@/components/ui/tooltip", () => ({
-  Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  TooltipContent: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="tooltip-content">{children}</div>
-  ),
-  TooltipProvider: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
-  TooltipTrigger: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
-}));
+const day = 24 * 60 * 60 * 1000;
+const start = new Date(Date.now() + 5 * day);
+const end = new Date(Date.now() + 7 * day);
 
-// --- Mock Data ---
-
-const mockUser: IUser = {
+const user: any = {
   id: "user_123",
   name: "Test User",
   email: "test@example.com",
   reward_points: 500,
-  // Add other fields from IUser as necessary
-  emailVerified: true,
-  image: null,
-  createdAt: new Date("2025-10-01T10:00:00Z"),
-  updatedAt: new Date("2025-10-01T10:00:00Z"),
-  banned: undefined,
 };
 
-const mockCar = {
+const car: any = {
   id: "car_abc",
   brand: "Tesla",
   model: "Model Y",
-  price_per_day: 150,
+  price_per_day: "150.00",
   fuel_type: "Electric",
-  image: "/tesla.jpg",
-  // Add other fields from Car as necessary
+  body_type: "Suv",
   transmission: "Automatic",
   passenger_capacity: 5,
-  body_type: "SUV",
   carbon_emissions: 0,
-  available: true,
-  car_created_at: "",
-  car_updated_at: "",
-  car_branch_id: "b1",
+  image: null,
+  branch_name: "Downtown",
+  branch_city: "Toronto",
+  branch_address: "123 Main St",
 };
 
-const mockBranch = {
-  id: "b1",
-  name: "Downtown",
-  address: "123 Main St",
-  city: "Testville",
-  province: "ON",
-  postal_code: "L8P 1A1",
-  // Add other fields from Branch as necessary
-  created_at: "",
-  updated_at: "",
-};
+const setRedeemPoints = jest.fn();
 
-const mockStoreState = {
-  startDate: "2025-10-01T10:00:00Z",
-  endDate: "2025-10-03T10:00:00Z", // 2 days
-  selectedCar: mockCar,
-  branch: mockBranch,
-};
+function store(overrides: Record<string, unknown> = {}) {
+  (useSearchStore as unknown as jest.Mock).mockReturnValue({
+    startDate: start.toISOString(),
+    endDate: end.toISOString(),
+    selectedCar: car,
+    redeemPoints: true,
+    setRedeemPoints,
+    ...overrides,
+  });
+}
 
-// --- Tests ---
+describe("Checkout", () => {
+  const push = jest.fn();
 
-describe("Checkout Component", () => {
   beforeEach(() => {
-    // Reset mocks before each test
-    mockRouter.back.mockClear();
-    mockRouter.push.mockClear();
-    mockHandleCheckout.mockClear();
-    mockUseSearchStore.mockClear();
-    (require("@/lib/utils").formatPrice as jest.Mock).mockClear();
-    (require("@/lib/utils").formatPrice as jest.Mock).mockImplementation(
-      (price) => `$${Number(price).toFixed(2)}`
-    );
+    jest.clearAllMocks();
+    (useRouter as jest.Mock).mockReturnValue({ push });
+    (useSearchParams as jest.Mock).mockReturnValue(new URLSearchParams());
+    (fetchRewards as jest.Mock).mockResolvedValue({ balance: 500 });
+    (handleCheckout as jest.Mock).mockReset();
+    global.fetch = jest.fn().mockResolvedValue(jsonResponse(car)) as any;
+    store();
   });
 
-  test("should render 'No car selected' message if no car is in store", () => {
-    mockUseSearchStore.mockReturnValue({
-      ...mockStoreState,
-      selectedCar: null,
-    });
-    render(<Checkout user={mockUser} />);
-
-    expect(screen.getByText(/No car selected/i)).toBeInTheDocument();
-  });
-
-  test("should render 'must be logged in' message if no user is provided", () => {
-    mockUseSearchStore.mockReturnValue(mockStoreState);
-    // Pass null or undefined for the user prop
-    render(<Checkout user={null as any} />);
-
-    expect(screen.getByText(/You must be logged in/i)).toBeInTheDocument();
-  });
-
-  test("should render 'select valid rental dates' message if dates are missing", () => {
-    mockUseSearchStore.mockReturnValue({
-      ...mockStoreState,
-      startDate: null,
-    });
-    render(<Checkout user={mockUser} />);
-
+  it("asks for a car when none is selected", () => {
+    store({ selectedCar: undefined });
+    renderWithClient(<Checkout user={user} />);
     expect(
-      screen.getByText(/Please select valid rental dates/i)
+      screen.getByText("No car selected. Please go back and choose a vehicle.")
     ).toBeInTheDocument();
   });
 
-  test("should render checkout details and handle payment", async () => {
-    // Set up all mocks for a successful render
-    mockUseSearchStore.mockReturnValue(mockStoreState);
-    mockHandleCheckout.mockResolvedValue({
-      url: "https://mock.stripe.checkout/session_123",
-    });
+  it("asks guests to sign in", () => {
+    renderWithClient(<Checkout user={null as any} />);
+    expect(
+      screen.getByText("You must be logged in to proceed to checkout.")
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /sign in/i })).toHaveAttribute(
+      "href",
+      "/signin?next=/checkout"
+    );
+  });
 
-    render(<Checkout user={mockUser} />);
+  it("asks for dates when they are missing", () => {
+    store({ startDate: undefined });
+    renderWithClient(<Checkout user={user} />);
+    expect(
+      screen.getByText("Please select valid rental dates to proceed.")
+    ).toBeInTheDocument();
+  });
 
-    // Check if key details are rendered
+  it("shows the trip, renter and price breakdown", () => {
+    renderWithClient(<Checkout user={user} />);
     expect(screen.getByText("Tesla Model Y")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Test User")).toBeInTheDocument();
+    expect(screen.getByText("Test User")).toBeInTheDocument();
     expect(screen.getByText("Downtown")).toBeInTheDocument();
+    // 2 days x $150 + $15 fee + $39 HST = $354.00, minus 500 pts ($50)
+    expect(screen.getByText("$300.00")).toBeInTheDocument();
+    expect(screen.getByText("-$50.00")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /pay now \$304\.00/i })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/\+608 pts/)).toBeInTheDocument();
+  });
 
-    // Find and click the "Pay Now" button
-    const payButton = screen.getByRole("button", { name: /Pay Now/i });
+  it("charges full price when points are turned off", () => {
+    store({ redeemPoints: false });
+    renderWithClient(<Checkout user={user} />);
+    expect(
+      screen.getByRole("button", { name: /pay now \$354\.00/i })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/turn on to save \$50\.00/i)).toBeInTheDocument();
 
-    // Wrap the async click event in act()
-    await act(async () => {
-      fireEvent.click(payButton);
+    fireEvent.click(screen.getByRole("switch", { name: /use reward points/i }));
+    expect(setRedeemPoints).toHaveBeenCalledWith(true);
+  });
+
+  it("requires accepting the terms before paying", () => {
+    renderWithClient(<Checkout user={user} />);
+    const pay = screen.getByRole("button", { name: /pay now/i });
+    expect(pay).toBeDisabled();
+
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: /i agree to the rental terms/i })
+    );
+    expect(pay).toBeEnabled();
+  });
+
+  it("sends only ids, dates and the points choice, then redirects to Stripe", async () => {
+    (handleCheckout as jest.Mock).mockResolvedValue({
+      url: "https://checkout.stripe.com/c/session_123",
     });
+    renderWithClient(<Checkout user={user} />);
 
-    // Check that the server action was called
-    expect(mockHandleCheckout).toHaveBeenCalledTimes(1);
-    expect(mockHandleCheckout).toHaveBeenCalledWith(
-      mockUser,
-      mockCar,
-      mockStoreState.startDate,
-      mockStoreState.endDate,
-      mockBranch
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: /i agree to the rental terms/i })
     );
+    fireEvent.click(screen.getByRole("button", { name: /pay now/i }));
 
-    // Check that the router was redirected to the Stripe URL
-    expect(mockRouter.push).toHaveBeenCalledWith(
-      "https://mock.stripe.checkout/session_123"
+    await waitFor(() =>
+      expect(push).toHaveBeenCalledWith(
+        "https://checkout.stripe.com/c/session_123"
+      )
     );
+    expect(handleCheckout).toHaveBeenCalledWith({
+      carId: "car_abc",
+      startDate: start,
+      endDate: end,
+      redeemPoints: true,
+    });
+  });
+
+  it("shows the server error when checkout fails", async () => {
+    (handleCheckout as jest.Mock).mockRejectedValue(
+      new Error("This car is already booked for some of these dates.")
+    );
+    renderWithClient(<Checkout user={user} />);
+
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: /i agree to the rental terms/i })
+    );
+    fireEvent.click(screen.getByRole("button", { name: /pay now/i }));
+
+    expect(await screen.findByText(/already booked/i)).toBeInTheDocument();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("explains a cancelled payment", () => {
+    (useSearchParams as jest.Mock).mockReturnValue(
+      new URLSearchParams("cancelled=1")
+    );
+    renderWithClient(<Checkout user={user} />);
+    expect(screen.getByText(/payment was cancelled/i)).toBeInTheDocument();
   });
 });

@@ -33,6 +33,9 @@ import {
 import Link from "next/link";
 import { CarWithBranch } from "@/app/(admin)/admin/manage-vehicles/actions";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { VehicleImage } from "@/components/vehicles/VehicleImage";
+import { bodyTypeLabel } from "@/lib/vehicles";
+import { formatPrice } from "@/lib/utils";
 
 interface VehicleOverviewTableProps {
   vehicles: CarWithBranch[];
@@ -44,6 +47,22 @@ export default function VehicleOverviewTable({
   branchId,
 }: VehicleOverviewTableProps) {
   const columns: ColumnDef<CarWithBranch>[] = [
+    {
+      id: "photo",
+      header: "",
+      enableHiding: false,
+      cell: ({ row }) => (
+        <div className="w-20 overflow-hidden rounded-lg border">
+          <VehicleImage
+            src={row.original.image}
+            brand={row.original.brand}
+            model={row.original.model}
+            bodyType={row.original.body_type}
+            sizes="80px"
+          />
+        </div>
+      ),
+    },
     {
       accessorFn: (row) => `${row.brand} ${row.model}`,
       id: "vehicle",
@@ -57,7 +76,12 @@ export default function VehicleOverviewTable({
         </Button>
       ),
       cell: ({ row }) => (
-        <div>{`${row.original.brand} ${row.original.model}`}</div>
+        <div>
+          <p className="font-semibold">{`${row.original.brand} ${row.original.model}`}</p>
+          <p className="text-xs text-muted-foreground">
+            {bodyTypeLabel(row.original.body_type)} · {row.original.fuel_type}
+          </p>
+        </div>
       ),
     },
     {
@@ -74,7 +98,9 @@ export default function VehicleOverviewTable({
       accessorKey: "price_per_day",
       header: "Price/Day",
       cell: ({ row }) => (
-        <div className="uppercase">CAD {row.getValue("price_per_day")}</div>
+        <div className="font-medium">
+          {formatPrice(Number(row.getValue("price_per_day")))}
+        </div>
       ),
     },
     {
@@ -83,7 +109,14 @@ export default function VehicleOverviewTable({
       cell: ({ row }) => {
         const available = row.getValue("available") as boolean;
         return (
-          <span className={available ? "text-green-600" : "text-red-500"}>
+          <span
+            className={
+              available
+                ? "inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300"
+                : "inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-semibold text-muted-foreground"
+            }
+          >
+            <span className="size-1.5 rounded-full bg-current" />
             {available ? "Available" : "Unavailable"}
           </span>
         );
@@ -200,7 +233,7 @@ export default function VehicleOverviewTable({
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="overflow-x-auto rounded-2xl border bg-card shadow-sm">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -249,8 +282,7 @@ export default function VehicleOverviewTable({
 
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredRowModel().rows.length} vehicles
         </div>
         <div className="space-x-2">
           <Button

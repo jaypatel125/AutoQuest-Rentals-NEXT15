@@ -21,19 +21,23 @@ jest.mock("@/hooks/SessionHandler", () => ({
   getServerSideSession: jest.fn(),
 }));
 
+jest.mock("@/lib/schema", () => ({
+  ensureSchema: jest.fn().mockResolvedValue(undefined),
+}));
+
 describe("/api/get-bookings GET", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("should return 400 if userId is missing", async () => {
+  it("should return 401 if the visitor is not signed in", async () => {
     (getServerSideSession as jest.Mock).mockResolvedValueOnce({ user: null });
 
     const response = await GET();
     const json = await response.json();
 
-    expect(response.status).toBe(400);
-    expect(json).toEqual({ error: "Missing userId" });
+    expect(response.status).toBe(401);
+    expect(json).toEqual({ error: "Unauthorized" });
     expect(pool.query).not.toHaveBeenCalled();
   });
 
@@ -59,9 +63,10 @@ describe("/api/get-bookings GET", () => {
 
     expect(response.status).toBe(200);
     expect(json).toEqual(mockRows);
-    expect(pool.query).toHaveBeenCalledWith(expect.stringContaining("SELECT"), [
-      123,
-    ]);
+    expect(pool.query).toHaveBeenCalledWith(
+      expect.stringContaining("SELECT"),
+      [123]
+    );
   });
 
   it("should return 500 if database query fails", async () => {

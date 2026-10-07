@@ -1,9 +1,7 @@
-"use server";
-import { Cars as CarType } from "@/lib/database/table-types";
-export async function fetchVehicle(id: string): Promise<CarType> {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_APP_URL}/api/vehicles/${id}`
-  );
+import type { VehicleDetail } from "@/components/main/select-vehicle-details";
+
+export async function fetchVehicle(id: string): Promise<VehicleDetail> {
+  const res = await fetch(`/api/vehicles/${encodeURIComponent(id)}`);
   if (!res.ok) {
     throw new Error("Failed to fetch vehicle details");
   }

@@ -3,7 +3,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAllBookingsByUserId } from "./actions";
 import Bookings from "@/components/main/bookings";
+import Link from "next/link";
 import PageLayout from "@/components/utility/page-layout";
+import { Button } from "@/components/ui/button";
 
 export default function BookingsPage() {
   const { data, isLoading, isError } = useQuery({
@@ -14,7 +16,13 @@ export default function BookingsPage() {
   return (
     <PageLayout
       title="My Bookings"
-      description="Manage and view your rental bookings"
+      description="Manage upcoming trips, revisit past rentals, and track your points."
+      goBack={false}
+      actions={
+        <Button asChild>
+          <Link href="/select-vehicle">Book a car</Link>
+        </Button>
+      }
     >
       <Bookings data={data} isLoading={isLoading} isError={isError} />
     </PageLayout>

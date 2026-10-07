@@ -1,112 +1,114 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @next/next/no-img-element */
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import "@testing-library/jest-dom";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import VehicleDetails from "./index";
-import { Cars as CarType } from "@/lib/database/table-types";
+import { useSearchStore } from "@/context/searchStore";
+import { jsonResponse, renderWithClient } from "@/test-utils";
 
-// Mock components
-jest.mock("@/components/ui/card", () => ({
-  Card: ({ children }: any) => <div>{children}</div>,
-  CardContent: ({ children }: any) => <div>{children}</div>,
+jest.mock("@/context/searchStore", () => ({
+  ...jest.requireActual("@/context/searchStore"),
+  useSearchStore: jest.fn(),
 }));
 
-jest.mock("@/components/ui/button", () => ({
-  Button: ({ children, onClick, variant }: any) => (
-    <button onClick={onClick} data-variant={variant}>
-      {children}
-    </button>
-  ),
-}));
+const day = 24 * 60 * 60 * 1000;
 
-jest.mock("next/image", () => ({
-  __esModule: true,
-  default: ({ src, alt, className, width, height }: any) => (
-    <img
-      src={src}
-      alt={alt}
-      className={className}
-      width={width}
-      height={height}
-      data-testid="car-image"
-    />
-  ),
-}));
-
-// Mock Lucide React icons
-jest.mock("lucide-react", () => ({
-  Users: () => <span data-testid="users-icon" />,
-  Fuel: () => <span data-testid="fuel-icon" />,
-  CarFront: () => <span data-testid="carfront-icon" />,
-  ArrowLeft: () => <span data-testid="arrowleft-icon" />,
-  ArrowRight: () => <span data-testid="arrowright-icon" />,
-}));
-
-// Mock utility function
-jest.mock("@/lib/utils", () => ({
-  formatPrice: (price: number) => `$${price}.00`,
-}));
-
-const mockCar: CarType = {
-  id: "1",
+const car: any = {
+  id: "c1",
   brand: "Tesla",
   model: "Model 3",
+  price_per_day: "119.00",
   body_type: "Sedan",
-  carbon_emissions: 0,
   passenger_capacity: 5,
   transmission: "Automatic",
   fuel_type: "Electric",
-  price_per_day: 99,
-  image: "/tesla-model3.jpg",
+  carbon_emissions: 0,
   available: true,
-  branch_id: "1",
-  created_at: new Date(),
-  updated_at: new Date(),
+  image: "https://autoquest.s3.us-east-2.amazonaws.com/vehicles/tesla.png",
+  branch_name: "AutoQuest Downtown",
+  branch_city: "Toronto",
+  branch_address: "100 King St W",
 };
 
-const mockOnRentNow = jest.fn();
+function withDates(dates: boolean) {
+  (useSearchStore as unknown as jest.Mock).mockReturnValue({
+    startDate: dates ? new Date(Date.now() + 5 * day) : undefined,
+    endDate: dates ? new Date(Date.now() + 9 * day) : undefined,
+    setDates: jest.fn(),
+  });
+}
 
 describe("VehicleDetails", () => {
+  const onRentNow = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
+    global.fetch = jest
+      .fn()
+      .mockResolvedValue(jsonResponse({ available: true })) as any;
   });
 
-  it("renders car details correctly", () => {
-    render(<VehicleDetails car={mockCar} onRentNow={mockOnRentNow} />);
-
-    // Check main car information
-    expect(screen.getByText("Tesla Model 3")).toBeInTheDocument();
-
-    // Check car specifications
-    expect(screen.getByText("Sedan")).toBeInTheDocument();
-    expect(screen.getByText("0 g/km CO2")).toBeInTheDocument();
-    expect(screen.getByText("5 Passengers")).toBeInTheDocument();
-    expect(screen.getByText("Automatic")).toBeInTheDocument();
-    expect(screen.getByText("Electric")).toBeInTheDocument();
-
-    // Check image
-    const image = screen.getByTestId("car-image");
-    expect(image).toHaveAttribute("src", "/tesla-model3.jpg");
-    expect(image).toHaveAttribute("alt", "Tesla Model 3");
+  it("renders car details and specs", () => {
+    withDates(false);
+    renderWithClient(<VehicleDetails car={car} onRentNow={onRentNow} />);
+    expect(
+      screen.getByRole("heading", { name: "Tesla Model 3" })
+    ).toBeInTheDocument();
+    expect(screen.getByText("$119.00")).toBeInTheDocument();
+    expect(screen.getByText("5 passengers")).toBeInTheDocument();
+    expect(screen.getByText("AutoQuest Downtown")).toBeInTheDocument();
   });
 
-  it("calls onRentNow when rent now button is clicked", () => {
-    render(<VehicleDetails car={mockCar} onRentNow={mockOnRentNow} />);
-
-    const rentButton = screen.getByText("Rent Now");
-    fireEvent.click(rentButton);
-
-    expect(mockOnRentNow).toHaveBeenCalledTimes(1);
+  it("asks for dates before renting", () => {
+    withDates(false);
+    renderWithClient(<VehicleDetails car={car} onRentNow={onRentNow} />);
+    expect(
+      screen.getByRole("button", { name: /pick dates to continue/i })
+    ).toBeDisabled();
   });
 
-  it("uses placeholder image when car image is not provided", () => {
-    const carWithoutImage = { ...mockCar, image: "" };
+  it("checks availability and shows the trip total", async () => {
+    withDates(true);
+    renderWithClient(<VehicleDetails car={car} onRentNow={onRentNow} />);
 
-    render(<VehicleDetails car={carWithoutImage} onRentNow={mockOnRentNow} />);
+    expect(
+      await screen.findByText(/available for your dates/i)
+    ).toBeInTheDocument();
+    // 4 days x $119 + $15 fee + 13% HST = $552.88
+    expect(screen.getByText("$552.88")).toBeInTheDocument();
+    expect((global.fetch as jest.Mock).mock.calls[0][0]).toContain(
+      "/api/vehicles/c1/availability"
+    );
+  });
 
-    const image = screen.getByTestId("car-image");
-    expect(image).toHaveAttribute("src", "/car-placeholder.png");
-    expect(image).toHaveAttribute("alt", "Tesla Model 3");
+  it("calls onRentNow when the car is available", async () => {
+    withDates(true);
+    renderWithClient(<VehicleDetails car={car} onRentNow={onRentNow} />);
+    const button = await screen.findByRole("button", { name: /rent now/i });
+    await waitFor(() => expect(button).toBeEnabled());
+    fireEvent.click(button);
+    expect(onRentNow).toHaveBeenCalledTimes(1);
+  });
+
+  it("blocks renting when the car is already booked", async () => {
+    withDates(true);
+    (global.fetch as jest.Mock).mockResolvedValue(
+      jsonResponse({
+        available: false,
+        reason: "Already booked for some of these dates.",
+      })
+    );
+    renderWithClient(<VehicleDetails car={car} onRentNow={onRentNow} />);
+    expect(await screen.findByText(/already booked/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /rent now/i })).toBeDisabled();
+  });
+
+  it("shows an illustration instead of a dead S3 photo", () => {
+    withDates(false);
+    renderWithClient(<VehicleDetails car={car} onRentNow={onRentNow} />);
+    expect(
+      screen.queryByRole("img", { name: "Tesla Model 3" })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("img", { name: /Tesla Model 3 illustration/i })
+    ).toBeInTheDocument();
   });
 });

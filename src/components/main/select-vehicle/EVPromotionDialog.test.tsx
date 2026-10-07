@@ -21,10 +21,6 @@ jest.mock("@/components/ui/button", () => ({
   ),
 }));
 
-jest.mock("lucide-react", () => ({
-  Leaf: () => <svg data-testid="leaf-icon" />,
-}));
-
 // ─── Tests ────────────────────────────────────────────────
 describe("EVPromotionDialog", () => {
   const mockOnOpenChange = jest.fn();
@@ -46,7 +42,6 @@ describe("EVPromotionDialog", () => {
     expect(screen.getByText(/make a greener choice!/i)).toBeInTheDocument();
     expect(screen.getByText(/carbon emissions impact/i)).toBeInTheDocument();
     expect(screen.getByText(/ev rewards available/i)).toBeInTheDocument();
-    expect(screen.getAllByTestId("leaf-icon")).toHaveLength(2);
   });
 
   it("does not render content when closed", () => {

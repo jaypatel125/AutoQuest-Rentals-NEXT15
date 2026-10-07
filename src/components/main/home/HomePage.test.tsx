@@ -1,15 +1,21 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { useQuery } from "@tanstack/react-query";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import { useRouter } from "next/navigation";
 import HomePage from "./index";
+import { renderWithClient } from "@/test-utils";
+import {
+  fetchCarBodyTypes,
+  fetchCarBrands,
+  fetchFeaturedCars,
+  fetchFleetStats,
+} from "@/app/actions";
 
 jest.mock("@/app/actions", () => ({
-  getData: jest.fn().mockResolvedValue([]),
+  fetchCarBrands: jest.fn(),
+  fetchCarBodyTypes: jest.fn(),
+  fetchFeaturedCars: jest.fn(),
+  fetchFleetStats: jest.fn(),
 }));
 
-jest.mock("@tanstack/react-query", () => ({
-  useQuery: jest.fn(),
-}));
 jest.mock("next/navigation", () => ({
   useRouter: jest.fn(),
 }));
@@ -24,41 +30,63 @@ describe("HomePage", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (useRouter as jest.Mock).mockReturnValue({ push: mockPush });
+    (fetchCarBrands as jest.Mock).mockResolvedValue(["Tesla", "Ford"]);
+    (fetchCarBodyTypes as jest.Mock).mockResolvedValue(["Suv", "Sedan"]);
+    (fetchFleetStats as jest.Mock).mockResolvedValue({
+      vehicles: 31,
+      electric: 12,
+      low_emission: 19,
+      brands: 12,
+      branches: 5,
+      cities: 5,
+    });
+    (fetchFeaturedCars as jest.Mock).mockResolvedValue([
+      {
+        id: "c1",
+        brand: "Kia",
+        model: "EV6",
+        fuel_type: "Electric",
+        body_type: "Hatchback",
+        transmission: "Automatic",
+        passenger_capacity: 5,
+        carbon_emissions: 0,
+        price_per_day: "105.00",
+        image: null,
+        branch_city: "Calgary",
+      },
+    ]);
   });
 
-  it("shows loader when data is loading", () => {
-    (useQuery as jest.Mock)
-      .mockReturnValueOnce({ isLoading: true })
-      .mockReturnValueOnce({ isLoading: true });
-    render(<HomePage />);
-    expect(screen.getByText(/Loading vehicle details/i)).toBeInTheDocument();
+  it("renders the hero and search right away", () => {
+    renderWithClient(<HomePage />);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
+      /drive green/i
+    );
+    expect(screen.getByText("Search Bar")).toBeInTheDocument();
   });
 
-  it("shows error message when API fails", () => {
-    (useQuery as jest.Mock)
-      .mockReturnValueOnce({ error: true })
-      .mockReturnValueOnce({ error: true });
-    render(<HomePage />);
-    expect(screen.getByText(/Failed to load details/i)).toBeInTheDocument();
+  it("shows live fleet stats instead of hard-coded numbers", async () => {
+    renderWithClient(<HomePage />);
+    expect(await screen.findByText("31")).toBeInTheDocument();
+    expect(screen.getByText("19")).toBeInTheDocument();
   });
 
-  it("renders brands and body types correctly", async () => {
-    (useQuery as jest.Mock)
-      .mockReturnValueOnce({ data: ["Tesla", "Ford"], isLoading: false })
-      .mockReturnValueOnce({ data: ["SUV", "Sedan"], isLoading: false });
-    render(<HomePage />);
+  it("renders brands, body types, and featured cars", async () => {
+    renderWithClient(<HomePage />);
     await waitFor(() => {
       expect(screen.getByText("Tesla")).toBeInTheDocument();
       expect(screen.getByText("SUV")).toBeInTheDocument();
+      expect(screen.getByText("Kia EV6")).toBeInTheDocument();
     });
+    expect(screen.getByRole("link", { name: /SUV/ })).toHaveAttribute(
+      "href",
+      "/select-vehicle?bodyTypes=Suv"
+    );
   });
 
-  it("navigates to rewards page when clicking Learn More", async () => {
-    (useQuery as jest.Mock)
-      .mockReturnValueOnce({ data: [], isLoading: false })
-      .mockReturnValueOnce({ data: [], isLoading: false });
-    render(<HomePage />);
-    screen.getByRole("button", { name: /learn more/i }).click();
-    await waitFor(() => expect(mockPush).toHaveBeenCalledWith("/rewards"));
+  it("navigates to rewards page when clicking Learn More", () => {
+    renderWithClient(<HomePage />);
+    fireEvent.click(screen.getByRole("button", { name: /learn more/i }));
+    expect(mockPush).toHaveBeenCalledWith("/rewards");
   });
 });

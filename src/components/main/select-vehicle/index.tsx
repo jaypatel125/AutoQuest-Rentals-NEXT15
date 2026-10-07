@@ -1,67 +1,48 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Users, Fuel, Car, CarFront } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import {
+  CalendarDays,
+  CarFront,
+  MapPin,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { useSearchStore } from "@/context/searchStore";
-import { Cars as CarType } from "@/lib/database/table-types";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState, useEffect } from "react";
-import { EVPromotionDialog } from "@/components/main/select-vehicle/EVPromotionDialog";
-import { useRouter, useSearchParams } from "next/navigation";
-import Loader from "@/components/utility/Loader";
-import { fetchCars } from "@/app/(main)/select-vehicle/actions";
-import { Separator } from "../../ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "../../ui/sheet";
-import { formatPrice } from "@/lib/utils";
+} from "@/components/ui/sheet";
+import { toDate, useSearchStore } from "@/context/searchStore";
+import { EVPromotionDialog } from "@/components/main/select-vehicle/EVPromotionDialog";
+import { fetchCars } from "@/app/(main)/select-vehicle/actions";
 import { SearchBar } from "../searchbar";
-function safeToDate(
-  date: string | number | Date | undefined
-): Date | undefined {
-  if (!date) return undefined;
-  if (date instanceof Date) return date;
-  try {
-    return new Date(date);
-  } catch {
-    return undefined;
-  }
-}
-
-function parseFiltersFromParams(params: URLSearchParams | null): FilterState {
-  if (!params) {
-    return {
-      brands: [],
-      fuelTypes: [],
-      transmissions: [],
-      bodyTypes: [],
-      passengerCapacities: [],
-    };
-  }
-
-  return {
-    brands: params.get("brands")?.split(",").filter(Boolean) || [],
-    fuelTypes: params.get("fuelTypes")?.split(",").filter(Boolean) || [],
-    transmissions:
-      params.get("transmissions")?.split(",").filter(Boolean) || [],
-    bodyTypes: params.get("bodyTypes")?.split(",").filter(Boolean) || [],
-    passengerCapacities:
-      params
-        .get("passengerCapacities")
-        ?.split(",")
-        .map(Number)
-        .filter((n) => !isNaN(n)) || [],
-  };
-}
+import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
+import Error from "@/components/utility/Error";
+import { EmptyState } from "@/components/utility/EmptyState";
+import {
+  CarListing,
+  VehicleCard,
+  VehicleCardSkeleton,
+} from "@/components/vehicles/VehicleCard";
+import { bodyTypeLabel } from "@/lib/vehicles";
+import { rentalDays } from "@/lib/pricing";
+import { formatPrice } from "@/lib/utils";
 
 interface FilterState {
   brands: string[];
@@ -71,116 +52,169 @@ interface FilterState {
   passengerCapacities: number[];
 }
 
-function filtersToQueryString(filters: FilterState): string {
+type SortKey = "price-asc" | "price-desc" | "green" | "seats";
+
+const EMPTY_FILTERS: FilterState = {
+  brands: [],
+  fuelTypes: [],
+  transmissions: [],
+  bodyTypes: [],
+  passengerCapacities: [],
+};
+
+const FILTER_LABELS: Record<keyof FilterState, string> = {
+  fuelTypes: "Fuel type",
+  bodyTypes: "Body type",
+  brands: "Brand",
+  transmissions: "Transmission",
+  passengerCapacities: "Seats",
+};
+
+const FILTER_ORDER: (keyof FilterState)[] = [
+  "fuelTypes",
+  "bodyTypes",
+  "brands",
+  "transmissions",
+  "passengerCapacities",
+];
+
+function parseFiltersFromParams(params: URLSearchParams | null): FilterState {
+  if (!params) return EMPTY_FILTERS;
+  const list = (key: string) =>
+    params.get(key)?.split(",").filter(Boolean) || [];
+  return {
+    brands: list("brands"),
+    fuelTypes: list("fuelTypes"),
+    transmissions: list("transmissions"),
+    bodyTypes: list("bodyTypes"),
+    passengerCapacities: list("passengerCapacities")
+      .map(Number)
+      .filter((n) => !isNaN(n)),
+  };
+}
+
+function toQueryString(
+  filters: FilterState,
+  sort: SortKey,
+  maxPrice: number | null
+) {
   const params = new URLSearchParams();
-  if (filters.brands.length > 0) params.set("brands", filters.brands.join(","));
-  if (filters.fuelTypes.length > 0)
-    params.set("fuelTypes", filters.fuelTypes.join(","));
-  if (filters.transmissions.length > 0)
-    params.set("transmissions", filters.transmissions.join(","));
-  if (filters.bodyTypes.length > 0)
-    params.set("bodyTypes", filters.bodyTypes.join(","));
-  if (filters.passengerCapacities.length > 0)
-    params.set("passengerCapacities", filters.passengerCapacities.join(","));
+  for (const key of FILTER_ORDER) {
+    if (filters[key].length) params.set(key, filters[key].join(","));
+  }
+  if (sort !== "price-asc") params.set("sort", sort);
+  if (maxPrice) params.set("maxPrice", String(maxPrice));
   return params.toString();
 }
 
+function optionLabel(key: keyof FilterState, value: string | number) {
+  if (key === "passengerCapacities") return `${value} seats`;
+  if (key === "bodyTypes") return bodyTypeLabel(String(value));
+  return String(value);
+}
+
 export default function SelectVehiclePage() {
-  const { branch, startDate, endDate } = useSearchStore();
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const { branch, startDate, endDate, setSelectedCar } = useSearchStore();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  // Parse initial filters from URL only once
   const [selectedFilters, setSelectedFilters] = useState<FilterState>(() =>
     parseFiltersFromParams(searchParams as unknown as URLSearchParams)
   );
+  const [sort, setSort] = useState<SortKey>(
+    () => (searchParams?.get("sort") as SortKey) || "price-asc"
+  );
+  const [maxPrice, setMaxPrice] = useState<number | null>(() => {
+    const v = Number(searchParams?.get("maxPrice"));
+    return Number.isFinite(v) && v > 0 ? v : null;
+  });
 
-  const startDateObj = safeToDate(startDate);
-  const endDateObj = safeToDate(endDate);
-
+  const start = toDate(startDate);
+  const end = toDate(endDate);
   const city = branch?.city || "";
+  const hasTrip = !!city && !!start && !!end;
 
   const {
     data: cars = [],
     isLoading,
     error,
-  } = useQuery<CarType[]>({
-    queryKey: [
-      "cars",
-      city,
-      startDateObj?.toISOString(),
-      endDateObj?.toISOString(),
-    ],
-    queryFn: () => fetchCars(city, startDateObj, endDateObj),
-    enabled: !!city && !!startDateObj && !!endDateObj,
+    refetch,
+  } = useQuery<CarListing[]>({
+    queryKey: ["cars", city, start?.toISOString(), end?.toISOString()],
+    queryFn: () => fetchCars(city, start, end),
   });
 
-  // Sync filters with URL
+  // Keep filters in the URL so results can be shared and survive reloads.
   useEffect(() => {
-    const queryString = filtersToQueryString(selectedFilters);
-    const currentQueryString = searchParams?.toString() || "";
-
-    if (queryString !== currentQueryString) {
-      const newUrl = queryString
-        ? `/select-vehicle?${queryString}`
-        : "/select-vehicle";
-      router.push(newUrl, { scroll: false });
+    const next = toQueryString(selectedFilters, sort, maxPrice);
+    if (next !== (searchParams?.toString() || "")) {
+      router.replace(next ? `/select-vehicle?${next}` : "/select-vehicle", {
+        scroll: false,
+      });
     }
-  }, [selectedFilters, router, searchParams]);
-
-  useEffect(() => {
-    if (!searchParams?.toString()) {
-      clearAllFilters();
-    }
-  }, [city, startDate, endDate, searchParams]);
+  }, [selectedFilters, sort, maxPrice, router, searchParams]);
 
   const availableFilters = useMemo(() => {
-    if (!cars.length) return null;
     const distinct = <T,>(arr: T[]) => Array.from(new Set(arr)).filter(Boolean);
-
     return {
-      brands: distinct(cars.map((c) => c.brand)),
-      fuelTypes: distinct(cars.map((c) => c.fuel_type)),
-      transmissions: distinct(cars.map((c) => c.transmission)),
-      bodyTypes: distinct(cars.map((c) => c.body_type)),
-      passengerCapacities: distinct(
-        cars.map((c) => c.passenger_capacity!)
-      ).sort((a, b) => a - b),
-    };
+      fuelTypes: distinct(cars.map((c) => c.fuel_type as string)),
+      bodyTypes: distinct(cars.map((c) => c.body_type as string)),
+      brands: distinct(cars.map((c) => c.brand)).sort(),
+      transmissions: distinct(cars.map((c) => c.transmission as string)),
+      passengerCapacities: distinct(cars.map((c) => c.passenger_capacity)).sort(
+        (a, b) => a - b
+      ),
+    } as Record<keyof FilterState, (string | number)[]>;
   }, [cars]);
 
+  const priceCeiling = useMemo(
+    () =>
+      Math.ceil(Math.max(0, ...cars.map((c) => Number(c.price_per_day))) / 10) *
+      10,
+    [cars]
+  );
+
   const filteredCars = useMemo(() => {
-    if (!cars.length) return [];
-    return cars.filter((car) => {
-      if (
-        selectedFilters.brands.length &&
-        !selectedFilters.brands.includes(car.brand)
-      )
+    const f = selectedFilters;
+    const list = cars.filter((car) => {
+      if (f.brands.length && !f.brands.includes(car.brand)) return false;
+      if (f.fuelTypes.length && !f.fuelTypes.includes(car.fuel_type!))
         return false;
       if (
-        selectedFilters.fuelTypes.length &&
-        !selectedFilters.fuelTypes.includes(car.fuel_type!)
+        f.transmissions.length &&
+        !f.transmissions.includes(car.transmission!)
       )
+        return false;
+      if (f.bodyTypes.length && !f.bodyTypes.includes(car.body_type!))
         return false;
       if (
-        selectedFilters.transmissions.length &&
-        !selectedFilters.transmissions.includes(car.transmission!)
+        f.passengerCapacities.length &&
+        !f.passengerCapacities.includes(car.passenger_capacity!)
       )
         return false;
-      if (
-        selectedFilters.bodyTypes.length &&
-        !selectedFilters.bodyTypes.includes(car.body_type!)
-      )
-        return false;
-      if (
-        selectedFilters.passengerCapacities.length &&
-        !selectedFilters.passengerCapacities.includes(car.passenger_capacity!)
-      )
-        return false;
+      if (maxPrice && Number(car.price_per_day) > maxPrice) return false;
       return true;
     });
-  }, [cars, selectedFilters]);
+    const price = (c: CarListing) => Number(c.price_per_day);
+    return [...list].sort((a, b) => {
+      switch (sort) {
+        case "price-desc":
+          return price(b) - price(a);
+        case "green":
+          return (
+            Number(a.carbon_emissions) - Number(b.carbon_emissions) ||
+            price(a) - price(b)
+          );
+        case "seats":
+          return (
+            b.passenger_capacity - a.passenger_capacity || price(a) - price(b)
+          );
+        default:
+          return price(a) - price(b);
+      }
+    });
+  }, [cars, selectedFilters, sort, maxPrice]);
 
   const handleFilterChange = (
     category: keyof FilterState,
@@ -188,312 +222,294 @@ export default function SelectVehiclePage() {
     checked: boolean
   ) => {
     setSelectedFilters((prev) => {
-      const currentValues = [...prev[category]];
+      const current = [...prev[category]] as (string | number)[];
       return {
         ...prev,
         [category]: checked
-          ? [...currentValues, value]
-          : currentValues.filter((v) => v !== value),
+          ? [...current, value]
+          : current.filter((v) => v !== value),
       };
     });
   };
 
   const clearAllFilters = () => {
-    setSelectedFilters({
-      brands: [],
-      fuelTypes: [],
-      transmissions: [],
-      bodyTypes: [],
-      passengerCapacities: [],
-    });
+    setSelectedFilters(EMPTY_FILTERS);
+    setMaxPrice(null);
   };
 
-  const hasActiveFilters = Object.values(selectedFilters).some(
-    (filters) => filters.length > 0
+  const activeChips = FILTER_ORDER.flatMap((key) =>
+    (selectedFilters[key] as (string | number)[]).map((value) => ({
+      key,
+      value,
+    }))
   );
+  const hasActiveFilters = activeChips.length > 0 || !!maxPrice;
 
-  if (error) return <div>Error loading cars: {(error as Error).message}</div>;
-
-  const handleLocalCheckoutEV = () => {
-    setSelectedFilters({
-      ...selectedFilters,
-      fuelTypes: ["Electric"],
-    });
-    setDialogOpen(false);
+  const handleRent = (car: CarListing) => {
+    setSelectedCar(car);
+    if (!hasTrip) {
+      router.push(`/select-vehicle/${car.id}`);
+      return;
+    }
+    if (car.fuel_type === "Electric") {
+      router.push(`/checkout`);
+      return;
+    }
+    setDialogOpen(true);
   };
 
-  return (
-    <div>
-      <SearchBar />
-
-      <div className="flex flex-col md:flex-row gap-6">
-        {!city || !startDate || !endDate ? (
-          <div className="w-full h-[60vh] flex items-center justify-center">
-            <div className="flex flex-col items-center gap-2">
-              <h3 className="text-muted-foreground">
-                Select a location and date range to get started.
-              </h3>
+  const filterPanel = (idPrefix: string) => (
+    <div className="space-y-6">
+      {cars.length > 0 && priceCeiling > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold">Max price per day</h4>
+            <span className="text-sm font-semibold text-primary">
+              {maxPrice ? formatPrice(maxPrice) : "Any"}
+            </span>
+          </div>
+          <input
+            type="range"
+            aria-label="Maximum price per day"
+            min={10}
+            max={priceCeiling}
+            step={5}
+            value={maxPrice ?? priceCeiling}
+            onChange={(e) => {
+              const v = Number(e.target.value);
+              setMaxPrice(v >= priceCeiling ? null : v);
+            }}
+            className="w-full"
+          />
+        </div>
+      )}
+      {FILTER_ORDER.map((key) =>
+        availableFilters[key].length ? (
+          <div
+            key={key}
+            className="space-y-3 border-t pt-5 first:border-t-0 first:pt-0"
+          >
+            <h4 className="text-sm font-semibold">{FILTER_LABELS[key]}</h4>
+            <div className="space-y-2.5">
+              {availableFilters[key].map((opt) => {
+                const id = `${idPrefix}-${key}-${opt}`;
+                return (
+                  <div key={String(opt)} className="flex items-center gap-2.5">
+                    <Checkbox
+                      id={id}
+                      checked={(
+                        selectedFilters[key] as (string | number)[]
+                      ).includes(opt)}
+                      onCheckedChange={(checked) =>
+                        handleFilterChange(key, opt, checked === true)
+                      }
+                    />
+                    <Label htmlFor={id} className="cursor-pointer font-normal">
+                      {optionLabel(key, opt)}
+                    </Label>
+                  </div>
+                );
+              })}
             </div>
           </div>
-        ) : (
-          <>
-            {/* Filters Sidebar */}
-            <aside className="md:w-1/5 space-y-6">
-              {/* Active filters summary */}
-              {(city || startDate || endDate || hasActiveFilters) && (
-                <div className="px-6 py-4 space-y-2 bg-muted rounded-lg">
-                  <h3 className="font-semibold my-2">Search Results For:</h3>
-                  <Button
-                    iconType="filter"
-                    variant="ghost"
-                    onClick={clearAllFilters}
-                    className="flex items-center gap-1 text-sm"
-                  >
-                    Clear Filters
-                  </Button>
-                  <div className="flex flex-wrap gap-2">
-                    {city && (
-                      <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm">
-                        Location: {city}
-                      </span>
-                    )}
-                    {startDate && (
-                      <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm">
-                        Pickup: {new Date(startDate).toLocaleDateString()}
-                      </span>
-                    )}
-                    {endDate && (
-                      <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm">
-                        Return: {new Date(endDate).toLocaleDateString()}
-                      </span>
-                    )}
-                    {hasActiveFilters &&
-                      Object.entries(selectedFilters).map(([key, values]) =>
-                        values.length > 0 ? (
-                          <span
-                            key={key}
-                            className="bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm"
-                          >
-                            {key
-                              .replace(/([A-Z])/g, " $1")
-                              .replace(/^./, (str) => str.toUpperCase())}
-                            : {values.join(", ")}
-                          </span>
-                        ) : null
-                      )}
-                  </div>
-                </div>
-              )}
+        ) : null
+      )}
+    </div>
+  );
 
-              {/* Filters UI */}
-              {availableFilters && (
-                <Card className="hidden md:block">
-                  <CardContent>
-                    <div className="space-y-4">
-                      {Object.entries(availableFilters).map(
-                        ([key, values], idx) => (
-                          <div key={key} className="space-y-4">
-                            <h4 className="font-semibold text-sm">
-                              {key
-                                .replace(/([A-Z])/g, " $1")
-                                .replace(/^./, (str) => str.toUpperCase())}
-                            </h4>
-                            <div className="space-y-2">
-                              {values.map((opt, i) => (
-                                <div
-                                  key={i}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <Checkbox
-                                    id={`${key}-${i}`}
-                                    checked={selectedFilters[
-                                      key as keyof FilterState
-                                    ].includes(opt as never)}
-                                    onCheckedChange={(checked) =>
-                                      handleFilterChange(
-                                        key as keyof FilterState,
-                                        opt!,
-                                        checked === true
-                                      )
-                                    }
-                                  />
-                                  <Label htmlFor={`${key}-${i}`}>
-                                    {opt}{" "}
-                                    {key === "passengerCapacities" &&
-                                      "Passengers"}
-                                  </Label>
-                                </div>
-                              ))}
-                            </div>
-                            {/* Add separator between groups except last */}
-                            {idx <
-                              Object.entries(availableFilters).length - 1 && (
-                              <Separator />
-                            )}
-                          </div>
-                        )
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              <div className="md:hidden mb-4">
-                <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      Filters
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent side="left" className="w-[70%] sm:w-2/5 p-6">
-                    <SheetHeader className="px-0 text-xl">
-                      <SheetTitle>Filters</SheetTitle>
-                    </SheetHeader>
-                    <Separator />
-                    <div className="space-y-4">
-                      {availableFilters &&
-                        Object.entries(availableFilters).map(
-                          ([key, values], idx) => (
-                            <div key={key} className="space-y-4 ">
-                              <h4 className="font-semibold ">
-                                {key
-                                  .replace(/([A-Z])/g, " $1")
-                                  .replace(/^./, (str) => str.toUpperCase())}
-                              </h4>
-                              <div className="space-y-2 text-md">
-                                {values.map((opt, i) => (
-                                  <div
-                                    key={i}
-                                    className="flex items-center space-x-2"
-                                  >
-                                    <Checkbox
-                                      id={`mobile-${key}-${i}`}
-                                      checked={selectedFilters[
-                                        key as keyof FilterState
-                                      ].includes(opt as never)}
-                                      onCheckedChange={(checked) =>
-                                        handleFilterChange(
-                                          key as keyof FilterState,
-                                          opt!,
-                                          checked === true
-                                        )
-                                      }
-                                    />
-                                    <Label htmlFor={`mobile-${key}-${i}`}>
-                                      {opt}{" "}
-                                      {key === "passengerCapacities" &&
-                                        "Passengers"}
-                                    </Label>
-                                  </div>
-                                ))}
-                              </div>
-                              {idx <
-                                Object.entries(availableFilters).length - 1 && (
-                                <Separator />
-                              )}
-                            </div>
-                          )
-                        )}
-                    </div>
-                  </SheetContent>
-                </Sheet>
-              </div>
-            </aside>
-
-            {/* Cars Grid */}
-            <div className="md:w-4/5 mb-6">
-              {isLoading ? (
-                <Loader title=" Fetching available vehicles" />
-              ) : filteredCars.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredCars.map((car) => (
-                    <Link
-                      key={car.id}
-                      href={`/select-vehicle/${car.id}`}
-                      className="block"
-                    >
-                      <Card className="hover:shadow-md cursor-pointer transition">
-                        <CardContent className="px-4">
-                          <Image
-                            src={car.image || "/car-placeholder.png"}
-                            alt={`${car.brand} ${car.model}`}
-                            width={400}
-                            height={200}
-                            className="rounded-md mb-3 h-48 object-cover"
-                          />
-                          <h3 className="font-semibold mb-2">
-                            {car.brand} {car.model}
-                          </h3>
-                          <ul className="text-sm text-muted-foreground space-y-1 mb-3">
-                            <li>
-                              <Users className="inline h-4 w-4 mr-1" />{" "}
-                              {car.passenger_capacity} Passengers
-                            </li>
-                            <li>
-                              <Car className="inline h-4 w-4 mr-1" />{" "}
-                              {car.transmission}
-                            </li>
-                            <li>
-                              <Fuel className="inline h-4 w-4 mr-1" />{" "}
-                              {car.fuel_type}
-                            </li>
-                            <li>
-                              <CarFront className="inline h-4 w-4 mr-1" />{" "}
-                              {car.body_type}
-                            </li>
-                          </ul>
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-semibold">
-                              {formatPrice(car.price_per_day)}/day
-                            </span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              iconType="right-arrow"
-                              className="whitespace-nowrap"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                useSearchStore.getState().setSelectedCar(car);
-                                if (car.fuel_type === "Electric") {
-                                  router.push(`/checkout`);
-                                  return;
-                                }
-
-                                setDialogOpen(true);
-                              }}
-                            >
-                              Rent Now
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Link>
-                  ))}
-                </div>
+  return (
+    <div className="pb-20">
+      <div className="border-b bg-muted/40">
+        <MaxWidthWrapper className="space-y-5 py-8">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold md:text-4xl">
+              {city ? `Cars in ${city}` : "Browse cars"}
+            </h1>
+            <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-muted-foreground">
+              {hasTrip ? (
+                <>
+                  <span className="inline-flex items-center gap-1.5">
+                    <CalendarDays className="size-4" />
+                    {format(start!, "EEE, MMM d")} to{" "}
+                    {format(end!, "EEE, MMM d")}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="size-4" />
+                    {rentalDays(start!, end!)} day trip
+                  </span>
+                </>
               ) : (
-                <div className="text-center py-12">
-                  <h3 className="text-xl font-semibold mb-2">
-                    No vehicles found
-                  </h3>
-                  <p className="text-muted-foreground mb-4">
-                    {hasActiveFilters
-                      ? "Try adjusting your filters to find more options."
-                      : "Try adjusting your search criteria to find more options."}
-                  </p>
-                  {hasActiveFilters && (
-                    <Button onClick={clearAllFilters}>Clear All Filters</Button>
-                  )}
-                </div>
+                <span>Select a location and date range to get started.</span>
               )}
-            </div>
-          </>
-        )}
+            </p>
+          </div>
+          <SearchBar onSearch={() => undefined} />
+        </MaxWidthWrapper>
       </div>
 
-      {/* EV Promo */}
+      <MaxWidthWrapper className="mt-8 flex flex-col gap-8 lg:flex-row">
+        <aside className="hidden w-64 shrink-0 lg:block">
+          <div className="sticky top-24 rounded-2xl border bg-card p-5">
+            <div className="mb-5 flex items-center justify-between">
+              <h3 className="font-semibold">Filters</h3>
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearAllFilters}
+                  className="cursor-pointer text-sm font-medium text-primary hover:underline"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+            {filterPanel("desktop")}
+          </div>
+        </aside>
+
+        <div className="min-w-0 flex-1 space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted-foreground" aria-live="polite">
+              {isLoading ? (
+                "Finding cars..."
+              ) : (
+                <>
+                  <strong className="text-foreground">
+                    {filteredCars.length}
+                  </strong>{" "}
+                  {filteredCars.length === 1 ? "car" : "cars"}
+                  {hasTrip ? " available for your dates" : ""}
+                </>
+              )}
+            </p>
+            <div className="flex items-center gap-2">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm" className="lg:hidden">
+                    <SlidersHorizontal /> Filters
+                    {activeChips.length > 0 && (
+                      <span className="rounded-full bg-primary px-1.5 text-[11px] text-primary-foreground">
+                        {activeChips.length}
+                      </span>
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent
+                  side="left"
+                  className="w-[85%] max-w-sm overflow-y-auto p-6"
+                >
+                  <SheetHeader className="px-0">
+                    <SheetTitle>Filters</SheetTitle>
+                  </SheetHeader>
+                  {filterPanel("mobile")}
+                </SheetContent>
+              </Sheet>
+              <Select value={sort} onValueChange={(v) => setSort(v as SortKey)}>
+                <SelectTrigger
+                  className="h-8 w-[190px] rounded-lg text-[13px]"
+                  aria-label="Sort by"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  <SelectItem value="price-asc">Price: low to high</SelectItem>
+                  <SelectItem value="price-desc">Price: high to low</SelectItem>
+                  <SelectItem value="green">Greenest first</SelectItem>
+                  <SelectItem value="seats">Most seats</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {hasActiveFilters && (
+            <div className="flex flex-wrap items-center gap-2">
+              {activeChips.map(({ key, value }) => (
+                <button
+                  key={`${key}-${value}`}
+                  type="button"
+                  onClick={() => handleFilterChange(key, value, false)}
+                  className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-accent px-3 py-1 text-sm font-medium text-accent-foreground hover:bg-accent/70"
+                >
+                  {optionLabel(key, value)} <X className="size-3.5" />
+                </button>
+              ))}
+              {maxPrice && (
+                <button
+                  type="button"
+                  onClick={() => setMaxPrice(null)}
+                  className="inline-flex cursor-pointer items-center gap-1 rounded-full bg-accent px-3 py-1 text-sm font-medium text-accent-foreground hover:bg-accent/70"
+                >
+                  Under {formatPrice(maxPrice)}/day <X className="size-3.5" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="cursor-pointer px-2 text-sm font-medium text-muted-foreground hover:text-foreground lg:hidden"
+              >
+                Clear Filters
+              </button>
+            </div>
+          )}
+
+          {!hasTrip && (
+            <div className="flex items-center gap-3 rounded-2xl border border-primary/20 bg-accent/50 px-4 py-3 text-sm text-accent-foreground">
+              <CalendarDays className="size-5 shrink-0" />
+              Add a location and dates above to check availability and see trip
+              totals.
+            </div>
+          )}
+
+          {error ? (
+            <Error
+              error={(error as Error).message || "Failed to load vehicles."}
+              onRetry={() => refetch()}
+            />
+          ) : isLoading ? (
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <VehicleCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : filteredCars.length > 0 ? (
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {filteredCars.map((car, i) => (
+                <VehicleCard
+                  key={car.id}
+                  car={car}
+                  start={hasTrip ? start : undefined}
+                  end={hasTrip ? end : undefined}
+                  onRent={handleRent}
+                  priority={i < 3}
+                />
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={CarFront}
+              title="No vehicles found"
+              description={
+                hasActiveFilters
+                  ? "Try adjusting your filters to find more options."
+                  : "Try adjusting your search criteria to find more options."
+              }
+              action={
+                hasActiveFilters ? (
+                  <Button onClick={clearAllFilters}>Clear All Filters</Button>
+                ) : undefined
+              }
+            />
+          )}
+        </div>
+      </MaxWidthWrapper>
+
       <EVPromotionDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
-        onCheckoutEV={handleLocalCheckoutEV}
+        onCheckoutEV={() => {
+          setSelectedFilters((prev) => ({ ...prev, fuelTypes: ["Electric"] }));
+          setDialogOpen(false);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
         onContinue={() => {
           setDialogOpen(false);
           router.push("/checkout");

@@ -10,12 +10,12 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { formatPrice } from "@/lib/utils";
 
 const COLORS = [
-  "#0088FE",
-  "#00C49F",
-  "#FFBB28",
-  "#FF8042",
-  "#8884D8",
-  "#82CA9D",
+  "var(--chart-2)",
+  "var(--chart-1)",
+  "var(--chart-3)",
+  "var(--chart-5)",
+  "var(--chart-4)",
+  "oklch(0.7 0.11 190)",
 ];
 
 interface VehiclesTabProps {
@@ -83,7 +83,7 @@ export const VehiclesTab: React.FC<VehiclesTabProps> = ({ data }) => {
                   labelLine={false}
                   label={({ fuel_type }) => `${fuel_type}`}
                   outerRadius={130}
-                  fill="#8884d8"
+                  fill="var(--chart-4)"
                   dataKey="total_revenue"
                 >
                   {data.fuelTypePerformance.map((entry, index) => (

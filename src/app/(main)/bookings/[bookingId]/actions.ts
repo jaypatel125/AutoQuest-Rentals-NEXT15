@@ -4,10 +4,14 @@ export interface Booking {
   car_id: string;
   start_date: string;
   end_date: string;
+  sub_total: string | null;
   total_price: string;
   booking_status: string;
   booking_created_at: string;
   booking_updated_at: string;
+  cancelled_at: string | null;
+  refund_amount: string | null;
+  paid_online: boolean;
   car_branch_id: string;
   brand: string;
   model: string;
@@ -19,40 +23,36 @@ export interface Booking {
   price_per_day: string;
   available: boolean;
   image: string;
-  car_created_at: string;
-  car_updated_at: string;
   branch_id: string;
   branch_name: string;
   branch_address: string;
   branch_city: string;
   branch_province: string;
   branch_postal_code: string | null;
-  branch_created_at: string;
-  branch_updated_at: string;
   points_earned: string;
   points_redeemed: string;
 }
 
 export default async function getBooking(bookingId: string): Promise<Booking> {
-  const res = await fetch(`/api/bookings/${bookingId}`);
+  const res = await fetch(`/api/bookings/${encodeURIComponent(bookingId)}`);
   if (!res.ok) throw new Error("Failed to fetch booking");
   return res.json();
 }
 
-export async function cancelBooking(bookingId: string) {
-  try {
-    const res = await fetch(`/api/bookings/${bookingId}`, {
-      method: "PATCH",
-    });
+export interface CancelResult {
+  success: boolean;
+  refund: number;
+  fee: number;
+  refundedAutomatically: boolean;
+}
 
-    if (!res.ok) {
-      const error = await res.json();
-      throw new Error(error?.error || "Failed to cancel booking");
-    }
-
-    return await res.json();
-  } catch (err) {
-    console.error("Error cancelling booking:", err);
-    throw err;
+export async function cancelBooking(bookingId: string): Promise<CancelResult> {
+  const res = await fetch(`/api/bookings/${encodeURIComponent(bookingId)}`, {
+    method: "PATCH",
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data?.error || "Failed to cancel booking");
   }
+  return data;
 }

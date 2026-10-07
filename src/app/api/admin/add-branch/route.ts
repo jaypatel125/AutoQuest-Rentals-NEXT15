@@ -1,35 +1,33 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
 import { Branches } from "@/lib/database/table-types";
-import { getServerSideSession } from "@/hooks/SessionHandler";
+import { requireAdmin } from "@/lib/api-auth";
+import { branchSchema } from "@/lib/zod";
 
 export async function POST(request: Request) {
+  const guard = await requireAdmin();
+  if (guard.error) return guard.error;
+
   try {
-    const session = await getServerSideSession();
+    const body = await request.json().catch(() => null);
+    const parsed = branchSchema.safeParse(body ?? {});
 
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (session.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-    const { name, address, city, province, postal_code } = await request.json();
-
-    if (!name || !address || !city || !province || !postal_code) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "All fields are required." },
+        {
+          error: "All fields are required.",
+          fields: parsed.error.flatten().fieldErrors,
+        },
         { status: 400 }
       );
     }
+    const { name, address, city, province, postal_code } = parsed.data;
 
     const result = await pool.query<Branches>(
-      `
-      INSERT INTO branches (name, address, city, province, postal_code)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *;
-      `,
-      [name, address, city, province, postal_code]
+      `INSERT INTO branches (name, address, city, province, postal_code)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [name, address, city, province, postal_code.toUpperCase()]
     );
 
     return NextResponse.json(

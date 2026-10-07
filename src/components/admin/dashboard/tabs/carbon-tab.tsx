@@ -68,7 +68,7 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
                   yAxisId="left"
                   type="monotone"
                   dataKey="total_carbon_emissions"
-                  stroke="#0088FE"
+                  stroke="var(--chart-2)"
                   name="Total Carbon Emissions"
                   strokeWidth={2}
                 />
@@ -76,7 +76,7 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
                   yAxisId="right"
                   type="monotone"
                   dataKey="avg_carbon_per_booking"
-                  stroke="#00C49F"
+                  stroke="var(--chart-1)"
                   name="Avg Carbon per Booking"
                   strokeWidth={2}
                 />
@@ -106,7 +106,7 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
                     <Tooltip />
                     <Bar
                       dataKey="avg_carbon_emissions"
-                      fill="#0088FE"
+                      fill="var(--chart-2)"
                       name="Avg Carbon Emissions"
                     />
                   </BarChart>
@@ -124,7 +124,7 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
                     <Tooltip />
                     <Bar
                       dataKey="rental_count"
-                      fill="#00C49F"
+                      fill="var(--chart-1)"
                       name="Rental Count"
                     />
                   </BarChart>
@@ -158,12 +158,12 @@ export const CarbonTab: React.FC<CarbonTabProps> = ({ data }) => {
                 <Bar
                   dataKey="carbon_per_rental"
                   name="Carbon per Rental"
-                  fill="#0088FE"
+                  fill="var(--chart-2)"
                 />
                 <Bar
                   dataKey="rental_count"
                   name="Rental Count"
-                  fill="#00C49F"
+                  fill="var(--chart-1)"
                 />
               </BarChart>
             </ResponsiveContainer>

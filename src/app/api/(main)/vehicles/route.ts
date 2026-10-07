@@ -1,56 +1,66 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
+import { parseRentalDates } from "@/lib/bookings";
 
-async function getAvailableCars(
-  city?: string,
-  startDate?: string,
-  endDate?: string
-) {
+export const dynamic = "force-dynamic";
+
+async function getAvailableCars(city?: string, start?: Date, end?: Date) {
+  const params: unknown[] = [];
   let query = `
-    SELECT c.* FROM cars c
+    SELECT c.*, br.name AS branch_name, br.city AS branch_city
+    FROM cars c
+    LEFT JOIN branches br ON br.id = c.branch_id
     WHERE c.available = TRUE
   `;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const params: any[] = [];
-
   if (city) {
-    query += ` AND c.branch_id IN (SELECT id FROM branches WHERE city = $${
-      params.length + 1
-    })`;
     params.push(city);
+    query += ` AND br.city = $${params.length}`;
   }
 
-  if (startDate && endDate) {
+  if (start && end) {
+    params.push(start, end);
     query += `
-      AND c.id NOT IN (
-        SELECT car_id FROM bookings 
-        WHERE (
-          (start_date <= $${params.length + 1} AND end_date >= $${
-      params.length + 2
-    })
-          OR (start_date <= $${params.length + 2} AND end_date >= $${
-      params.length + 1
-    })
-          OR (start_date >= $${params.length + 1} AND end_date <= $${
-      params.length + 2
-    })
-        )
-        AND status != 'Cancelled'
-      )
-    `;
-    params.push(new Date(startDate), new Date(endDate));
+      AND NOT EXISTS (
+        SELECT 1 FROM bookings b
+        WHERE b.car_id = c.id
+          AND b.status <> 'Cancelled'
+          AND b.start_date <= $${params.length}
+          AND b.end_date >= $${params.length - 1}
+      )`;
   }
 
-  query += " LIMIT 12";
+  query += " ORDER BY c.price_per_day ASC, c.brand, c.model LIMIT 200";
 
   const result = await pool.query(query, params);
-
   return result.rows;
 }
 
 export async function POST(req: Request) {
-  const { city, startDate, endDate } = await req.json();
-  const cars = await getAvailableCars(city, startDate, endDate);
-  return NextResponse.json(cars);
+  try {
+    const body = await req.json().catch(() => ({}));
+    const city =
+      typeof body?.city === "string" && body.city.length <= 100
+        ? body.city
+        : undefined;
+
+    let start: Date | undefined;
+    let end: Date | undefined;
+    if (body?.startDate || body?.endDate) {
+      const dates = parseRentalDates(body.startDate, body.endDate);
+      if ("error" in dates) {
+        return NextResponse.json({ error: dates.error }, { status: 400 });
+      }
+      ({ start, end } = dates);
+    }
+
+    const cars = await getAvailableCars(city, start, end);
+    return NextResponse.json(cars);
+  } catch (error) {
+    console.error("Error searching vehicles:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch vehicles" },
+      { status: 500 }
+    );
+  }
 }

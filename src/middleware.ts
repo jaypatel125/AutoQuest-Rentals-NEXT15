@@ -11,67 +11,80 @@ const adminRoutes = ["/admin"];
 // Regular user-only protected routes
 const protectedRoutes = ["/account", "/checkout", "/bookings", "/confirmation"];
 
+const matches = (path: string, routes: string[]) =>
+  routes.some((route) => path === route || path.startsWith(`${route}/`));
+
 export default async function authMiddleware(request: NextRequest) {
   const pathName = request.nextUrl.pathname;
 
-  const isAuthRoute = authRoutes.some((route) => pathName.startsWith(route));
-  const isPasswordRoute = passwordRoutes.some((route) =>
-    pathName.startsWith(route)
-  );
-  const isAdminRoute = adminRoutes.some((route) => pathName.startsWith(route));
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathName.startsWith(route)
-  );
+  const isAuthRoute = matches(pathName, authRoutes);
+  const isPasswordRoute = matches(pathName, passwordRoutes);
+  const isAdminRoute = matches(pathName, adminRoutes);
+  const isProtectedRoute = matches(pathName, protectedRoutes);
 
-  // Fetch current user session
-  const { data: session } = await betterFetch<Session>(
-    "/api/auth/get-session",
-    {
-      baseURL: process.env.NEXT_PUBLIC_APP_URL,
-      headers: {
-        cookie: request.headers.get("cookie") || "",
-      },
-    }
-  );
+  const session = await getSession(request);
 
-  // --- ADMIN-ONLY ENFORCEMENT ---
-  // If user is logged in and is an admin, only allow /admin/* routes.
+  // Admins work inside /admin (plus their own profile).
   if (session?.user.role === "admin") {
-    if (isAdminRoute || pathName.startsWith("/account")) {
-      return NextResponse.next(); // allow admin pages
+    if (isAdminRoute || matches(pathName, ["/account"])) {
+      return NextResponse.next();
     }
-    // Any other route — including "/", auth pages, or protected user routes — redirect to /admin
     return NextResponse.redirect(new URL("/admin", request.url));
   }
 
-  // --- Non-admin / unauthenticated flows ---
-
-  // Allow unauthenticated users on auth & password routes
   if ((isAuthRoute || isPasswordRoute) && !session) {
     return NextResponse.next();
   }
 
-  // Prevent logged-in non-admin users from accessing signin/signup/reset pages
+  // Signed-in customers don't need the sign-in/sign-up/reset pages.
   if ((isAuthRoute || isPasswordRoute) && session) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Block non-admins from admin routes
   if (isAdminRoute) {
     if (!session) {
-      return NextResponse.redirect(new URL("/signin", request.url));
+      return redirectToSignIn(request);
     }
-    return NextResponse.redirect(new URL("/unauthorized", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Require authentication for user-protected routes
   if (isProtectedRoute && !session) {
-    return NextResponse.redirect(new URL("/signin", request.url));
+    return redirectToSignIn(request);
   }
 
   return NextResponse.next();
 }
 
+/**
+ * Looks up the current session. If the auth endpoint is unreachable the
+ * visitor is treated as signed out, so public pages still load and
+ * protected pages fall back to the sign-in redirect.
+ */
+async function getSession(request: NextRequest): Promise<Session | null> {
+  try {
+    const { data } = await betterFetch<Session>("/api/auth/get-session", {
+      baseURL: process.env.NEXT_PUBLIC_APP_URL || request.nextUrl.origin,
+      headers: {
+        cookie: request.headers.get("cookie") || "",
+      },
+    });
+    return data ?? null;
+  } catch (err) {
+    console.error("Session lookup failed in middleware:", err);
+    return null;
+  }
+}
+
+/** Sends the visitor to sign in and back to where they were afterwards. */
+function redirectToSignIn(request: NextRequest) {
+  const url = new URL("/signin", request.url);
+  const next = request.nextUrl.pathname + request.nextUrl.search;
+  if (next !== "/") url.searchParams.set("next", next);
+  return NextResponse.redirect(url);
+}
+
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|.*\\.png$).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|txt|xml|webmanifest)$).*)",
+  ],
 };

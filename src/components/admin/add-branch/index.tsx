@@ -57,12 +57,12 @@ export default function AddBranchPage() {
   });
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8 rounded-2xl border bg-card p-6 md:p-8">
       {/* Form */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Name */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-semibold text-gray-700">Name</label>
+          <label className="text-sm font-medium">Name</label>
           <Input
             value={form.name}
             onChange={(e) =>
@@ -74,7 +74,7 @@ export default function AddBranchPage() {
 
         {/* Address */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-semibold text-gray-700">Address</label>
+          <label className="text-sm font-medium">Address</label>
           <Input
             value={form.address}
             onChange={(e) =>
@@ -86,7 +86,7 @@ export default function AddBranchPage() {
 
         {/* City */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-semibold text-gray-700">City</label>
+          <label className="text-sm font-medium">City</label>
           <Input
             value={form.city}
             onChange={(e) =>
@@ -98,9 +98,7 @@ export default function AddBranchPage() {
 
         {/* Province */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-semibold text-gray-700">
-            Province
-          </label>
+          <label className="text-sm font-medium">Province</label>
           <Select
             value={form.province}
             onValueChange={(value) =>
@@ -122,9 +120,7 @@ export default function AddBranchPage() {
 
         {/* Postal Code */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-semibold text-gray-700">
-            Postal Code
-          </label>
+          <label className="text-sm font-medium">Postal Code</label>
           <Input
             value={form.postal_code}
             onChange={(e) =>
@@ -136,12 +132,11 @@ export default function AddBranchPage() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end gap-3 pt-8 border-t border-gray-200">
+      <div className="flex justify-end gap-3 pt-8 border-t">
         <Button
           variant="outline"
           onClick={() => router.push("/admin/manage-branches")}
           iconType="close"
-          className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200"
         >
           Cancel
         </Button>
@@ -157,9 +152,10 @@ export default function AddBranchPage() {
       </div>
 
       {mutation.isError && (
-        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700 text-sm font-medium">
-            Error adding branch. Please try again.
+        <div className="mt-4 p-4 bg-destructive/10 border border-destructive/30 rounded-xl">
+          <p className="text-destructive text-sm font-medium">
+            {(mutation.error as Error)?.message ||
+              "Error adding branch. Please try again."}
           </p>
         </div>
       )}

@@ -37,7 +37,7 @@ describe("ProfileEmail (basic)", () => {
     fireEvent.change(input, { target: { value: "invalid-email" } });
     fireEvent.submit(screen.getByTestId("account-email-editor"));
     await waitFor(() => {
-      expect(screen.getByText(/Invalid email/i)).toBeInTheDocument();
+      expect(screen.getByText(/valid email/i)).toBeInTheDocument();
     });
   });
 

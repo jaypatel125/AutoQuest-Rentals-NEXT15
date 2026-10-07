@@ -1,20 +1,14 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
-import { getServerSideSession } from "@/hooks/SessionHandler";
+import { requireAdmin } from "@/lib/api-auth";
+import { isInvalidInput } from "@/lib/bookings";
 
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ branchId: string }> }
 ) {
-  const session = await getServerSideSession();
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  if (session.user?.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const guard = await requireAdmin();
+  if (guard.error) return guard.error;
   const { branchId } = await params;
 
   try {
@@ -28,6 +22,9 @@ export async function GET(
 
     return NextResponse.json(result.rows[0], { status: 200 });
   } catch (error) {
+    if (isInvalidInput(error)) {
+      return NextResponse.json({ error: "Branch not found" }, { status: 404 });
+    }
     console.error("Error fetching branch:", error);
     return NextResponse.json(
       { error: "Failed to fetch branch" },
@@ -36,33 +33,35 @@ export async function GET(
   }
 }
 
-// DELETE branch
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ branchId: string }> }
 ) {
-  const session = await getServerSideSession();
-
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  if (session.user?.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
+  const guard = await requireAdmin();
+  if (guard.error) return guard.error;
   const { branchId } = await params;
 
   try {
-    // Check if branch exists
-    const existing = await pool.query("SELECT id FROM branches WHERE id = $1", [
-      branchId,
-    ]);
+    const existing = await pool.query(
+      `SELECT b.id, COUNT(c.id)::int AS vehicle_count
+       FROM branches b LEFT JOIN cars c ON c.branch_id = b.id
+       WHERE b.id = $1
+       GROUP BY b.id`,
+      [branchId]
+    );
     if (existing.rows.length === 0) {
       return NextResponse.json({ error: "Branch not found" }, { status: 404 });
     }
+    if (existing.rows[0].vehicle_count > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "This branch still has vehicles. Move or remove them before deleting the branch.",
+        },
+        { status: 409 }
+      );
+    }
 
-    // Delete branch
     await pool.query("DELETE FROM branches WHERE id = $1", [branchId]);
 
     return NextResponse.json(
@@ -70,6 +69,9 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
+    if (isInvalidInput(error)) {
+      return NextResponse.json({ error: "Branch not found" }, { status: 404 });
+    }
     console.error("Error deleting branch:", error);
     return NextResponse.json(
       { error: "Failed to delete branch" },

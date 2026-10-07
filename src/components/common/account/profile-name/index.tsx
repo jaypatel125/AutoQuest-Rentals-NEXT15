@@ -1,16 +1,12 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { UserRound } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import AccountInfo from "../AccountInfo";
 import { authClient, IUser } from "../../../../../auth-client";
-import { z } from "zod";
 import { getNameSchema } from "@/lib/zod";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-
-const profileFormSchema = z.object({
-  username: getNameSchema().optional(),
-});
 
 const ProfileName = ({ currentUser }: { currentUser: IUser }) => {
   const [successState, setSuccessState] = useState(false);
@@ -28,51 +24,31 @@ const ProfileName = ({ currentUser }: { currentUser: IUser }) => {
     }
   }, [currentUser]);
 
-  const validateName = (name: string) => {
-    try {
-      profileFormSchema.parse({ username: name });
-      return null;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return error.message;
-      }
-      toast({
-        title: "Error",
-        description:
-          (error as Error).message ||
-          "An unexpected error occurred during validation.",
-      });
-      return "An unexpected error occurred.";
-    }
-  };
-
   const updateCustomerName = async () => {
-    setLoading(true);
     setErrorState(null);
-    try {
-      const validationError = validateName(name);
-      if (validationError) {
-        setErrorState(validationError);
-        return;
-      }
+    const parsed = getNameSchema().safeParse(name);
+    if (!parsed.success) {
+      setErrorState(parsed.error.issues[0]?.message ?? "Invalid name");
+      return;
+    }
 
-      await authClient.updateUser({ name });
+    setLoading(true);
+    try {
+      const { error } =
+        (await authClient.updateUser({ name: parsed.data })) ?? {};
+      if (error) throw new Error(error.message || "Could not update name");
       setSuccessState(true);
       toast({
         title: "Success",
         description: "Name updated successfully.",
       });
       router.refresh();
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error("Error updating name:", error);
-      toast({
-        title: "Error",
-        description:
-          error.message || "An unexpected error occurred while updating name.",
-      });
-      setErrorState(error.toString());
+    } catch (error) {
+      const message =
+        (error as Error).message ||
+        "An unexpected error occurred while updating name.";
+      toast({ title: "Error", description: message, variant: "destructive" });
+      setErrorState(message);
     } finally {
       setLoading(false);
     }
@@ -91,9 +67,10 @@ const ProfileName = ({ currentUser }: { currentUser: IUser }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-4">
+    <form onSubmit={handleSubmit} className="w-full">
       <AccountInfo
         label="Name"
+        icon={<UserRound className="size-5" />}
         currentInfo={currentUser?.name || ""}
         isSuccess={successState}
         isError={!!errorState}
@@ -101,17 +78,21 @@ const ProfileName = ({ currentUser }: { currentUser: IUser }) => {
         data-testid="account-name-editor"
         isLoading={loading}
       >
-        <div className="space-y-4">
+        <div className="space-y-2">
           <Input
             name="name"
             required
             value={name}
+            maxLength={50}
+            autoComplete="name"
             onChange={(e) => setName(e.target.value)}
             disabled={loading}
             data-testid="name-input"
             className="w-full"
           />
-          {errorState && <p className="text-red-500 text-sm">{errorState}</p>}
+          {errorState && (
+            <p className="text-sm text-destructive">{errorState}</p>
+          )}
         </div>
       </AccountInfo>
     </form>

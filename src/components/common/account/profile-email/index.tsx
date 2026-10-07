@@ -1,77 +1,50 @@
 "use client";
 import React, { useState } from "react";
+import { Mail } from "lucide-react";
 import { authClient, IUser } from "../../../../../auth-client";
 import AccountInfo from "../AccountInfo";
 import { Input } from "@/components/ui/input";
-import { z } from "zod";
 import { getEmailSchema } from "@/lib/zod";
-import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-
-const profileFormSchema = z.object({
-  email: getEmailSchema().optional(),
-});
 
 const ProfileEmail = ({ currentUser }: { currentUser: IUser }) => {
   const [successState, setSuccessState] = useState(false);
   const [errorState, setErrorState] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
-  const router = useRouter();
   const { toast } = useToast();
 
-  const hasChanges = email.trim() !== currentUser?.email;
-
-  const validateEmail = (email: string) => {
-    try {
-      profileFormSchema.parse({ email });
-
-      return null;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return error.message;
-      }
-      toast({
-        title: "Error",
-        description:
-          (error as Error).message ||
-          "An unexpected error occurred during validation.",
-      });
-      return "An unexpected error occurred.";
-    }
-  };
+  const hasChanges =
+    email.trim().toLowerCase() !== currentUser?.email?.toLowerCase();
 
   const updateCustomerEmail = async () => {
-    setLoading(true);
     setErrorState(null);
-    try {
-      const validationError = validateEmail(email);
-      if (validationError) {
-        setErrorState(validationError);
-        return;
-      }
+    const parsed = getEmailSchema().safeParse(email);
+    if (!parsed.success) {
+      setErrorState(parsed.error.issues[0]?.message ?? "Invalid email");
+      return;
+    }
 
-      await authClient.changeEmail({
-        newEmail: email,
-        callbackURL: `${process.env.NEXT_PUBLIC_APP_URL}/account/profile`,
+    setLoading(true);
+    try {
+      const { error } = await authClient.changeEmail({
+        newEmail: parsed.data,
+        callbackURL: "/account",
       });
+      if (error) throw new Error(error.message || "Could not update email");
 
       setSuccessState(true);
+      setEmail("");
       toast({
-        title: "Success",
-        description: "Email updated successfully.",
+        title: "Check your inbox",
+        description: `We sent a link to ${currentUser.email} to approve the change.`,
       });
-      router.refresh();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error("Error updating email:", error);
-      toast({
-        title: "Error",
-        description:
-          error.message || "An unexpected error occurred while updating email.",
-      });
-
-      setErrorState(error.toString());
+    } catch (error) {
+      const message =
+        (error as Error).message ||
+        "An unexpected error occurred while updating email.";
+      toast({ title: "Error", description: message, variant: "destructive" });
+      setErrorState(message);
     } finally {
       setLoading(false);
     }
@@ -90,10 +63,11 @@ const ProfileEmail = ({ currentUser }: { currentUser: IUser }) => {
           updateCustomerEmail();
         }
       }}
-      className="w-full space-y-4"
+      className="w-full"
     >
       <AccountInfo
         label="Email"
+        icon={<Mail className="size-5" />}
         currentInfo={currentUser.email}
         isSuccess={successState}
         isError={!!errorState}
@@ -101,17 +75,26 @@ const ProfileEmail = ({ currentUser }: { currentUser: IUser }) => {
         data-testid="account-email-editor"
         isLoading={loading}
       >
-        <div className="space-y-4">
+        <div className="space-y-2">
           <Input
             name="email"
+            type="email"
             required
             value={email}
+            placeholder="new@email.com"
+            autoComplete="email"
             disabled={loading}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full"
             data-testid="email-input"
           />
-          {errorState && <p className="text-red-500 text-sm">{errorState}</p>}
+          <p className="text-xs text-muted-foreground">
+            For your security, we&apos;ll ask you to approve the change from
+            your current inbox.
+          </p>
+          {errorState && (
+            <p className="text-sm text-destructive">{errorState}</p>
+          )}
         </div>
       </AccountInfo>
     </form>

@@ -20,14 +20,16 @@ export default function BookingDetailPage() {
     enabled: !!bookingId,
   });
 
-  if (isLoading) {
-    return;
-  }
-
-  const description = `ID: ${booking!.booking_id}`;
+  const title = booking
+    ? `${booking.brand} ${booking.model}`
+    : "Booking Details";
 
   return (
-    <PageLayout title="Booking Details" description={description}>
+    <PageLayout
+      title={title}
+      eyebrow="Booking Details"
+      description={`Booking reference ${bookingId.slice(0, 8).toUpperCase()}`}
+    >
       <BookingDetail booking={booking} isLoading={isLoading} error={error} />
     </PageLayout>
   );

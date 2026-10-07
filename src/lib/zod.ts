@@ -1,23 +1,34 @@
 import { object, string, z } from "zod";
+import { BODY_TYPES, FUEL_TYPES, TRANSMISSIONS } from "./vehicles";
+
+export const PASSWORD_MIN = 8;
+export const PASSWORD_MAX = 128;
 
 export const getPasswordSchema = (type: "password" | "confirmPassword") =>
   string()
-    .min(4, { message: `${type} must be at least 4 characters` })
-    .max(32, { message: `${type} cannot exceed 32 characters` });
+    .min(PASSWORD_MIN, {
+      message: `${type === "password" ? "Password" : "Confirmation"} must be at least ${PASSWORD_MIN} characters`,
+    })
+    .max(PASSWORD_MAX, {
+      message: `${type === "password" ? "Password" : "Confirmation"} cannot exceed ${PASSWORD_MAX} characters`,
+    });
 
 export const getEmailSchema = () =>
   string()
+    .trim()
     .min(1, { message: "Email is required" })
-    .email({ message: "Invalid email" });
+    .email({ message: "Enter a valid email address" });
 
 export const getNameSchema = () =>
   string()
+    .trim()
     .min(1, { message: "Name is required" })
     .max(50, { message: "Name must be less than 50 characters" });
 
+// Sign-in only checks presence: older accounts may have shorter passwords.
 export const signInSchema = object({
   email: getEmailSchema(),
-  password: getPasswordSchema("password"),
+  password: string().min(1, { message: "Password is required" }),
 });
 
 export const signUpSchema = object({
@@ -30,32 +41,53 @@ export const signUpSchema = object({
   path: ["confirmPassword"],
 });
 
-export const addVehicleSchema = z.object({
-  branch_id: z.string().min(1, { message: "Branch is required" }),
-  brand: z.string().min(1, { message: "Brand is required" }),
-  model: z.string().min(1, { message: "Model is required" }),
-  transmission: z.string().min(1, { message: "Transmission type is required" }),
-  fuel_type: z.string().min(1, { message: "Fuel type is required" }),
-  passenger_capacity: z
-    .union([
-      z.string().min(1, { message: "Passenger capacity is required" }),
-      z.number().min(1, { message: "Passenger capacity is required" }),
-    ])
-    .transform((val) => Number(val)),
-  body_type: z.string().min(1, { message: "Body type is required" }),
-  carbon_emissions: z
-    .union([
-      z.string().min(1, { message: "Carbon emissions are required" }),
-      z.number().min(1, { message: "Carbon emissions are required" }),
-    ])
-    .transform((val) => Number(val)),
-  price_per_day: z
-    .union([
-      z.string().min(1, { message: "Price per day is required" }),
-      z.number().min(1, { message: "Price per day is required" }),
-    ])
-    .transform((val) => Number(val)),
+const IMAGE_PATH = /^\/api\/images\/[0-9a-f-]{36}$/i;
+
+/** A stored photo path, an external https URL, or no photo. */
+export const vehicleImageSchema = z.union([
+  z.string().regex(IMAGE_PATH),
+  z.string().url().startsWith("https://"),
+  z.null(),
+]);
+
+/** Server-side validation for vehicle create/update payloads. */
+export const vehicleSchema = z.object({
+  branch_id: z.string().trim().min(1, "Branch is required").max(64),
+  brand: z.string().trim().min(1, "Brand is required").max(60),
+  model: z.string().trim().min(1, "Model is required").max(60),
+  transmission: z.enum(TRANSMISSIONS as [string, ...string[]]),
+  fuel_type: z.enum(FUEL_TYPES as [string, ...string[]]),
+  passenger_capacity: z.coerce.number().int().min(1).max(15),
+  body_type: z.enum(BODY_TYPES as [string, ...string[]]),
+  carbon_emissions: z.coerce.number().min(0).max(1000),
+  price_per_day: z.coerce
+    .number()
+    .positive("Price must be greater than 0")
+    .max(10000),
   available: z.boolean(),
-  image: z.union([z.instanceof(File), z.string()]).optional(),
-  imageUrl: z.string().optional(),
+  image: vehicleImageSchema.optional(),
+});
+
+export const vehicleUpdateSchema = vehicleSchema.partial();
+
+export const branchSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100),
+  address: z.string().trim().min(1, "Address is required").max(200),
+  city: z.string().trim().min(1, "City is required").max(100),
+  province: z.string().trim().min(1, "Province is required").max(100),
+  postal_code: z.string().trim().min(3, "Postal code is required").max(12),
+});
+
+export const branchUpdateSchema = branchSchema.partial();
+
+export const contactSchema = z.object({
+  name: z.string().trim().min(1, "Name is required").max(100),
+  email: getEmailSchema().max(200),
+  message: z
+    .string()
+    .trim()
+    .min(10, "Message must be at least 10 characters")
+    .max(5000, "Message is too long"),
+  // Honeypot: real users never see or fill this field.
+  website: z.string().max(0).optional().or(z.literal("")),
 });

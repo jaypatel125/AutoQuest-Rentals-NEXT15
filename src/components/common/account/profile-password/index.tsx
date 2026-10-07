@@ -1,17 +1,12 @@
 "use client";
 import React, { useState } from "react";
+import { KeyRound } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import AccountInfo from "../AccountInfo";
 import { authClient } from "../../../../../auth-client";
-import { z } from "zod";
+import { getPasswordSchema } from "@/lib/zod";
 import { useToast } from "@/hooks/use-toast";
-
-const profileFormSchema = z.object({
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters long")
-    .optional(),
-});
 
 const ProfilePassword = () => {
   const [successState, setSuccessState] = useState(false);
@@ -21,42 +16,30 @@ const ProfilePassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const { toast } = useToast();
 
-  const validatePassword = (newPassword: string) => {
-    try {
-      profileFormSchema.parse({ password: newPassword });
-      return null;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return error.message;
-      }
-      return "An unexpected error occurred.";
-    }
-  };
-
   const updateCustomerPassword = async () => {
     setLoading(true);
     setErrorState(null);
     try {
-      await authClient.changePassword({
-        newPassword: newPassword,
-        currentPassword: currentPassword,
-        revokeOtherSessions: true,
-      });
+      const { error } =
+        (await authClient.changePassword({
+          newPassword: newPassword,
+          currentPassword: currentPassword,
+          revokeOtherSessions: true,
+        })) ?? {};
+      if (error) throw new Error(error.message || "Could not update password");
       setSuccessState(true);
+      setCurrentPassword("");
+      setNewPassword("");
       toast({
         title: "Success",
-        description: "Password updated successfully.",
+        description: "Password updated. Other devices have been signed out.",
       });
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error("Error updating password:", error);
-      toast({
-        title: "Error",
-        description:
-          error.message ||
-          "An unexpected error occurred while updating password.",
-      });
-      setErrorState(error.toString());
+    } catch (error) {
+      const message =
+        (error as Error).message ||
+        "An unexpected error occurred while updating password.";
+      toast({ title: "Error", description: message, variant: "destructive" });
+      setErrorState(message);
     } finally {
       setLoading(false);
     }
@@ -65,9 +48,13 @@ const ProfilePassword = () => {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
-    const validationError = validatePassword(newPassword);
-    if (validationError) {
-      setErrorState(validationError);
+    const parsed = getPasswordSchema("password").safeParse(newPassword);
+    if (!parsed.success) {
+      setErrorState(parsed.error.issues[0]?.message ?? "Invalid password");
+      return;
+    }
+    if (newPassword === currentPassword) {
+      setErrorState("Choose a password different from your current one.");
       return;
     }
 
@@ -80,9 +67,10 @@ const ProfilePassword = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full space-y-4">
+    <form onSubmit={handleSubmit} className="w-full">
       <AccountInfo
         label="Password"
+        icon={<KeyRound className="size-5" />}
         currentInfo={"The password is not shown for security reasons."}
         isSuccess={successState}
         isError={!!errorState}
@@ -90,13 +78,16 @@ const ProfilePassword = () => {
         data-testid="account-password-editor"
         isLoading={loading}
       >
-        <div className="space-y-4">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Current Password</p>
+            <Label htmlFor="current-password">Current Password</Label>
             <Input
+              id="current-password"
               name="current-password"
               type="password"
+              autoComplete="current-password"
               required
+              value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               disabled={loading}
               data-testid="current-password-input"
@@ -104,18 +95,25 @@ const ProfilePassword = () => {
             />
           </div>
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">New Password</p>
+            <Label htmlFor="new-password">New Password</Label>
             <Input
+              id="new-password"
               name="password"
               type="password"
+              autoComplete="new-password"
               required
+              value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
               disabled={loading}
               data-testid="new-password-input"
               className="w-full"
             />
           </div>
-          {errorState && <p className="text-red-500 text-sm">{errorState}</p>}
+          {errorState && (
+            <p className="text-sm text-destructive sm:col-span-2">
+              {errorState}
+            </p>
+          )}
         </div>
       </AccountInfo>
     </form>

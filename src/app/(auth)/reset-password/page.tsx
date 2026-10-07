@@ -1,14 +1,17 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
 import AuthLayout from "@/components/common/auth/AuthLayout";
 import ResetPasswordForm from "@/components/common/auth/ResetPasswordForm";
 import Loader from "@/components/utility/Loader";
-import { Suspense } from "react";
 
-export default function ResetPasswordPage() {
+export const metadata: Metadata = { title: "Reset password" };
+
+export default function Page() {
   return (
-    <Suspense fallback={<Loader />}>
-      <AuthLayout>
+    <AuthLayout>
+      <Suspense fallback={<Loader />}>
         <ResetPasswordForm />
-      </AuthLayout>
-    </Suspense>
+      </Suspense>
+    </AuthLayout>
   );
 }

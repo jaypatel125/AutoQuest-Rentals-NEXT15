@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
@@ -9,10 +10,6 @@ import { authClient } from "../../../../auth-client";
 import { signUpSchema } from "@/lib/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { IoEyeOutline, IoEyeOffOutline } from "react-icons/io5";
-
-import Image from "next/image";
-
 import {
   Form,
   FormField,
@@ -22,11 +19,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { Divider, GoogleButton, PasswordInput, StrengthMeter } from "./shared";
 
 export default function SignupForm() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<z.infer<typeof signUpSchema>>({
@@ -38,6 +35,7 @@ export default function SignupForm() {
       confirmPassword: "",
     },
   });
+  const password = form.watch("password");
 
   const onSubmit = async (values: z.infer<typeof signUpSchema>) => {
     const { name, email, password } = values;
@@ -54,12 +52,13 @@ export default function SignupForm() {
             description: "Please verify your email to continue.",
           });
 
-          router.push("/verification");
+          router.push(`/verification?email=${encodeURIComponent(email)}`);
         },
         onError: (error) => {
           toast({
             title: "Something went wrong",
             description: error.error.message ?? "Something went wrong.",
+            variant: "destructive",
           });
         },
       }
@@ -67,7 +66,7 @@ export default function SignupForm() {
     setLoading(false);
   };
 
-  async function handleSiginInWithGoogle() {
+  async function handleSignInWithGoogle() {
     await authClient.signIn.social(
       {
         provider: "google",
@@ -78,6 +77,7 @@ export default function SignupForm() {
           toast({
             title: "Something went wrong",
             description: error.error.message ?? "Something went wrong.",
+            variant: "destructive",
           });
         },
       }
@@ -85,8 +85,19 @@ export default function SignupForm() {
   }
 
   return (
-    <div>
-      <h2 className="mb-6 text-2xl font-bold">Get Started Now</h2>
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold">Get Started Now</h1>
+        <p className="text-muted-foreground">
+          Create a free account and earn points on your first rental.
+        </p>
+      </div>
+
+      <GoogleButton
+        onClick={handleSignInWithGoogle}
+        label="Sign up with Google"
+      />
+      <Divider />
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -97,7 +108,12 @@ export default function SignupForm() {
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter your name" {...field} />
+                  <Input
+                    placeholder="Enter your name"
+                    autoComplete="name"
+                    className="h-11"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -114,6 +130,8 @@ export default function SignupForm() {
                   <Input
                     placeholder="you@example.com"
                     type="email"
+                    autoComplete="email"
+                    className="h-11"
                     {...field}
                   />
                 </FormControl>
@@ -122,97 +140,74 @@ export default function SignupForm() {
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <PasswordInput
                       placeholder="Enter your password"
-                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      className="h-11"
                       {...field}
                     />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-3 flex items-center text-gray-500"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? (
-                        <IoEyeOffOutline size={20} />
-                      ) : (
-                        <IoEyeOutline size={20} />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
+                  <FormControl>
+                    <PasswordInput
                       placeholder="Confirm your password"
-                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      className="h-11"
                       {...field}
                     />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <StrengthMeter password={password} />
 
           <Button
             type="submit"
-            className="w-full"
+            size="lg"
+            className="h-11 w-full"
             disabled={loading}
-            iconType="sign-in"
             loading={loading}
             name="Sign Up"
           >
             {loading ? "Signing Up..." : "Sign Up"}
           </Button>
-
-          <div className="flex items-center">
-            <div className="h-px flex-1 bg-gray-300" />
-            <span className="px-2 text-sm text-gray-500">Or</span>
-            <div className="h-px flex-1 bg-gray-300" />
-          </div>
-
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              className="w-full justify-center gap-2"
-              type="button"
-              onClick={handleSiginInWithGoogle}
-            >
-              <Image
-                src="https://www.svgrepo.com/show/475656/google-color.svg"
-                alt="Google"
-                width={18}
-                height={18}
-              />
-              Sign up with Google
-            </Button>
-          </div>
+          <p className="text-center text-xs text-muted-foreground">
+            By signing up you agree to our{" "}
+            <Link href="/terms" className="underline hover:text-foreground">
+              rental terms
+            </Link>
+            .
+          </p>
         </form>
       </Form>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
+      <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
-        <a href="/signin" className="font-medium text-blue-600 hover:underline">
+        <Link
+          href="/signin"
+          className="font-semibold text-primary hover:underline"
+        >
           Sign In
-        </a>
+        </Link>
       </p>
     </div>
   );

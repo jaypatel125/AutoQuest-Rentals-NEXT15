@@ -1,14 +1,22 @@
 "use client";
 
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { differenceInCalendarDays, format } from "date-fns";
+import {
+  ArrowRight,
+  CalendarDays,
+  CalendarX2,
+  Gift,
+  MapPin,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Loader from "@/components/utility/Loader";
-import Image from "next/image";
 import type { Booking } from "@/app/(main)/bookings/actions";
-import { Separator } from "../../ui/separator";
-import { Calendar } from "lucide-react";
-import { formatDate, formatPrice } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { formatPrice, cn } from "@/lib/utils";
 import Error from "@/components/utility/Error";
+import { EmptyState } from "@/components/utility/EmptyState";
+import { VehicleImage } from "@/components/vehicles/VehicleImage";
+import { StatusBadge } from "@/components/vehicles/badges";
 
 type Props = {
   data?: Booking[];
@@ -16,187 +24,213 @@ type Props = {
   isError: boolean;
 };
 
+type Tab = "upcoming" | "past" | "cancelled";
+
+function categorize(b: Booking, today: Date): Tab {
+  if (b.status === "Cancelled") return "cancelled";
+  if (b.status === "Completed") return "past";
+  return new Date(b.end_date) < today ? "past" : "upcoming";
+}
+
+function countdown(start: Date, end: Date, today: Date) {
+  const days = differenceInCalendarDays(start, today);
+  if (days > 1) return `Pick-up in ${days} days`;
+  if (days === 1) return "Pick-up tomorrow";
+  if (days === 0) return "Pick-up today";
+  return differenceInCalendarDays(end, today) >= 0 ? "On the road" : null;
+}
+
 export default function Bookings({ data, isLoading, isError }: Props) {
-  const router = useRouter();
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+  const groups = useMemo(() => {
+    const g: Record<Tab, Booking[]> = { upcoming: [], past: [], cancelled: [] };
+    for (const b of data ?? []) g[categorize(b, today)].push(b);
+    g.upcoming.sort(
+      (a, b) => +new Date(a.start_date) - +new Date(b.start_date)
+    );
+    return g;
+  }, [data, today]);
+  const [tab, setTab] = useState<Tab | null>(null);
+  const active: Tab =
+    tab ?? (groups.upcoming.length || !data?.length ? "upcoming" : "past");
+
   if (isLoading) {
-    return <Loader title="Fetching your bookings" />;
+    return (
+      <div
+        className="space-y-4"
+        role="status"
+        aria-label="Fetching your bookings"
+      >
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="h-40 animate-pulse rounded-2xl bg-muted" />
+        ))}
+      </div>
+    );
   }
 
   if (isError) {
     return <Error error="Failed to load bookings. Please try again." />;
   }
 
+  if (!data || data.length === 0) {
+    return (
+      <EmptyState
+        icon={CalendarDays}
+        title="No bookings found"
+        description="You haven't made any bookings yet. Start exploring our available cars."
+        action={
+          <Button asChild>
+            <Link href="/select-vehicle">Browse Cars</Link>
+          </Button>
+        }
+      />
+    );
+  }
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: "upcoming", label: "Upcoming" },
+    { key: "past", label: "Past" },
+    { key: "cancelled", label: "Cancelled" },
+  ];
+  const list = groups[active];
+
   return (
-    <div>
-      {data && data.length > 0 ? (
+    <div className="space-y-6">
+      <div
+        role="tablist"
+        aria-label="Booking status"
+        className="inline-flex rounded-xl bg-muted p-1"
+      >
+        {tabs.map(({ key, label }) => (
+          <button
+            key={key}
+            role="tab"
+            type="button"
+            aria-selected={active === key}
+            onClick={() => setTab(key)}
+            className={cn(
+              "inline-flex cursor-pointer items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors",
+              active === key && "bg-card text-foreground shadow-sm"
+            )}
+          >
+            {label}
+            <span className="rounded-full bg-background/70 px-1.5 text-xs">
+              {groups[key].length}
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {list.length === 0 ? (
+        <EmptyState
+          icon={active === "cancelled" ? CalendarX2 : CalendarDays}
+          title={`No ${active} bookings`}
+          description={
+            active === "upcoming"
+              ? "Your next adventure is just a search away."
+              : undefined
+          }
+          action={
+            active === "upcoming" ? (
+              <Button asChild>
+                <Link href="/select-vehicle">Find a car</Link>
+              </Button>
+            ) : undefined
+          }
+        />
+      ) : (
         <div className="space-y-4">
-          {data.map((booking) => (
-            <div key={booking.booking_id}>
-              <div className="py-6">
-                <div className="flex flex-col md:flex-row gap-6">
-                  {/* Car Image */}
-                  <div className="flex-shrink-0">
-                    <Image
-                      src={booking.image}
-                      alt={`${booking.brand} ${booking.model}`}
-                      width={200}
-                      height={120}
-                      className="min-w-full lg:h-full object-cover rounded-lg shadow-md"
-                    />
-                  </div>
-
-                  {/* Booking Details */}
-                  <div className="w-[100%]">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {booking.brand} {booking.model}
-                    </h3>
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 lg:gap-6 gap-2">
-                      {/* Car & Location Info */}
-                      <div className="space-y-3">
-                        <p className="text-sm text-gray-600 mt-1">
-                          {booking.branch_name}, {booking.city},{" "}
-                          {booking.province}
-                        </p>
-
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Calendar className="h-4 w-4 text-gray-400" />
-                            <span className="text-gray-600">Pickup:</span>
-                            <span className="font-medium">
-                              {formatDate(booking.start_date)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Calendar className="h-4 w-4 text-gray-400" />
-                            <span className="text-gray-600">Return:</span>
-                            <span className="font-medium">
-                              {formatDate(booking.end_date)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Booking Status & Financial Info */}
-                      <div className="space-y-3">
-                        <div className="flex flex-col gap-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">
-                              Status:
-                            </span>
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                booking.status === "Confirmed"
-                                  ? "bg-green-100 text-green-800"
-                                  : booking.status === "Pending"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : booking.status === "Cancelled"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-blue-100 text-blue-800"
-                              }`}
-                            >
-                              {booking.status.charAt(0).toUpperCase() +
-                                booking.status.slice(1)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">
-                              Booked on:
-                            </span>
-                            <span className="text-sm text-gray-600">
-                              <span>
-                                {new Date(
-                                  booking.created_at
-                                ).toLocaleDateString("en-US", {
-                                  year: "numeric",
-                                  month: "short",
-                                  day: "numeric",
-                                })}
-                              </span>
-                            </span>
-                          </div>
-
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">
-                              Total Price:
-                            </span>
-                            <span className="font-semibold text-gray-900">
-                              {formatPrice(Number(booking.total_price))}
-                            </span>
-                          </div>
-
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">
-                              Price per day:
-                            </span>
-                            <span className="text-gray-900">
-                              {formatPrice(Number(booking.price_per_day))}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Points & Actions */}
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">
-                              Points Earned:
-                            </span>
-                            <span className="font-semibold text-green-600">
-                              +{booking.points_earned}
-                            </span>
-                          </div>
-
-                          {booking.points_redeemed &&
-                            parseInt(booking.points_redeemed) > 0 && (
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm text-gray-600">
-                                  Points Redeemed:
-                                </span>
-                                <span className="font-semibold text-orange-600">
-                                  -{booking.points_redeemed}
-                                </span>
-                              </div>
-                            )}
-                        </div>
-
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            iconType="view"
-                            onClick={() =>
-                              router.push(`/bookings/${booking.booking_id}`)
-                            }
-                            className="flex-1"
-                          >
-                            View Details
-                          </Button>
-                        </div>
-                      </div>
+          {list.map((booking) => {
+            const start = new Date(booking.start_date);
+            const end = new Date(booking.end_date);
+            const soon =
+              active === "upcoming" ? countdown(start, end, today) : null;
+            return (
+              <Link
+                key={booking.booking_id}
+                href={`/bookings/${booking.booking_id}`}
+                className="group grid overflow-hidden rounded-2xl border bg-card transition-all hover:-translate-y-0.5 hover:shadow-lg sm:grid-cols-[220px_1fr]"
+              >
+                <VehicleImage
+                  src={booking.image}
+                  brand={booking.brand}
+                  model={booking.model}
+                  bodyType={booking.body_type}
+                  className={cn(
+                    "h-full sm:aspect-auto",
+                    active === "cancelled" && "opacity-60 grayscale"
+                  )}
+                />
+                <div className="flex flex-col gap-4 p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-lg font-bold">
+                        {booking.brand} {booking.model}
+                      </h3>
+                      <p className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <MapPin className="size-3.5" /> {booking.branch_name},{" "}
+                        {booking.city}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {soon && (
+                        <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                          {soon}
+                        </span>
+                      )}
+                      <StatusBadge status={booking.status} />
                     </div>
                   </div>
+
+                  <div className="grid gap-3 text-sm sm:grid-cols-3">
+                    <div>
+                      <p className="text-muted-foreground">Dates</p>
+                      <p className="font-semibold">
+                        {format(start, "MMM d")} to {format(end, "MMM d, yyyy")}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">
+                        {booking.status === "Cancelled" ? "Refunded" : "Total"}
+                      </p>
+                      <p className="font-semibold">
+                        {formatPrice(
+                          Number(
+                            booking.status === "Cancelled"
+                              ? (booking.refund_amount ?? booking.total_price)
+                              : booking.total_price
+                          )
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Points</p>
+                      <p className="flex items-center gap-1 font-semibold text-primary">
+                        <Gift className="size-3.5" />+
+                        {Number(booking.points_earned).toLocaleString()}
+                        {Number(booking.points_redeemed) > 0 && (
+                          <span className="text-muted-foreground">
+                            {" "}
+                            / -
+                            {Number(booking.points_redeemed).toLocaleString()}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  <span className="mt-auto inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                    View Details
+                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                  </span>
                 </div>
-              </div>
-              <Separator className="mt-4" />
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-          <Calendar className="h-12 w-12 text-muted-foreground mx-auto" />
-          <h3 className="text-lg font-semibold">No bookings found</h3>
-          <p className="text-muted-foreground">
-            You haven&apos;t made any bookings yet. Start exploring our
-            available cars.
-          </p>
-          <Button
-            iconType="list"
-            onClick={() => router.push("/")}
-            className="mt-2"
-          >
-            Browse Cars
-          </Button>
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

@@ -93,6 +93,13 @@ export default function EditBranchPage() {
       queryClient.invalidateQueries({ queryKey: ["branches"] });
       router.push("/admin/manage-branches");
     },
+    onError: (err: Error) => {
+      toast({
+        title: "Could not delete branch",
+        description: err.message,
+        variant: "destructive",
+      });
+    },
   });
 
   if (isLoading) {
@@ -104,12 +111,12 @@ export default function EditBranchPage() {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8 rounded-2xl border bg-card p-6 md:p-8">
       {/* Form */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Name */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-semibold text-gray-700">Name</label>
+          <label className="text-sm font-medium">Name</label>
           <Input
             value={form.name}
             onChange={(e) =>
@@ -121,7 +128,7 @@ export default function EditBranchPage() {
 
         {/* Address */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-semibold text-gray-700">Address</label>
+          <label className="text-sm font-medium">Address</label>
           <Input
             value={form.address}
             onChange={(e) =>
@@ -133,7 +140,7 @@ export default function EditBranchPage() {
 
         {/* City */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-semibold text-gray-700">City</label>
+          <label className="text-sm font-medium">City</label>
           <Input
             value={form.city}
             onChange={(e) =>
@@ -145,9 +152,7 @@ export default function EditBranchPage() {
 
         {/* Province (Select dropdown) */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-semibold text-gray-700">
-            Province
-          </label>
+          <label className="text-sm font-medium">Province</label>
           <Select
             value={form.province}
             onValueChange={(value) =>
@@ -169,9 +174,7 @@ export default function EditBranchPage() {
 
         {/* Postal Code */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm font-semibold text-gray-700">
-            Postal Code
-          </label>
+          <label className="text-sm font-medium">Postal Code</label>
           <Input
             value={form.postal_code}
             onChange={(e) =>
@@ -183,7 +186,7 @@ export default function EditBranchPage() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t border-gray-200">
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t">
         <div className="flex gap-3 w-full sm:w-auto">
           <Button
             iconType="view"
@@ -196,7 +199,14 @@ export default function EditBranchPage() {
           </Button>
           <Button
             variant="destructive"
-            onClick={() => deleteMutation.mutate(branchId)}
+            onClick={() => {
+              if (
+                window.confirm("Delete this branch? This cannot be undone.")
+              ) {
+                deleteMutation.mutate(branchId);
+              }
+            }}
+            loading={deleteMutation.isPending}
             iconType="delete"
           >
             Delete Branch
@@ -217,7 +227,7 @@ export default function EditBranchPage() {
                 postal_code: branch.postal_code || "",
               })
             }
-            className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200"
+            className=""
           >
             Reset
           </Button>
@@ -235,9 +245,10 @@ export default function EditBranchPage() {
 
       {/* Status Feedback */}
       {mutation.isError && (
-        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700 text-sm font-medium">
-            Error updating branch. Please try again.
+        <div className="mt-4 p-4 bg-destructive/10 border border-destructive/30 rounded-xl">
+          <p className="text-destructive text-sm font-medium">
+            {(mutation.error as Error)?.message ||
+              "Error updating branch. Please try again."}
           </p>
         </div>
       )}

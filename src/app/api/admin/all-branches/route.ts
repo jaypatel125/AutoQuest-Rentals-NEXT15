@@ -21,7 +21,8 @@ export async function GET() {
         b.city,
         b.address,
         b.province,
-        COUNT(c.id) AS vehicle_count
+        b.postal_code,
+        COUNT(c.id)::int AS vehicle_count
       FROM branches b
       LEFT JOIN cars c ON c.branch_id = b.id
       WHERE b.city IS NOT NULL

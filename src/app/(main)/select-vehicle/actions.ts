@@ -1,28 +1,24 @@
-"use server";
+import type { CarListing } from "@/components/vehicles/VehicleCard";
 
-import { Cars as CarType } from "@/lib/database/table-types";
-
+/** Searches available vehicles. Dates are optional (browse mode). */
 export async function fetchCars(
   city?: string,
   startDate?: Date,
   endDate?: Date
-): Promise<CarType[]> {
-  const payload = {
-    city,
-    startDate: startDate?.toISOString(),
-    endDate: endDate?.toISOString(),
-  };
-
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/vehicles`, {
+): Promise<CarListing[]> {
+  const res = await fetch("/api/vehicles", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      city: city || undefined,
+      startDate: startDate?.toISOString(),
+      endDate: endDate?.toISOString(),
+    }),
   });
 
   if (!res.ok) {
-    throw new Error("Failed to fetch cars");
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data?.error || "Failed to fetch cars");
   }
 
   return res.json();

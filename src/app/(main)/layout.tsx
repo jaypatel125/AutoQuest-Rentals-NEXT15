@@ -1,24 +1,21 @@
 import Footer from "@/components/Footer";
 import UserNavbarWrapper from "@/components/common/navigation/UseNavbarWrapper";
 import { PageWrapper } from "@/components/utility/page-wrapper";
-import { Toaster } from "@/components/ui/toaster";
-import MaxWidthWrapper from "@/components/utility/MaxWidthWrapper";
+import { CompareBar } from "@/components/vehicles/CompareBar";
 
-export default function RootLayout({
+export default function MainLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <div className="antialiased">
-      <div className="flex flex-col min-h-screen">
-        <UserNavbarWrapper />
-        <PageWrapper>
-          <MaxWidthWrapper className="flex-1">{children}</MaxWidthWrapper>
-        </PageWrapper>
-        <Footer />
-      </div>
-      <Toaster />
+    <div className="flex min-h-screen flex-col">
+      <UserNavbarWrapper />
+      <main id="main" className="flex flex-1 flex-col">
+        <PageWrapper>{children}</PageWrapper>
+      </main>
+      <Footer />
+      <CompareBar />
     </div>
   );
 }

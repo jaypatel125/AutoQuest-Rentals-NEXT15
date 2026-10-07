@@ -24,7 +24,9 @@ describe("SignupForm (basic)", () => {
 
   it("toggles password visibility", () => {
     render(<SignupForm />);
-    const toggleButton = screen.getAllByRole("button")[0]; // first button inside password input
+    const toggleButton = screen.getAllByRole("button", {
+      name: /show password/i,
+    })[0];
     const passwordInput = screen.getByPlaceholderText(
       /Enter your password/i
     ) as HTMLInputElement;
@@ -32,7 +34,7 @@ describe("SignupForm (basic)", () => {
     expect(passwordInput.type).toBe("password");
     fireEvent.click(toggleButton);
     expect(passwordInput.type).toBe("text");
-    fireEvent.click(toggleButton);
+    fireEvent.click(screen.getByRole("button", { name: /hide password/i }));
     expect(passwordInput.type).toBe("password");
   });
 

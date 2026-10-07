@@ -1,14 +1,17 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
 import AuthLayout from "@/components/common/auth/AuthLayout";
 import ForgotPasswordForm from "@/components/common/auth/ForgotPasswordForm";
 import Loader from "@/components/utility/Loader";
-import { Suspense } from "react";
 
-export default function ForgotPasswordPage() {
+export const metadata: Metadata = { title: "Forgot password" };
+
+export default function Page() {
   return (
-    <Suspense fallback={<Loader />}>
-      <AuthLayout>
+    <AuthLayout>
+      <Suspense fallback={<Loader />}>
         <ForgotPasswordForm />
-      </AuthLayout>
-    </Suspense>
+      </Suspense>
+    </AuthLayout>
   );
 }
