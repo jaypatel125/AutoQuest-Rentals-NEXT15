@@ -85,10 +85,10 @@ export async function GET(request: NextRequest) {
         br.city,
         COALESCE(SUM(b.total_price),0)::numeric(14,2) AS total_revenue,
         COUNT(b.id) AS total_bookings,
-        SUM(c.carbon_emissions * (EXTRACT(day FROM (b.end_date - b.start_date)) + 1)) AS total_carbon_emissions,
+        SUM(c.carbon_emissions * ((b.end_date - b.start_date) + 1)) AS total_carbon_emissions,
         CASE 
-          WHEN SUM(c.carbon_emissions * (EXTRACT(day FROM (b.end_date - b.start_date)) + 1)) > 0 
-          THEN ROUND((SUM(b.total_price) / SUM(c.carbon_emissions * (EXTRACT(day FROM (b.end_date - b.start_date)) + 1)))::numeric, 2)
+          WHEN SUM(c.carbon_emissions * ((b.end_date - b.start_date) + 1)) > 0 
+          THEN ROUND((SUM(b.total_price) / SUM(c.carbon_emissions * ((b.end_date - b.start_date) + 1)))::numeric, 2)
           ELSE 0 
         END AS revenue_per_carbon_unit
       FROM bookings b
@@ -173,7 +173,7 @@ export async function GET(request: NextRequest) {
     const carbonEmissionsQuery = `
       SELECT 
         DATE_TRUNC('month', b.start_date) AS month,
-        SUM(c.carbon_emissions * (EXTRACT(day FROM (b.end_date - b.start_date)) + 1)) AS total_carbon_emissions,
+        SUM(c.carbon_emissions * ((b.end_date - b.start_date) + 1)) AS total_carbon_emissions,
         COUNT(b.id) AS booking_count,
         AVG(c.carbon_emissions) AS avg_carbon_per_booking
       FROM bookings b
@@ -219,7 +219,7 @@ export async function GET(request: NextRequest) {
         c.body_type,
         COUNT(b.id) AS rental_count,
         AVG(c.carbon_emissions) AS avg_carbon_emissions,
-        SUM(c.carbon_emissions * (EXTRACT(day FROM (b.end_date - b.start_date)) + 1)) AS total_carbon_emitted
+        SUM(c.carbon_emissions * ((b.end_date - b.start_date) + 1)) AS total_carbon_emitted
       FROM bookings b
       JOIN cars c ON b.car_id = c.id
       WHERE b.status = 'Completed'
