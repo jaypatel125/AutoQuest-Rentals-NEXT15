@@ -113,8 +113,8 @@ export default function VehicleOverviewTable({
           <span
             className={
               available
-                ? "inline-flex items-center gap-1.5 text-sm [&>span]:text-eco"
-                : "inline-flex items-center gap-1.5 text-sm text-muted-foreground"
+                ? "inline-flex items-center gap-1.5 rounded-full bg-eco-soft px-2.5 py-1 text-xs font-semibold text-eco"
+                : "inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-muted-foreground"
             }
           >
             <span className="size-1.5 rounded-full bg-current" />
@@ -229,7 +229,7 @@ export default function VehicleOverviewTable({
         </div>
       </div>
 
-      <div className="overflow-x-auto border-y">
+      <div className="overflow-x-auto rounded-2xl border bg-card shadow-card">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

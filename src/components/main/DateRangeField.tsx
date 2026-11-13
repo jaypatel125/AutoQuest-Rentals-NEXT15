@@ -37,7 +37,8 @@ export function DateRangeField({
   };
 
   const cell = "flex-1 px-3 py-2.5 text-left";
-  const label = "block text-xs text-muted-foreground";
+  const label =
+    "block text-[11px] font-semibold tracking-wide text-muted-foreground uppercase";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -45,19 +46,21 @@ export function DateRangeField({
         <button
           type="button"
           className={cn(
-            "flex w-full cursor-pointer items-stretch divide-x rounded-md border text-sm transition-colors hover:border-foreground/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+            "flex w-full cursor-pointer items-stretch divide-x rounded-xl border bg-card text-sm shadow-xs transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40",
             className
           )}
         >
           <span className={cell}>
             <span className={label}>Pick-up</span>
-            <span className={cn(!from && "text-muted-foreground")}>
+            <span
+              className={cn("font-medium", !from && "text-muted-foreground")}
+            >
               {from ? format(from, "EEE, MMM d") : "Add date"}
             </span>
           </span>
           <span className={cell}>
             <span className={label}>Return</span>
-            <span className={cn(!to && "text-muted-foreground")}>
+            <span className={cn("font-medium", !to && "text-muted-foreground")}>
               {to ? format(to, "EEE, MMM d") : "Add date"}
             </span>
           </span>

@@ -178,7 +178,7 @@ const columns: ColumnDef<Booking>[] = [
 function BookingsTable({ table }: { table: TableType<Booking> }) {
   return (
     <>
-      <div className="overflow-x-auto border-y">
+      <div className="overflow-x-auto rounded-2xl border bg-card shadow-card">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (

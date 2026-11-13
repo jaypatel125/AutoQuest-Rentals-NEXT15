@@ -76,7 +76,8 @@ describe("HomePage", () => {
     await waitFor(() => {
       expect(screen.getByText("Tesla")).toBeInTheDocument();
       expect(screen.getByText("SUV")).toBeInTheDocument();
-      expect(screen.getByText("Kia EV6")).toBeInTheDocument();
+      // The greenest car is spotlighted in the hero and listed in the grid.
+      expect(screen.getAllByText("Kia EV6").length).toBeGreaterThan(0);
     });
     expect(screen.getByRole("link", { name: /SUV/ })).toHaveAttribute(
       "href",

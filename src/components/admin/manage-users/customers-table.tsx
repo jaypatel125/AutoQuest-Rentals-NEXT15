@@ -279,7 +279,7 @@ export function CustomersTable({
 
   return (
     <div className="w-full">
-      <div className="overflow-x-auto border-y">
+      <div className="overflow-x-auto rounded-2xl border bg-card shadow-card">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

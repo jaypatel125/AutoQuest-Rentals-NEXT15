@@ -35,7 +35,7 @@ export function Avatar({
   return (
     <span
       aria-hidden
-      className={`inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-medium text-foreground ${className}`}
+      className={`inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-eco text-xs font-bold text-white ${className}`}
     >
       {initials(name)}
     </span>
@@ -67,7 +67,7 @@ export function Dropdown({ user }: { user: IUser }) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex cursor-pointer items-center gap-2 rounded-full py-1 pr-2 pl-1 text-sm transition-colors hover:bg-accent"
+          className="flex cursor-pointer items-center gap-2 rounded-full border bg-card py-1 pr-3 pl-1 text-sm font-medium shadow-xs transition-colors hover:bg-secondary"
           aria-label="Open account menu"
         >
           <Avatar name={user.name} />

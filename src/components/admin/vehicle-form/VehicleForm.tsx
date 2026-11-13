@@ -74,10 +74,10 @@ function ChipGroup<T extends string | number>({
               aria-checked={selected}
               onClick={() => onChange(option)}
               className={cn(
-                "cursor-pointer rounded-full border px-3.5 py-1.5 text-sm transition-colors",
+                "cursor-pointer rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
                 selected
-                  ? "border-foreground bg-foreground text-background"
-                  : "hover:border-foreground"
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  : "bg-card hover:border-primary/40 hover:bg-accent"
               )}
             >
               {format(option)}
@@ -201,9 +201,9 @@ export function VehicleForm({
       noValidate
     >
       <div className="space-y-8">
-        <section className="space-y-4">
-          <h3 className="font-medium">Vehicle photo</h3>
-          <div className="relative overflow-hidden rounded-md">
+        <section className="space-y-4 rounded-2xl border bg-card p-5 shadow-card">
+          <h3 className="font-display font-bold">Vehicle photo</h3>
+          <div className="relative overflow-hidden rounded-xl border">
             <VehicleImage
               src={preview ?? image}
               brand={values.brand}
@@ -217,7 +217,7 @@ export function VehicleForm({
             )}
           </div>
           {legacyPhoto && (
-            <p className="border-l-2 border-foreground pl-3 text-xs">
+            <p className="rounded-xl bg-amber-soft p-3 text-xs text-amber-900 dark:text-amber-100">
               This photo was stored in the old S3 bucket and no longer loads.
               Upload a new one (it&apos;s stored for free in your database).
             </p>
@@ -270,8 +270,8 @@ export function VehicleForm({
           </p>
         </section>
 
-        <section className="space-y-4 border-t pt-8">
-          <h3 className="font-medium">Availability & branch</h3>
+        <section className="space-y-4 rounded-2xl border bg-card p-5 shadow-card">
+          <h3 className="font-display font-bold">Availability & branch</h3>
           <div className="space-y-2">
             <Label htmlFor="branch_id">Assigned Branch</Label>
             <Select
@@ -295,9 +295,11 @@ export function VehicleForm({
             </Select>
             {fieldError("branch_id")}
           </div>
-          <label className="flex cursor-pointer items-center justify-between gap-3 border-y py-3">
+          <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-secondary p-3">
             <span>
-              <span className="block text-sm">Available for Rent</span>
+              <span className="block text-sm font-semibold">
+                Available for Rent
+              </span>
               <span className="text-xs text-muted-foreground">
                 Hidden from search when off.
               </span>
@@ -312,8 +314,10 @@ export function VehicleForm({
       </div>
 
       <div className="space-y-8">
-        <section className="grid gap-4 sm:grid-cols-2">
-          <h3 className="font-medium sm:col-span-2">Vehicle details</h3>
+        <section className="grid gap-4 rounded-2xl border bg-card p-5 shadow-card sm:grid-cols-2">
+          <h3 className="font-display font-bold sm:col-span-2">
+            Vehicle details
+          </h3>
           <div className="space-y-2">
             <Label htmlFor="brand">Brand</Label>
             <Input
@@ -375,8 +379,8 @@ export function VehicleForm({
           </div>
         </section>
 
-        <section className="space-y-6 border-t pt-8">
-          <h3 className="font-medium">Specifications</h3>
+        <section className="space-y-6 rounded-2xl border bg-card p-5 shadow-card">
+          <h3 className="font-display font-bold">Specifications</h3>
           <ChipGroup
             label="Vehicle Class"
             options={BODY_TYPES}

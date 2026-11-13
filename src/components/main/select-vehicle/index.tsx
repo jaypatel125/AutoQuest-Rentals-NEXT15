@@ -257,8 +257,8 @@ export default function SelectVehiclePage() {
       {cars.length > 0 && priceCeiling > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between text-sm">
-            <h4 className="text-muted-foreground">Max price per day</h4>
-            <span className="tabular-nums">
+            <h4 className="font-semibold">Max price per day</h4>
+            <span className="font-semibold text-primary tabular-nums">
               {maxPrice ? formatPrice(maxPrice) : "Any"}
             </span>
           </div>
@@ -280,9 +280,7 @@ export default function SelectVehiclePage() {
       {FILTER_ORDER.map((key) =>
         availableFilters[key].length ? (
           <div key={key} className="space-y-3">
-            <h4 className="text-sm text-muted-foreground">
-              {FILTER_LABELS[key]}
-            </h4>
+            <h4 className="text-sm font-semibold">{FILTER_LABELS[key]}</h4>
             <div className="space-y-2.5">
               {availableFilters[key].map((opt) => {
                 const id = `${idPrefix}-${key}-${opt}`;
@@ -311,41 +309,43 @@ export default function SelectVehiclePage() {
   );
 
   const chip =
-    "inline-flex cursor-pointer items-center gap-1 rounded-full border px-3 py-1 text-sm transition-colors hover:border-foreground";
+    "inline-flex cursor-pointer items-center gap-1 rounded-full bg-accent px-3 py-1 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent/70";
 
   return (
     <div className="pb-24">
-      <MaxWidthWrapper className="space-y-8 pt-12 pb-10 md:pt-16">
-        <div className="space-y-2">
-          <h1 className="text-3xl font-semibold md:text-4xl">
-            {city ? `Cars in ${city}` : "Browse cars"}
-          </h1>
-          <p className="text-muted-foreground">
-            {hasTrip ? (
-              <>
-                {format(start!, "EEE, MMM d")} to {format(end!, "EEE, MMM d")}
-                {" · "}
-                {rentalDays(start!, end!)} day trip
-              </>
-            ) : (
-              "Select a location and date range to get started."
-            )}
-          </p>
-        </div>
-        <SearchBar onSearch={() => undefined} />
-      </MaxWidthWrapper>
+      <div className="border-b bg-hero">
+        <MaxWidthWrapper className="space-y-6 pt-10 pb-8">
+          <div className="space-y-2">
+            <h1 className="font-display text-3xl font-bold md:text-4xl">
+              {city ? `Cars in ${city}` : "Browse cars"}
+            </h1>
+            <p className="text-muted-foreground">
+              {hasTrip ? (
+                <>
+                  {format(start!, "EEE, MMM d")} to {format(end!, "EEE, MMM d")}
+                  {" · "}
+                  {rentalDays(start!, end!)} day trip
+                </>
+              ) : (
+                "Select a location and date range to get started."
+              )}
+            </p>
+          </div>
+          <SearchBar onSearch={() => undefined} />
+        </MaxWidthWrapper>
+      </div>
 
       <MaxWidthWrapper>
-        <div className="flex flex-col gap-12 border-t pt-10 lg:flex-row">
-          <aside className="hidden w-52 shrink-0 lg:block">
-            <div className="sticky top-24">
-              <div className="mb-8 flex h-8 items-center justify-between">
-                <h3 className="text-sm font-medium">Filters</h3>
+        <div className="flex flex-col gap-8 pt-8 lg:flex-row">
+          <aside className="hidden w-64 shrink-0 lg:block">
+            <div className="sticky top-24 rounded-2xl border bg-card p-5 shadow-card">
+              <div className="mb-5 flex items-center justify-between">
+                <h3 className="font-display font-bold">Filters</h3>
                 {hasActiveFilters && (
                   <button
                     type="button"
                     onClick={clearAllFilters}
-                    className="cursor-pointer text-sm text-muted-foreground hover:text-foreground"
+                    className="cursor-pointer text-sm font-medium text-primary hover:underline"
                   >
                     Clear Filters
                   </button>
@@ -362,9 +362,9 @@ export default function SelectVehiclePage() {
                   "Finding cars..."
                 ) : (
                   <>
-                    <span className="text-foreground tabular-nums">
+                    <strong className="text-foreground tabular-nums">
                       {filteredCars.length}
-                    </span>{" "}
+                    </strong>{" "}
                     {filteredCars.length === 1 ? "car" : "cars"}
                     {hasTrip ? " available for your dates" : ""}
                   </>
@@ -397,7 +397,7 @@ export default function SelectVehiclePage() {
                   onValueChange={(v) => setSort(v as SortKey)}
                 >
                   <SelectTrigger
-                    className="h-8 w-[180px] text-[13px]"
+                    className="h-9 w-[190px] rounded-xl text-[13px]"
                     aria-label="Sort by"
                   >
                     <SelectValue />
@@ -426,7 +426,7 @@ export default function SelectVehiclePage() {
                     className={chip}
                   >
                     {optionLabel(key, value)}
-                    <X className="size-3.5 text-muted-foreground" />
+                    <X className="size-3.5" />
                   </button>
                 ))}
                 {maxPrice && (
@@ -436,7 +436,7 @@ export default function SelectVehiclePage() {
                     className={chip}
                   >
                     Under {formatPrice(maxPrice)}/day
-                    <X className="size-3.5 text-muted-foreground" />
+                    <X className="size-3.5" />
                   </button>
                 )}
                 <button
@@ -455,13 +455,13 @@ export default function SelectVehiclePage() {
                 onRetry={() => refetch()}
               />
             ) : isLoading ? (
-              <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, i) => (
                   <VehicleCardSkeleton key={i} />
                 ))}
               </div>
             ) : filteredCars.length > 0 ? (
-              <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {filteredCars.map((car, i) => (
                   <VehicleCard
                     key={car.id}

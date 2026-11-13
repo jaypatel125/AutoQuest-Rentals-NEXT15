@@ -57,12 +57,12 @@ export default function AddBranchPage() {
   });
 
   return (
-    <div className="max-w-3xl space-y-8">
+    <div className="max-w-3xl space-y-8 rounded-2xl border bg-card p-6 shadow-card md:p-8">
       {/* Form */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Name */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm">Name</label>
+          <label className="text-sm font-medium">Name</label>
           <Input
             value={form.name}
             onChange={(e) =>
@@ -74,7 +74,7 @@ export default function AddBranchPage() {
 
         {/* Address */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm">Address</label>
+          <label className="text-sm font-medium">Address</label>
           <Input
             value={form.address}
             onChange={(e) =>
@@ -86,7 +86,7 @@ export default function AddBranchPage() {
 
         {/* City */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm">City</label>
+          <label className="text-sm font-medium">City</label>
           <Input
             value={form.city}
             onChange={(e) =>
@@ -98,7 +98,7 @@ export default function AddBranchPage() {
 
         {/* Province */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm">Province</label>
+          <label className="text-sm font-medium">Province</label>
           <Select
             value={form.province}
             onValueChange={(value) =>
@@ -120,7 +120,7 @@ export default function AddBranchPage() {
 
         {/* Postal Code */}
         <div className="flex flex-col space-y-1">
-          <label className="text-sm">Postal Code</label>
+          <label className="text-sm font-medium">Postal Code</label>
           <Input
             value={form.postal_code}
             onChange={(e) =>
@@ -150,7 +150,7 @@ export default function AddBranchPage() {
       </div>
 
       {mutation.isError && (
-        <div className="mt-4 border-l-2 border-destructive pl-4">
+        <div className="mt-4 rounded-xl bg-destructive/10 p-4">
           <p className="text-destructive text-sm">
             {(mutation.error as Error)?.message ||
               "Error adding branch. Please try again."}
