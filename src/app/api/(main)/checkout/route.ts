@@ -88,7 +88,7 @@ export async function POST(req: Request) {
     });
 
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
-    const image = absoluteImageUrl(car.image, appUrl);
+    const image = absoluteImageUrl(car.image, appUrl, car.brand, car.model);
     const days = `${quote.days} day${quote.days === 1 ? "" : "s"}`;
 
     const checkout = await stripe.checkout.sessions.create({
