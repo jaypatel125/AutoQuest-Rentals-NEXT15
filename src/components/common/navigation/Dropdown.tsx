@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ADMIN_NAV, ADMIN_QUICK_ADD } from "@/components/layout/nav-items";
 import { authClient, IUser } from "../../../../auth-client";
+import { canViewAdmin, isReviewer } from "@/lib/roles";
 
 export function initials(name?: string | null) {
   return (
@@ -45,7 +46,8 @@ export function Avatar({
 /** Account menu for signed-in users (customers and admins). */
 export function Dropdown({ user }: { user: IUser }) {
   const router = useRouter();
-  const isAdmin = user.role === "admin";
+  const isAdmin = canViewAdmin(user.role);
+  const reviewer = isReviewer(user.role);
 
   const handleSignOut = async () => {
     try {
@@ -82,9 +84,11 @@ export function Dropdown({ user }: { user: IUser }) {
           <p className="truncate text-sm font-medium">{user.name}</p>
           <p className="truncate text-xs text-muted-foreground">{user.email}</p>
           <p className="mt-1 text-xs text-muted-foreground tabular-nums">
-            {isAdmin
-              ? "Admin"
-              : `${(user.reward_points ?? 0).toLocaleString()} pts`}
+            {reviewer
+              ? "Reviewer (read-only)"
+              : isAdmin
+                ? "Admin"
+                : `${(user.reward_points ?? 0).toLocaleString()} pts`}
           </p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

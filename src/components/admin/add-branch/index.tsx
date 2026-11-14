@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { addBranch } from "@/app/(admin)/admin/add-branch/actions";
 import { useToast } from "@/hooks/use-toast";
+import { ReadOnlyNote, useAdminAccess } from "@/components/admin/AdminAccess";
 
 const provinces = [
   "Ontario",
@@ -44,6 +45,7 @@ export default function AddBranchPage() {
     postal_code: "",
   });
 
+  const { readOnly } = useAdminAccess();
   const mutation = useMutation({
     mutationFn: addBranch,
     onSuccess: () => {
@@ -132,17 +134,18 @@ export default function AddBranchPage() {
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-end gap-3 pt-8 border-t">
+      <div className="flex items-center justify-end gap-3 pt-8 border-t">
+        {readOnly && <ReadOnlyNote className="mr-auto" />}
         <Button
           variant="outline"
           onClick={() => router.push("/admin/manage-branches")}
         >
-          Cancel
+          {readOnly ? "Back" : "Cancel"}
         </Button>
 
         <Button
           onClick={() => mutation.mutate(form)}
-          disabled={mutation.isPending}
+          disabled={mutation.isPending || readOnly}
           loading={mutation.isPending}
         >
           {mutation.isPending ? "Adding..." : "Add Branch"}

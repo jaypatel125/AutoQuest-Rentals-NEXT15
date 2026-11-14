@@ -38,6 +38,7 @@ import {
   fetchAllBranches,
 } from "@/app/(admin)/admin/manage-branches/actions";
 import Error from "@/components/utility/Error";
+import { useAdminAccess } from "@/components/admin/AdminAccess";
 
 export default function ManageBranchesTable() {
   const {
@@ -96,13 +97,7 @@ export default function ManageBranchesTable() {
       header: "Actions",
       cell: ({ row }) => {
         const branchId = row.original.id;
-        return (
-          <Link href={`/admin/manage-branches/${branchId}`}>
-            <Button variant="outline" size="sm">
-              Edit
-            </Button>
-          </Link>
-        );
+        return <ManageLink href={`/admin/manage-branches/${branchId}`} />;
       },
     },
   ];
@@ -235,5 +230,15 @@ export default function ManageBranchesTable() {
         </Button>
       </div>
     </div>
+  );
+}
+
+/** Row action: reviewers can open the record but not edit it. */
+function ManageLink({ href }: { href: string }) {
+  const { readOnly } = useAdminAccess();
+  return (
+    <Button asChild variant="outline" size="sm">
+      <Link href={href}>{readOnly ? "View" : "Edit"}</Link>
+    </Button>
   );
 }

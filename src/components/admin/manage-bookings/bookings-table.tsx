@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { formatDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useAdminAccess } from "@/components/admin/AdminAccess";
 
 export type Booking = {
   id: string;
@@ -55,6 +56,7 @@ function BookingStatusCell({
 }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { readOnly } = useAdminAccess();
 
   const { mutate, isPending } = useMutation({
     mutationFn: (newStatus: string) =>
@@ -79,7 +81,7 @@ function BookingStatusCell({
   });
 
   const allowed = ADMIN_TRANSITIONS[currentStatus] ?? [];
-  if (allowed.length === 0) {
+  if (allowed.length === 0 || readOnly) {
     return <StatusBadge status={currentStatus} />;
   }
 

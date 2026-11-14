@@ -36,6 +36,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { VehicleImage } from "@/components/vehicles/VehicleImage";
 import { bodyTypeLabel } from "@/lib/vehicles";
 import { formatPrice } from "@/lib/utils";
+import { useAdminAccess } from "@/components/admin/AdminAccess";
 
 interface VehicleOverviewTableProps {
   vehicles: CarWithBranch[];
@@ -128,13 +129,7 @@ export default function VehicleOverviewTable({
       header: "Actions",
       cell: ({ row }) => {
         const vehicleId = row.original.id;
-        return (
-          <Link href={`/admin/manage-vehicles/${vehicleId}`}>
-            <Button variant="outline" size="sm">
-              Edit
-            </Button>
-          </Link>
-        );
+        return <ManageLink href={`/admin/manage-vehicles/${vehicleId}`} />;
       },
     },
   ];
@@ -298,5 +293,15 @@ export default function VehicleOverviewTable({
         </div>
       </div>
     </div>
+  );
+}
+
+/** Row action: reviewers can open the record but not edit it. */
+function ManageLink({ href }: { href: string }) {
+  const { readOnly } = useAdminAccess();
+  return (
+    <Button asChild variant="outline" size="sm">
+      <Link href={href}>{readOnly ? "View" : "Edit"}</Link>
+    </Button>
   );
 }

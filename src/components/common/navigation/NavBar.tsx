@@ -19,6 +19,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { CUSTOMER_NAV, isActive } from "@/components/layout/nav-items";
+import { canViewAdmin } from "@/lib/roles";
 
 const Navbar = ({
   user,
@@ -31,7 +32,8 @@ const Navbar = ({
 
   if (isAuthRoutes(pathname)) return null;
 
-  const isAdmin = user?.role === "admin";
+  // Admins and reviewers both use the admin shell.
+  const isAdmin = canViewAdmin(user?.role);
   // Admins navigate with the sidebar in the admin shell.
   const links = isAdmin ? [] : CUSTOMER_NAV;
 

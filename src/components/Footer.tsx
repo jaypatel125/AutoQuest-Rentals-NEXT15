@@ -42,7 +42,11 @@ const COLUMNS = [
   },
 ];
 
-export default function Footer() {
+export default function Footer({
+  reviewerDemo = false,
+}: {
+  reviewerDemo?: boolean;
+}) {
   const pathname = usePathname();
   if (isAuthRoutes(pathname)) {
     return null;
@@ -72,7 +76,19 @@ export default function Footer() {
               </li>
             </ul>
           </div>
-          {COLUMNS.map((col) => (
+          {COLUMNS.map((col) => ({
+            ...col,
+            links:
+              reviewerDemo && col.title === "Support"
+                ? [
+                    ...col.links,
+                    {
+                      href: "/signin?demo=reviewer",
+                      label: "Admin demo (read-only)",
+                    },
+                  ]
+                : col.links,
+          })).map((col) => (
             <div key={col.title}>
               <h3 className="mb-4 font-display text-sm font-bold">
                 {col.title}

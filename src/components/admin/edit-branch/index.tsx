@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import Error from "@/components/utility/Error";
+import { ReadOnlyNote, useAdminAccess } from "@/components/admin/AdminAccess";
 
 const provinces = [
   "Alberta",
@@ -70,6 +71,7 @@ export default function EditBranchPage() {
     }
   }, [branch]);
 
+  const { readOnly } = useAdminAccess();
   const mutation = useMutation({
     mutationFn: (updated: typeof form) => updateBranch(branchId, updated),
     onSuccess: () => {
@@ -206,6 +208,7 @@ export default function EditBranchPage() {
               }
             }}
             loading={deleteMutation.isPending}
+            disabled={readOnly}
           >
             Delete Branch
           </Button>
@@ -231,13 +234,14 @@ export default function EditBranchPage() {
 
           <Button
             onClick={() => mutation.mutate(form)}
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || readOnly}
             loading={mutation.isPending}
           >
             {mutation.isPending ? "Updating..." : "Save Changes"}
           </Button>
         </div>
       </div>
+      {readOnly && <ReadOnlyNote className="justify-end" />}
 
       {/* Status Feedback */}
       {mutation.isError && (

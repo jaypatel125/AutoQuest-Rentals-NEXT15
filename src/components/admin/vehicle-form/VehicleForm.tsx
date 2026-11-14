@@ -25,6 +25,8 @@ import {
   bodyTypeLabel,
 } from "@/lib/vehicles";
 import { cn } from "@/lib/utils";
+import { ReadOnlyNote, useAdminAccess } from "@/components/admin/AdminAccess";
+import { bundledVehiclePhoto } from "@/lib/vehicle-image";
 
 export interface VehicleFormValues {
   brand: string;
@@ -149,10 +151,11 @@ export function VehicleForm({
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
+  const { readOnly } = useAdminAccess();
   const legacyPhoto = !!image && /amazonaws\.com/i.test(image) && !preview;
 
   const pickFile = async (picked?: File) => {
-    if (!picked) return;
+    if (!picked || readOnly) return;
     const url = URL.createObjectURL(picked);
     setPreview(url);
     if (mode === "edit" && onReplacePhoto) {
@@ -166,6 +169,7 @@ export function VehicleForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (readOnly) return;
     const parsed = vehicleSchema.safeParse(values);
     if (!parsed.success) {
       const fieldErrors = parsed.error.flatten().fieldErrors as Record<
@@ -218,8 +222,9 @@ export function VehicleForm({
           </div>
           {legacyPhoto && (
             <p className="rounded-xl bg-amber-soft p-3 text-xs text-amber-900 dark:text-amber-100">
-              This photo was stored in the old S3 bucket and no longer loads.
-              Upload a new one (it&apos;s stored for free in your database).
+              {bundledVehiclePhoto(values.brand, values.model)
+                ? "The original photo was in the old S3 bucket, so customers see the stock photo for this model. Upload your own to replace it."
+                : "This photo was stored in the old S3 bucket and no longer loads. Upload a new one (it's stored for free in your database)."}
             </p>
           )}
           {!image && !preview && (
@@ -244,7 +249,7 @@ export function VehicleForm({
               type="button"
               variant="outline"
               className="flex-1"
-              disabled={photoBusy}
+              disabled={photoBusy || readOnly}
               onClick={() => fileInput.current?.click()}
             >
               {image || preview ? "Replace photo" : "Upload photo"}
@@ -254,7 +259,7 @@ export function VehicleForm({
                 type="button"
                 variant="ghost"
                 aria-label="Remove photo"
-                disabled={photoBusy}
+                disabled={photoBusy || readOnly}
                 onClick={async () => {
                   await onRemovePhoto();
                   setImage(null);
@@ -413,11 +418,16 @@ export function VehicleForm({
           />
         </section>
 
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse items-center gap-3 sm:flex-row sm:justify-end">
+          {readOnly && <ReadOnlyNote className="sm:mr-auto" />}
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            {readOnly ? "Back" : "Cancel"}
           </Button>
-          <Button type="submit" disabled={submitting} loading={submitting}>
+          <Button
+            type="submit"
+            disabled={submitting || readOnly}
+            loading={submitting}
+          >
             {submitLabel}
           </Button>
         </div>

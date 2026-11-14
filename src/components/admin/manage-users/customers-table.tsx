@@ -33,23 +33,39 @@ import { useRouter } from "next/navigation";
 import { useUserBanMutations } from "@/hooks/use-ban-user";
 import { CustomersItem } from "@/app/api/admin/all-users/route";
 import Loader from "@/components/utility/Loader";
+import { useAdminAccess } from "@/components/admin/AdminAccess";
+import { type AppRole, primaryRole, ROLE_LABELS } from "@/lib/roles";
+import { cn } from "@/lib/utils";
+
+const ROLE_BADGE: Record<AppRole, string> = {
+  admin: "bg-accent text-accent-foreground ring-primary/15",
+  reviewer: "bg-amber-soft text-amber-900 ring-amber/30 dark:text-amber-100",
+  user: "bg-secondary text-foreground/70 ring-border",
+};
+
+const ROLE_ACTIONS: { role: AppRole; label: string }[] = [
+  { role: "admin", label: "Make admin" },
+  { role: "reviewer", label: "Make reviewer (read-only admin)" },
+  { role: "user", label: "Make customer" },
+];
 
 export function CustomersTable({
   rows,
   loading,
   hasNextPage,
   onLoadMore,
-  onToggleAdmin,
+  onSetRole,
   currentUserId,
 }: {
   rows: CustomersItem[];
   loading?: boolean;
   hasNextPage?: boolean;
   onLoadMore?: () => void;
-  onToggleAdmin: (id: string, makeAdmin: boolean) => Promise<void>;
+  onSetRole?: (id: string, role: AppRole) => Promise<void>;
   currentUserId: string;
 }) {
   const router = useRouter();
+  const { readOnly } = useAdminAccess();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
@@ -162,9 +178,20 @@ export function CustomersTable({
       {
         accessorKey: "role",
         header: "Role",
-        cell: ({ row }) => (
-          <div className="font-medium">{row.original.role}</div>
-        ),
+        cell: ({ row }) => {
+          const role = primaryRole(row.original.role);
+          return (
+            <span
+              className={cn(
+                "inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset",
+                ROLE_BADGE[role]
+              )}
+            >
+              {ROLE_LABELS[role]}
+              {row.original.demo && " · public demo"}
+            </span>
+          );
+        },
       },
       {
         id: "actions",
@@ -172,7 +199,11 @@ export function CustomersTable({
         cell: ({ row }) => {
           const customer = row.original;
           const isSelf = currentUserId && currentUserId === customer.id;
-          const canToggleRole = !!onToggleAdmin && !isSelf;
+          // Reviewers only get the read actions.
+          const canManage = !readOnly && !isSelf;
+          // The public demo login always stays a reviewer.
+          const canSetRole = canManage && !!onSetRole && !customer.demo;
+          const currentRole = primaryRole(customer.role);
 
           return (
             <DropdownMenu>
@@ -189,7 +220,7 @@ export function CustomersTable({
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                 {!row.original.banned &&
-                  !isSelf &&
+                  canManage &&
                   !customer.banReason?.includes("Admin-initiated") && (
                     <DropdownMenuItem
                       onClick={() =>
@@ -206,6 +237,7 @@ export function CustomersTable({
                   )}
 
                 {row.original.banned &&
+                  canManage &&
                   !customer.banReason?.includes("Admin-initiated") && (
                     <DropdownMenuItem
                       onClick={() =>
@@ -231,23 +263,26 @@ export function CustomersTable({
                   View bookings
                 </DropdownMenuItem>
 
-                {canToggleRole &&
+                {canSetRole &&
                   !customer.banReason?.includes("Admin-initiated") && (
                     <>
                       <DropdownMenuSeparator />
-                      {customer.role === "admin" ? (
-                        <DropdownMenuItem
-                          className="text-destructive focus:text-destructive"
-                          onClick={() => onToggleAdmin!(customer.id, false)}
-                        >
-                          Remove admin
-                        </DropdownMenuItem>
-                      ) : (
-                        <DropdownMenuItem
-                          onClick={() => onToggleAdmin!(customer.id, true)}
-                        >
-                          Make admin
-                        </DropdownMenuItem>
+                      <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                        Role: {ROLE_LABELS[currentRole]}
+                      </DropdownMenuLabel>
+                      {ROLE_ACTIONS.filter((a) => a.role !== currentRole).map(
+                        (action) => (
+                          <DropdownMenuItem
+                            key={action.role}
+                            className={cn(
+                              currentRole === "admin" &&
+                                "text-destructive focus:text-destructive"
+                            )}
+                            onClick={() => onSetRole!(customer.id, action.role)}
+                          >
+                            {action.label}
+                          </DropdownMenuItem>
+                        )
                       )}
                     </>
                   )}
@@ -257,7 +292,7 @@ export function CustomersTable({
         },
       },
     ],
-    [router, currentUserId, onToggleAdmin, banUser, isPending, unbanUser]
+    [router, currentUserId, onSetRole, readOnly, banUser, isPending, unbanUser]
   );
 
   const table = useReactTable({

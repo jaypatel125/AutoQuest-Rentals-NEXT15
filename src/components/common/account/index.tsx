@@ -20,6 +20,7 @@ import {
 import { Avatar } from "@/components/common/navigation/Dropdown";
 import { useToast } from "@/hooks/use-toast";
 import { authClient, IUser } from "../../../../auth-client";
+import { canViewAdmin, isReviewer } from "@/lib/roles";
 
 export default function SettingsProfilePage({ user }: { user: IUser }) {
   const router = useRouter();
@@ -57,7 +58,9 @@ export default function SettingsProfilePage({ user }: { user: IUser }) {
     router.refresh();
   };
 
-  const isAdmin = user.role === "admin";
+  const isAdmin = canViewAdmin(user.role);
+  // The reviewer login may be shared, so its profile can't be changed.
+  const readOnly = isReviewer(user.role);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
@@ -70,7 +73,8 @@ export default function SettingsProfilePage({ user }: { user: IUser }) {
         <div className="flex justify-center gap-2">
           {isAdmin ? (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-accent px-3 py-1 text-xs font-semibold text-accent-foreground">
-              <ShieldCheck className="size-3.5" /> Administrator
+              <ShieldCheck className="size-3.5" />{" "}
+              {readOnly ? "Reviewer (read-only)" : "Administrator"}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-soft px-3 py-1 text-xs font-semibold text-amber-900 dark:text-amber-100">
@@ -85,62 +89,75 @@ export default function SettingsProfilePage({ user }: { user: IUser }) {
         </p>
       </aside>
 
-      <div className="space-y-6">
-        <section className="rounded-3xl border bg-card p-6 shadow-card">
+      {readOnly ? (
+        <section className="h-fit rounded-3xl border bg-card p-6 shadow-card">
           <h2 className="mb-1 font-display text-lg font-bold">
-            Personal information
+            Read-only reviewer account
           </h2>
-          <p className="mb-6 text-sm text-muted-foreground">
-            Update your profile information to personalize your experience.
+          <p className="text-sm text-muted-foreground">
+            This account is for looking around the admin area. Its name, email
+            and password can&apos;t be changed, and it can&apos;t be deleted.
+            Ask an admin if you need full access.
           </p>
-          <div className="space-y-6">
-            <ProfileName currentUser={user} />
-            <Separator />
+        </section>
+      ) : (
+        <div className="space-y-6">
+          <section className="rounded-3xl border bg-card p-6 shadow-card">
+            <h2 className="mb-1 font-display text-lg font-bold">
+              Personal information
+            </h2>
+            <p className="mb-6 text-sm text-muted-foreground">
+              Update your profile information to personalize your experience.
+            </p>
+            <div className="space-y-6">
+              <ProfileName currentUser={user} />
+              <Separator />
+              {hasPassword ? (
+                <ProfileEmail currentUser={user} />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  You signed in with Google, so your email is managed by your
+                  Google account.
+                </p>
+              )}
+            </div>
+          </section>
+
+          <section className="rounded-3xl border bg-card p-6 shadow-card">
+            <h2 className="mb-1 font-display text-lg font-bold">Security</h2>
+            <p className="mb-6 text-sm text-muted-foreground">
+              Changing your password signs you out on your other devices.
+            </p>
             {hasPassword ? (
-              <ProfileEmail currentUser={user} />
+              <ProfilePassword />
             ) : (
               <p className="text-sm text-muted-foreground">
-                You signed in with Google, so your email is managed by your
-                Google account.
+                You signed in with Google. To add a password, use the forgot
+                password option on the sign-in page.
               </p>
             )}
-          </div>
-        </section>
-
-        <section className="rounded-3xl border bg-card p-6 shadow-card">
-          <h2 className="mb-1 font-display text-lg font-bold">Security</h2>
-          <p className="mb-6 text-sm text-muted-foreground">
-            Changing your password signs you out on your other devices.
-          </p>
-          {hasPassword ? (
-            <ProfilePassword />
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              You signed in with Google. To add a password, use the forgot
-              password option on the sign-in page.
-            </p>
-          )}
-        </section>
-
-        {!isAdmin && (
-          <section className="rounded-3xl border border-destructive/30 bg-card p-6 shadow-card">
-            <h2 className="mb-1 font-display text-lg font-bold text-destructive">
-              Danger Zone
-            </h2>
-            <p className="mb-4 text-sm text-muted-foreground">
-              Permanently delete your account and all associated data. Cancel
-              any upcoming bookings first.
-            </p>
-            <Button
-              variant="outline"
-              className="border-destructive/40 text-destructive hover:bg-destructive hover:text-white"
-              onClick={() => setConfirmOpen(true)}
-            >
-              <Trash2 /> Delete Account
-            </Button>
           </section>
-        )}
-      </div>
+
+          {!isAdmin && (
+            <section className="rounded-3xl border border-destructive/30 bg-card p-6 shadow-card">
+              <h2 className="mb-1 font-display text-lg font-bold text-destructive">
+                Danger Zone
+              </h2>
+              <p className="mb-4 text-sm text-muted-foreground">
+                Permanently delete your account and all associated data. Cancel
+                any upcoming bookings first.
+              </p>
+              <Button
+                variant="outline"
+                className="border-destructive/40 text-destructive hover:bg-destructive hover:text-white"
+                onClick={() => setConfirmOpen(true)}
+              >
+                <Trash2 /> Delete Account
+              </Button>
+            </section>
+          )}
+        </div>
+      )}
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>

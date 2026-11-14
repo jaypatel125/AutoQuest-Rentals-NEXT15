@@ -34,6 +34,10 @@ import { FuelBadge, GreenScoreBadge } from "@/components/vehicles/badges";
 import { bodyTypeLabel } from "@/lib/vehicles";
 import { REWARD_TIERS } from "@/lib/rewards";
 import { cn, formatPrice } from "@/lib/utils";
+import {
+  ReviewerDemoCard,
+  type ReviewerDemoCredentials,
+} from "@/components/common/auth/ReviewerDemo";
 
 const PERKS = [
   {
@@ -110,7 +114,11 @@ function Stat({ value, label }: { value?: number; label: string }) {
   );
 }
 
-const HomePage = () => {
+const HomePage = ({
+  reviewerDemo = null,
+}: {
+  reviewerDemo?: ReviewerDemoCredentials | null;
+}) => {
   const router = useRouter();
   const { data: stats } = useQuery({
     queryKey: ["stats"],
@@ -434,6 +442,28 @@ const HomePage = () => {
           </ol>
         </div>
       </MaxWidthWrapper>
+
+      {/* Admin demo */}
+      {reviewerDemo && (
+        <MaxWidthWrapper className="mt-20">
+          <div className="grid items-center gap-8 rounded-3xl border bg-card p-8 shadow-card md:grid-cols-[1.1fr_1fr] md:p-12">
+            <div className="space-y-4">
+              <p className="text-sm font-semibold tracking-wider text-primary uppercase">
+                For reviewers
+              </p>
+              <h2 className="font-display text-3xl font-bold md:text-4xl">
+                See how the admin side works
+              </h2>
+              <p className="max-w-lg text-muted-foreground">
+                Sign in with the shared reviewer account to explore the
+                dashboard, bookings, fleet, branches and customer pages. Nothing
+                can be changed, and customer details are partly hidden.
+              </p>
+            </div>
+            <ReviewerDemoCard credentials={reviewerDemo} />
+          </div>
+        </MaxWidthWrapper>
+      )}
 
       {/* Brands */}
       {brands.length > 0 && (

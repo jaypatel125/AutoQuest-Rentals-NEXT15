@@ -37,12 +37,33 @@ The app creates the extra tables and columns it needs on first use.
 | `SMTP_FROM`, `SUPPORT_EMAIL` | no | Sender and contact-form inbox |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | no | Enables "Continue with Google" |
 | `DATABASE_SSL_REJECT_UNAUTHORIZED` | no | Set to `false` only if your host needs it |
+| `REVIEWER_DEMO` | no | Set to `off` to hide and disable the public reviewer login |
+| `REVIEWER_DEMO_EMAIL`, `REVIEWER_DEMO_PASSWORD` | no | Reviewer login shown on the site (defaults below) |
 
 ### Testing payments
 
 With a Stripe test key, the checkout page shows the test card details next
 to the pay button. Use card `4242 4242 4242 4242`, any future expiry, any
 CVC and any postal code. No real charge is made.
+
+## Roles
+
+| Role | Can do |
+| --- | --- |
+| Customer | Book cars, manage their own bookings and rewards |
+| Reviewer | Open every admin page read-only. Every write is refused by the API, customer names and emails are partly hidden, and the account's own profile, password and sessions can't be changed |
+| Admin | Everything, including assigning roles from Admin > Customers |
+
+### Public reviewer demo
+
+The sign-in page, the home page and the footer show a shared reviewer login
+so anyone can look around the admin area. The account is created on first
+visit to the sign-in page, and its role and password are put back if they
+drift. Defaults: `reviewer@example.com` / `Reviewer123!` (example.com can
+never receive email, so nobody can take the account over). Change them with
+`REVIEWER_DEMO_EMAIL` and `REVIEWER_DEMO_PASSWORD`, or turn the demo off
+with `REVIEWER_DEMO=off`. Banning the account from Admin > Customers also
+locks it.
 
 ## Scripts
 

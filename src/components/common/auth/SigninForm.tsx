@@ -20,11 +20,20 @@ import {
 import { authClient } from "../../../../auth-client";
 import { useToast } from "@/hooks/use-toast";
 import { Divider, GoogleButton, PasswordInput, safeNext } from "./shared";
+import { canViewAdmin } from "@/lib/roles";
+import { ReviewerDemoCard, type ReviewerDemoCredentials } from "./ReviewerDemo";
 
-export default function SigninForm() {
+export default function SigninForm({
+  reviewerDemo = null,
+}: {
+  reviewerDemo?: ReviewerDemoCredentials | null;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = safeNext(searchParams?.get("next"));
+  // Links to the admin demo land here with ?demo=reviewer.
+  const demoRequested =
+    !!reviewerDemo && searchParams?.get("demo") === "reviewer";
   const { toast } = useToast();
   const [pending, setPending] = useState(false);
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
@@ -32,10 +41,9 @@ export default function SigninForm() {
 
   const form = useForm<z.infer<typeof signInSchema>>({
     resolver: zodResolver(signInSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
+    defaultValues: demoRequested
+      ? { email: reviewerDemo!.email, password: reviewerDemo!.password }
+      : { email: "", password: "" },
   });
 
   const onSubmit = async (values: z.infer<typeof signInSchema>) => {
@@ -52,7 +60,7 @@ export default function SigninForm() {
             title: "Signed in successfully",
           });
           const role = ctx.data?.user?.role;
-          router.push(role === "admin" ? "/admin" : next);
+          router.push(canViewAdmin(role) ? "/admin" : next);
           router.refresh();
         },
         onError: (error) => {
@@ -209,6 +217,19 @@ export default function SigninForm() {
           Sign Up
         </Link>
       </p>
+
+      {reviewerDemo && (
+        <ReviewerDemoCard
+          credentials={reviewerDemo}
+          highlight={demoRequested}
+          pending={pending}
+          onSignIn={() => {
+            form.setValue("email", reviewerDemo.email);
+            form.setValue("password", reviewerDemo.password);
+            onSubmit(reviewerDemo);
+          }}
+        />
+      )}
     </div>
   );
 }
