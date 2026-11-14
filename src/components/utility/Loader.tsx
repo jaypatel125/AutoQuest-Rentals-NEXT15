@@ -20,10 +20,12 @@ const Loader: React.FC<LoaderProps> = ({ title, className }) => {
       <div className="flex flex-col items-center gap-4 text-center">
         <span
           data-testid="loader-spinner"
-          className="inline-block size-5 animate-spin rounded-full border-[1.5px] border-border border-t-foreground"
+          className="inline-block size-9 animate-spin rounded-full border-[3px] border-primary/15 border-t-primary"
         />
         {title ? (
-          <p className="text-sm text-muted-foreground">{title}...</p>
+          <p className="text-sm font-medium text-muted-foreground">
+            {title}...
+          </p>
         ) : (
           <span className="sr-only">Loading</span>
         )}

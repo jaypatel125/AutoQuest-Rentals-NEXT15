@@ -76,7 +76,8 @@ describe("HomePage", () => {
     await waitFor(() => {
       expect(screen.getByText("Tesla")).toBeInTheDocument();
       expect(screen.getByText("SUV")).toBeInTheDocument();
-      expect(screen.getByText("Kia EV6")).toBeInTheDocument();
+      // The greenest car is spotlighted in the hero and listed in the grid.
+      expect(screen.getAllByText("Kia EV6").length).toBeGreaterThan(0);
     });
     expect(screen.getByRole("link", { name: /SUV/ })).toHaveAttribute(
       "href",
@@ -88,5 +89,30 @@ describe("HomePage", () => {
     renderWithClient(<HomePage />);
     fireEvent.click(screen.getByRole("button", { name: /learn more/i }));
     expect(mockPush).toHaveBeenCalledWith("/rewards");
+  });
+
+  it("shows the reviewer demo login when it is enabled", () => {
+    renderWithClient(
+      <HomePage
+        reviewerDemo={{
+          email: "reviewer@example.com",
+          password: "Reviewer123!",
+        }}
+      />
+    );
+    expect(
+      screen.getByText("See how the admin side works")
+    ).toBeInTheDocument();
+    expect(screen.getByText("reviewer@example.com")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /open the admin demo/i })
+    ).toHaveAttribute("href", "/signin?demo=reviewer");
+  });
+
+  it("hides the reviewer demo when it is turned off", () => {
+    renderWithClient(<HomePage />);
+    expect(
+      screen.queryByText("See how the admin side works")
+    ).not.toBeInTheDocument();
   });
 });

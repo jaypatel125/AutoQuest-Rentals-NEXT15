@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ADMIN_NAV, ADMIN_QUICK_ADD } from "@/components/layout/nav-items";
 import { authClient, IUser } from "../../../../auth-client";
+import { canViewAdmin, isReviewer } from "@/lib/roles";
 
 export function initials(name?: string | null) {
   return (
@@ -35,7 +36,7 @@ export function Avatar({
   return (
     <span
       aria-hidden
-      className={`inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-medium text-foreground ${className}`}
+      className={`inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-eco text-xs font-bold text-white ${className}`}
     >
       {initials(name)}
     </span>
@@ -45,7 +46,8 @@ export function Avatar({
 /** Account menu for signed-in users (customers and admins). */
 export function Dropdown({ user }: { user: IUser }) {
   const router = useRouter();
-  const isAdmin = user.role === "admin";
+  const isAdmin = canViewAdmin(user.role);
+  const reviewer = isReviewer(user.role);
 
   const handleSignOut = async () => {
     try {
@@ -67,7 +69,7 @@ export function Dropdown({ user }: { user: IUser }) {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="flex cursor-pointer items-center gap-2 rounded-full py-1 pr-2 pl-1 text-sm transition-colors hover:bg-accent"
+          className="flex cursor-pointer items-center gap-2 rounded-full border bg-card py-1 pr-3 pl-1 text-sm font-medium shadow-xs transition-colors hover:bg-secondary"
           aria-label="Open account menu"
         >
           <Avatar name={user.name} />
@@ -82,9 +84,11 @@ export function Dropdown({ user }: { user: IUser }) {
           <p className="truncate text-sm font-medium">{user.name}</p>
           <p className="truncate text-xs text-muted-foreground">{user.email}</p>
           <p className="mt-1 text-xs text-muted-foreground tabular-nums">
-            {isAdmin
-              ? "Admin"
-              : `${(user.reward_points ?? 0).toLocaleString()} pts`}
+            {reviewer
+              ? "Reviewer (read-only)"
+              : isAdmin
+                ? "Admin"
+                : `${(user.reward_points ?? 0).toLocaleString()} pts`}
           </p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

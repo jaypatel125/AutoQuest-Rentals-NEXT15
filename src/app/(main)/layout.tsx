@@ -2,6 +2,7 @@ import Footer from "@/components/Footer";
 import UserNavbarWrapper from "@/components/common/navigation/UseNavbarWrapper";
 import { PageWrapper } from "@/components/utility/page-wrapper";
 import { CompareBar } from "@/components/vehicles/CompareBar";
+import { getReviewerDemo } from "@/lib/reviewer-demo";
 
 export default function MainLayout({
   children,
@@ -14,7 +15,7 @@ export default function MainLayout({
       <main id="main" className="flex flex-1 flex-col">
         <PageWrapper>{children}</PageWrapper>
       </main>
-      <Footer />
+      <Footer reviewerDemo={getReviewerDemo() !== null} />
       <CompareBar />
     </div>
   );

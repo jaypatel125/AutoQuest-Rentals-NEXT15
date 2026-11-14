@@ -17,13 +17,15 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center justify-center gap-5 px-6 py-20 text-center",
+        "flex flex-col items-center justify-center gap-4 rounded-3xl border border-dashed bg-card/60 px-6 py-16 text-center",
         className
       )}
     >
-      <Icon className="size-6 text-muted-foreground" strokeWidth={1.5} />
+      <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-accent text-accent-foreground">
+        <Icon className="size-7" />
+      </span>
       <div className="max-w-sm space-y-1.5">
-        <h3 className="font-medium">{title}</h3>
+        <h3 className="font-display text-lg font-bold">{title}</h3>
         {description && (
           <p className="text-sm text-muted-foreground">{description}</p>
         )}

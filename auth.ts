@@ -2,9 +2,20 @@ import { sendEmail } from "@/lib/email";
 import { renderEmail } from "@/lib/email-templates";
 import pool from "@/lib/db";
 import { betterAuth, BetterAuthOptions } from "better-auth";
-import { APIError } from "better-auth/api";
+import {
+  APIError,
+  createAuthMiddleware,
+  getSessionFromCtx,
+} from "better-auth/api";
 import { lastLoginMethod, openAPI } from "better-auth/plugins";
 import { admin } from "better-auth/plugins";
+import { roles } from "@/lib/permissions";
+import {
+  isBlockedForReviewer,
+  isReviewer,
+  READ_ONLY_MESSAGE,
+} from "@/lib/roles";
+import { isDemoReviewerId } from "@/lib/reviewer-demo";
 
 const appUrl =
   process.env.NEXT_PUBLIC_APP_URL || "https://jay-capstone.vercel.app";
@@ -78,9 +89,42 @@ export const auth = betterAuth({
   plugins: [
     // The OpenAPI reference page is useful locally but should not be public.
     openAPI({ disableDefaultReference: process.env.NODE_ENV === "production" }),
-    admin({ impersonationSessionDuration: 60 * 60 }),
+    admin({ roles, impersonationSessionDuration: 60 * 60 }),
     lastLoginMethod(),
   ],
+  hooks: {
+    // Reviewers can sign in and browse, but the account may be shared, so it
+    // can't change its profile, credentials or sessions, or manage users.
+    before: createAuthMiddleware(async (ctx) => {
+      // The public demo login must stay a reviewer: promoting it would hand
+      // admin rights to anyone who reads the sign-in page.
+      if (ctx.path === "/admin/set-role") {
+        const role = ctx.body?.role;
+        const roles = Array.isArray(role) ? role : [role];
+        if (
+          !(roles.length === 1 && roles[0] === "reviewer") &&
+          (await isDemoReviewerId(ctx.body?.userId))
+        ) {
+          throw new APIError("BAD_REQUEST", {
+            message:
+              "The public demo account always stays a reviewer. Ban it or set REVIEWER_DEMO=off to turn it off.",
+          });
+        }
+      }
+      if (
+        !isBlockedForReviewer(ctx.path) ||
+        ctx.path === "/admin/stop-impersonating"
+      ) {
+        return;
+      }
+      const session = await getSessionFromCtx(ctx);
+      const role = (session?.user as { role?: string | null } | undefined)
+        ?.role;
+      if (isReviewer(role)) {
+        throw new APIError("FORBIDDEN", { message: READ_ONLY_MESSAGE });
+      }
+    }),
+  },
   trustedOrigins: [appUrl],
   rateLimit: {
     enabled: process.env.NODE_ENV === "production",
@@ -135,6 +179,9 @@ export const auth = betterAuth({
     revokeSessionsOnPasswordReset: true,
 
     sendResetPassword: async ({ user, url }) => {
+      // The reviewer login is published on the site; its password is reset
+      // from the environment, never by email.
+      if (isReviewer((user as { role?: string | null }).role)) return;
       await sendEmail({
         to: user.email,
         subject: "Reset your AutoQuest password",

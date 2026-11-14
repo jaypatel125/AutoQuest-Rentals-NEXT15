@@ -61,15 +61,15 @@ export default function ContactForm() {
   };
 
   return (
-    <div className="grid gap-16 lg:grid-cols-[1.4fr_1fr]">
-      <div>
-        <h2 className="font-medium">Send us a message</h2>
-        <p className="mt-1 mb-8 text-sm text-muted-foreground">
+    <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr]">
+      <div className="rounded-3xl border bg-card p-6 shadow-card md:p-8">
+        <h2 className="font-display text-xl font-bold">Send us a message</h2>
+        <p className="mt-1 mb-6 text-sm text-muted-foreground">
           We usually reply within one business day.
         </p>
         {isSuccess ? (
-          <div className="space-y-3 border-y py-10">
-            <p className="font-medium">
+          <div className="space-y-3 rounded-2xl bg-accent/60 p-8 text-center">
+            <p className="font-display text-lg font-bold">
               Your message has been sent successfully!
             </p>
             <p className="text-sm text-muted-foreground">
@@ -148,6 +148,7 @@ export default function ContactForm() {
             <Button
               type="submit"
               disabled={isSubmitting}
+              size="lg"
               className="w-full sm:w-auto"
               loading={isSubmitting}
             >
@@ -157,10 +158,12 @@ export default function ContactForm() {
         )}
       </div>
 
-      <div className="space-y-12">
-        <div className="space-y-4">
-          <h2 className="font-medium">Contact Information</h2>
-          <ul className="space-y-1.5 text-sm text-muted-foreground">
+      <div className="space-y-6">
+        <div className="space-y-4 rounded-3xl border bg-card p-6 shadow-card">
+          <h2 className="font-display text-lg font-bold">
+            Contact Information
+          </h2>
+          <ul className="space-y-2.5 text-sm">
             <li>
               <a
                 href="mailto:autoquest.rental@gmail.com"
@@ -179,14 +182,18 @@ export default function ContactForm() {
           </ul>
         </div>
 
-        <div className="space-y-4">
-          <h2 className="font-medium">Quick help</h2>
-          <div className="divide-y border-y">
+        <div className="space-y-3">
+          <h2 className="px-1 text-sm font-semibold tracking-wider text-muted-foreground uppercase">
+            Quick help
+          </h2>
+          <div className="space-y-3">
             {QUICK_HELP.map(({ title, body, href }) => (
-              <Link key={title} href={href} className="group block py-4">
-                <span className="block text-sm group-hover:underline group-hover:underline-offset-4">
-                  {title}
-                </span>
+              <Link
+                key={title}
+                href={href}
+                className="block rounded-2xl border bg-card p-4 shadow-card transition-colors hover:border-primary/40"
+              >
+                <span className="block font-semibold">{title}</span>
                 <span className="text-sm text-muted-foreground">{body}</span>
               </Link>
             ))}

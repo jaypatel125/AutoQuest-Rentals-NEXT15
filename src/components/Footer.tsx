@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Leaf, Mail, MapPin, Phone } from "lucide-react";
 import MaxWidthWrapper from "./utility/MaxWidthWrapper";
 import { isAuthRoutes } from "@/lib/utils";
+import { Logo } from "@/components/brand/Logo";
+import { CAR_PHOTOS } from "@/lib/car-photos";
 
 const COLUMNS = [
   {
@@ -32,34 +35,65 @@ const COLUMNS = [
       { href: "/contact", label: "Contact us" },
       { href: "/terms", label: "Rental terms" },
       { href: "/terms#cancellations", label: "Cancellation policy" },
+      ...(Object.keys(CAR_PHOTOS).length
+        ? [{ href: "/terms#photo-credits", label: "Photo credits" }]
+        : []),
     ],
   },
 ];
 
-export default function Footer() {
+export default function Footer({
+  reviewerDemo = false,
+}: {
+  reviewerDemo?: boolean;
+}) {
   const pathname = usePathname();
   if (isAuthRoutes(pathname)) {
     return null;
   }
   return (
-    <footer className="mt-auto border-t">
+    <footer className="mt-auto border-t bg-sand">
       <MaxWidthWrapper className="py-14">
         <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
-          <div className="space-y-3 text-sm">
-            <p className="font-medium">AutoQuest</p>
-            <p className="max-w-xs leading-relaxed text-muted-foreground">
-              Electric, hybrid, and gas rentals across Canada.
+          <div className="space-y-5">
+            <Logo />
+            <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
+              Electric, hybrid, and gas rentals across Canada. Every EV trip
+              earns double points and leaves less behind.
             </p>
-            <ul className="space-y-1 text-muted-foreground">
-              <li>autoquest.rental@gmail.com</li>
-              <li>+1 (123) 456-7890</li>
-              <li>123 Main Street, Toronto, ON</li>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-center gap-2.5">
+                <Mail className="size-4 text-primary" />
+                autoquest.rental@gmail.com
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Phone className="size-4 text-primary" />
+                +1 (123) 456-7890
+              </li>
+              <li className="flex items-center gap-2.5">
+                <MapPin className="size-4 text-primary" />
+                123 Main Street, Toronto, ON
+              </li>
             </ul>
           </div>
-          {COLUMNS.map((col) => (
+          {COLUMNS.map((col) => ({
+            ...col,
+            links:
+              reviewerDemo && col.title === "Support"
+                ? [
+                    ...col.links,
+                    {
+                      href: "/signin?demo=reviewer",
+                      label: "Admin demo (read-only)",
+                    },
+                  ]
+                : col.links,
+          })).map((col) => (
             <div key={col.title}>
-              <h3 className="mb-3 text-sm font-medium">{col.title}</h3>
-              <ul className="space-y-2 text-sm">
+              <h3 className="mb-4 font-display text-sm font-bold">
+                {col.title}
+              </h3>
+              <ul className="space-y-2.5 text-sm">
                 {col.links.map((link) => (
                   <li key={link.href}>
                     <Link
@@ -74,9 +108,13 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        <p className="mt-14 text-xs text-muted-foreground">
-          © {new Date().getFullYear()} AutoQuest
-        </p>
+        <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
+          <p>© {new Date().getFullYear()} AutoQuest. All rights reserved.</p>
+          <p className="inline-flex items-center gap-1.5">
+            <Leaf className="size-3.5 text-eco" />
+            Drive electric, earn 2x points.
+          </p>
+        </div>
       </MaxWidthWrapper>
     </footer>
   );

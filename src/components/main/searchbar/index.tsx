@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { Check } from "lucide-react";
+import { CalendarDays, Check, MapPin, Search } from "lucide-react";
 import { format } from "date-fns";
 import type { DateRange } from "react-day-picker";
 import { Calendar } from "@/components/ui/calendar";
@@ -126,24 +126,27 @@ export function SearchBar({
   };
 
   const field =
-    "group flex w-full cursor-pointer flex-col items-start gap-0.5 px-4 py-3 text-left transition-colors hover:bg-muted/60 focus-visible:outline-none focus-visible:bg-muted/60";
-  const label = "block text-xs text-muted-foreground";
+    "group flex w-full cursor-pointer flex-col items-start gap-0.5 rounded-xl px-4 py-2.5 text-left transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:bg-secondary";
+  const label =
+    "flex items-center gap-1.5 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase";
 
   return (
     <section
       aria-label="Search vehicles"
       className={cn(
-        "grid overflow-hidden rounded-lg border bg-background md:grid-cols-[1fr_1.6fr_auto] md:items-stretch",
+        "grid gap-1 rounded-2xl border bg-card p-2 text-card-foreground shadow-float md:grid-cols-[1.1fr_1.6fr_auto] md:items-center",
         className
       )}
     >
       <Popover open={cityOpen} onOpenChange={setCityOpen}>
         <PopoverTrigger asChild>
           <button type="button" className={field}>
-            <span className={label}>Location</span>
+            <span className={label}>
+              <MapPin className="size-3.5 text-primary" /> Location
+            </span>
             <span
               className={cn(
-                "block w-full truncate text-sm",
+                "block w-full truncate text-sm font-medium",
                 !localBranch?.city && "text-muted-foreground"
               )}
             >
@@ -197,15 +200,17 @@ export function SearchBar({
       <Popover open={datesOpen} onOpenChange={setDatesOpen}>
         <PopoverTrigger asChild>
           <div
-            className="grid grid-cols-2 border-t md:border-t-0 md:border-l"
+            className="grid grid-cols-2 md:border-l md:pl-1"
             role="group"
             aria-label="Rental dates"
           >
             <button type="button" className={field}>
-              <span className={label}>Pick-up date</span>
+              <span className={label}>
+                <CalendarDays className="size-3.5 text-primary" /> Pick-up date
+              </span>
               <span
                 className={cn(
-                  "block truncate text-sm",
+                  "block truncate text-sm font-medium",
                   !from && "text-muted-foreground"
                 )}
               >
@@ -218,8 +223,10 @@ export function SearchBar({
                 {days !== null && (
                   <span
                     className={cn(
-                      "ml-2",
-                      tooLong ? "text-destructive" : "text-foreground"
+                      "ml-1 rounded-full px-1.5 py-px normal-case",
+                      tooLong
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-accent text-accent-foreground"
                     )}
                   >
                     {days} day{days === 1 ? "" : "s"}
@@ -228,7 +235,7 @@ export function SearchBar({
               </span>
               <span
                 className={cn(
-                  "block truncate text-sm",
+                  "block truncate text-sm font-medium",
                   !to && "text-muted-foreground"
                 )}
               >
@@ -275,13 +282,15 @@ export function SearchBar({
         </PopoverContent>
       </Popover>
 
-      <div className="border-t p-2 md:border-t-0 md:border-l">
+      <div className="p-1">
         <Button
-          className="h-full min-h-10 w-full px-6"
+          size="xl"
+          className="w-full md:w-auto md:px-7"
           onClick={handleSearch}
           disabled={!ready}
           loading={loading}
         >
+          {!loading && <Search className="size-4" />}
           {loading ? "Searching..." : "Search Vehicles"}
         </Button>
       </div>

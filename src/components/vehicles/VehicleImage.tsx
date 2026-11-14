@@ -7,7 +7,7 @@ import { resolveVehicleImage } from "@/lib/vehicle-image";
 import { CarIllustration } from "./CarIllustration";
 
 /**
- * Shows the vehicle's photo, or a matching illustration when there is no
+ * Shows the vehicle's photo, or a matching studio render when there is no
  * photo, the photo was in the retired S3 bucket, or it fails to load.
  */
 export function VehicleImage({
@@ -29,7 +29,7 @@ export function VehicleImage({
   priority?: boolean;
   sizes?: string;
 }) {
-  const resolved = resolveVehicleImage(src);
+  const resolved = resolveVehicleImage(src, brand, model);
   const [failedSrc, setFailedSrc] = useState<string | null>(null);
   const showPhoto = !!resolved && failedSrc !== resolved;
   const name = [brand, model].filter(Boolean).join(" ") || "Vehicle";
@@ -37,7 +37,7 @@ export function VehicleImage({
   return (
     <div
       className={cn(
-        "relative aspect-[16/10] w-full overflow-hidden bg-muted",
+        "relative aspect-[4/3] w-full overflow-hidden bg-studio",
         className
       )}
     >
@@ -56,11 +56,12 @@ export function VehicleImage({
           onError={() => setFailedSrc(resolved)}
         />
       ) : (
-        <div className="absolute inset-0 flex items-center justify-center px-[14%] pt-[3%] text-foreground/60">
+        <div className="absolute inset-0 flex items-center justify-center px-[8%] pt-[5%]">
           <CarIllustration
             bodyType={bodyType}
+            seed={`${brand ?? ""}${model ?? ""}`}
             title={`${name} illustration`}
-            className="max-h-full"
+            className="max-h-full drop-shadow-md"
           />
         </div>
       )}

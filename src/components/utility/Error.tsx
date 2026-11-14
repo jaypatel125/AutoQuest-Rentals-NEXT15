@@ -15,12 +15,13 @@ const Error: React.FC<ErrorProps> = ({ error, onRetry }) => {
   return (
     <div className="flex min-h-80 items-center justify-center py-10">
       <div className="flex max-w-sm flex-col items-center gap-4 text-center">
-        <TriangleAlert
-          className="size-6 text-muted-foreground"
-          strokeWidth={1.5}
-        />
+        <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive">
+          <TriangleAlert className="size-7" />
+        </span>
         <div className="space-y-1">
-          <h2 className="font-medium">Something went wrong</h2>
+          <h2 className="font-display text-lg font-bold">
+            Something went wrong
+          </h2>
           <p className="text-sm text-muted-foreground">
             {error ? error : "Something went wrong. Please try again."}
           </p>

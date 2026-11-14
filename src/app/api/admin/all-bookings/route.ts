@@ -1,21 +1,15 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
-import { getServerSideSession } from "@/hooks/SessionHandler";
+import { requireAdminViewer } from "@/lib/api-auth";
+import { maskPeople } from "@/lib/privacy";
 import { ensureSchema } from "@/lib/schema";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const session = await getServerSideSession();
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (session.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const guard = await requireAdminViewer();
+    if (guard.error) return guard.error;
 
     await ensureSchema();
     const client = await pool.connect();
@@ -46,7 +40,8 @@ export async function GET() {
 
       const result = await client.query(query);
 
-      const bookings = result.rows;
+      // Reviewers see the bookings without customer names and emails.
+      const bookings = guard.readOnly ? maskPeople(result.rows) : result.rows;
 
       return NextResponse.json(bookings);
     } finally {
