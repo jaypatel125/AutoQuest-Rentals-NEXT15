@@ -101,14 +101,23 @@ describe("VehicleDetails", () => {
     expect(screen.getByRole("button", { name: /rent now/i })).toBeDisabled();
   });
 
-  it("shows an illustration instead of a dead S3 photo", () => {
+  it("replaces a dead S3 photo with the bundled stock photo", () => {
     withDates(false);
     renderWithClient(<VehicleDetails car={car} onRentNow={onRentNow} />);
     expect(
-      screen.queryByRole("img", { name: "Tesla Model 3" })
+      screen.getByRole("img", { name: "Tesla Model 3" }).getAttribute("src")
+    ).toContain("/cars/tesla-model-3.webp");
+  });
+
+  it("shows an illustration when there is no photo for the model", () => {
+    withDates(false);
+    const unknown = { ...car, brand: "Acme", model: "Roadster" };
+    renderWithClient(<VehicleDetails car={unknown} onRentNow={onRentNow} />);
+    expect(
+      screen.queryByRole("img", { name: "Acme Roadster" })
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("img", { name: /Tesla Model 3 illustration/i })
+      screen.getByRole("img", { name: /Acme Roadster illustration/i })
     ).toBeInTheDocument();
   });
 });

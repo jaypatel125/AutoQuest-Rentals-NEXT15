@@ -36,6 +36,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { VehicleImage } from "@/components/vehicles/VehicleImage";
 import { bodyTypeLabel } from "@/lib/vehicles";
 import { formatPrice } from "@/lib/utils";
+import { useAdminAccess } from "@/components/admin/AdminAccess";
 
 interface VehicleOverviewTableProps {
   vehicles: CarWithBranch[];
@@ -113,8 +114,8 @@ export default function VehicleOverviewTable({
           <span
             className={
               available
-                ? "inline-flex items-center gap-1.5 text-sm [&>span]:text-eco"
-                : "inline-flex items-center gap-1.5 text-sm text-muted-foreground"
+                ? "inline-flex items-center gap-1.5 rounded-full bg-eco-soft px-2.5 py-1 text-xs font-semibold text-eco"
+                : "inline-flex items-center gap-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold text-muted-foreground"
             }
           >
             <span className="size-1.5 rounded-full bg-current" />
@@ -128,13 +129,7 @@ export default function VehicleOverviewTable({
       header: "Actions",
       cell: ({ row }) => {
         const vehicleId = row.original.id;
-        return (
-          <Link href={`/admin/manage-vehicles/${vehicleId}`}>
-            <Button variant="outline" size="sm">
-              Edit
-            </Button>
-          </Link>
-        );
+        return <ManageLink href={`/admin/manage-vehicles/${vehicleId}`} />;
       },
     },
   ];
@@ -229,7 +224,7 @@ export default function VehicleOverviewTable({
         </div>
       </div>
 
-      <div className="overflow-x-auto border-y">
+      <div className="overflow-x-auto rounded-2xl border bg-card shadow-card">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -298,5 +293,15 @@ export default function VehicleOverviewTable({
         </div>
       </div>
     </div>
+  );
+}
+
+/** Row action: reviewers can open the record but not edit it. */
+function ManageLink({ href }: { href: string }) {
+  const { readOnly } = useAdminAccess();
+  return (
+    <Button asChild variant="outline" size="sm">
+      <Link href={href}>{readOnly ? "View" : "Edit"}</Link>
+    </Button>
   );
 }

@@ -25,6 +25,8 @@ import {
   bodyTypeLabel,
 } from "@/lib/vehicles";
 import { cn } from "@/lib/utils";
+import { ReadOnlyNote, useAdminAccess } from "@/components/admin/AdminAccess";
+import { bundledVehiclePhoto } from "@/lib/vehicle-image";
 
 export interface VehicleFormValues {
   brand: string;
@@ -74,10 +76,10 @@ function ChipGroup<T extends string | number>({
               aria-checked={selected}
               onClick={() => onChange(option)}
               className={cn(
-                "cursor-pointer rounded-full border px-3.5 py-1.5 text-sm transition-colors",
+                "cursor-pointer rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
                 selected
-                  ? "border-foreground bg-foreground text-background"
-                  : "hover:border-foreground"
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  : "bg-card hover:border-primary/40 hover:bg-accent"
               )}
             >
               {format(option)}
@@ -149,10 +151,11 @@ export function VehicleForm({
     setErrors((prev) => ({ ...prev, [key]: undefined }));
   };
 
+  const { readOnly } = useAdminAccess();
   const legacyPhoto = !!image && /amazonaws\.com/i.test(image) && !preview;
 
   const pickFile = async (picked?: File) => {
-    if (!picked) return;
+    if (!picked || readOnly) return;
     const url = URL.createObjectURL(picked);
     setPreview(url);
     if (mode === "edit" && onReplacePhoto) {
@@ -166,6 +169,7 @@ export function VehicleForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (readOnly) return;
     const parsed = vehicleSchema.safeParse(values);
     if (!parsed.success) {
       const fieldErrors = parsed.error.flatten().fieldErrors as Record<
@@ -201,9 +205,9 @@ export function VehicleForm({
       noValidate
     >
       <div className="space-y-8">
-        <section className="space-y-4">
-          <h3 className="font-medium">Vehicle photo</h3>
-          <div className="relative overflow-hidden rounded-md">
+        <section className="space-y-4 rounded-2xl border bg-card p-5 shadow-card">
+          <h3 className="font-display font-bold">Vehicle photo</h3>
+          <div className="relative overflow-hidden rounded-xl border">
             <VehicleImage
               src={preview ?? image}
               brand={values.brand}
@@ -217,9 +221,10 @@ export function VehicleForm({
             )}
           </div>
           {legacyPhoto && (
-            <p className="border-l-2 border-foreground pl-3 text-xs">
-              This photo was stored in the old S3 bucket and no longer loads.
-              Upload a new one (it&apos;s stored for free in your database).
+            <p className="rounded-xl bg-amber-soft p-3 text-xs text-amber-900 dark:text-amber-100">
+              {bundledVehiclePhoto(values.brand, values.model)
+                ? "The original photo was in the old S3 bucket, so customers see the stock photo for this model. Upload your own to replace it."
+                : "This photo was stored in the old S3 bucket and no longer loads. Upload a new one (it's stored for free in your database)."}
             </p>
           )}
           {!image && !preview && (
@@ -244,7 +249,7 @@ export function VehicleForm({
               type="button"
               variant="outline"
               className="flex-1"
-              disabled={photoBusy}
+              disabled={photoBusy || readOnly}
               onClick={() => fileInput.current?.click()}
             >
               {image || preview ? "Replace photo" : "Upload photo"}
@@ -254,7 +259,7 @@ export function VehicleForm({
                 type="button"
                 variant="ghost"
                 aria-label="Remove photo"
-                disabled={photoBusy}
+                disabled={photoBusy || readOnly}
                 onClick={async () => {
                   await onRemovePhoto();
                   setImage(null);
@@ -270,8 +275,8 @@ export function VehicleForm({
           </p>
         </section>
 
-        <section className="space-y-4 border-t pt-8">
-          <h3 className="font-medium">Availability & branch</h3>
+        <section className="space-y-4 rounded-2xl border bg-card p-5 shadow-card">
+          <h3 className="font-display font-bold">Availability & branch</h3>
           <div className="space-y-2">
             <Label htmlFor="branch_id">Assigned Branch</Label>
             <Select
@@ -295,9 +300,11 @@ export function VehicleForm({
             </Select>
             {fieldError("branch_id")}
           </div>
-          <label className="flex cursor-pointer items-center justify-between gap-3 border-y py-3">
+          <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl bg-secondary p-3">
             <span>
-              <span className="block text-sm">Available for Rent</span>
+              <span className="block text-sm font-semibold">
+                Available for Rent
+              </span>
               <span className="text-xs text-muted-foreground">
                 Hidden from search when off.
               </span>
@@ -312,8 +319,10 @@ export function VehicleForm({
       </div>
 
       <div className="space-y-8">
-        <section className="grid gap-4 sm:grid-cols-2">
-          <h3 className="font-medium sm:col-span-2">Vehicle details</h3>
+        <section className="grid gap-4 rounded-2xl border bg-card p-5 shadow-card sm:grid-cols-2">
+          <h3 className="font-display font-bold sm:col-span-2">
+            Vehicle details
+          </h3>
           <div className="space-y-2">
             <Label htmlFor="brand">Brand</Label>
             <Input
@@ -375,8 +384,8 @@ export function VehicleForm({
           </div>
         </section>
 
-        <section className="space-y-6 border-t pt-8">
-          <h3 className="font-medium">Specifications</h3>
+        <section className="space-y-6 rounded-2xl border bg-card p-5 shadow-card">
+          <h3 className="font-display font-bold">Specifications</h3>
           <ChipGroup
             label="Vehicle Class"
             options={BODY_TYPES}
@@ -409,11 +418,16 @@ export function VehicleForm({
           />
         </section>
 
-        <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse items-center gap-3 sm:flex-row sm:justify-end">
+          {readOnly && <ReadOnlyNote className="sm:mr-auto" />}
           <Button type="button" variant="outline" onClick={onCancel}>
-            Cancel
+            {readOnly ? "Back" : "Cancel"}
           </Button>
-          <Button type="submit" disabled={submitting} loading={submitting}>
+          <Button
+            type="submit"
+            disabled={submitting || readOnly}
+            loading={submitting}
+          >
             {submitLabel}
           </Button>
         </div>

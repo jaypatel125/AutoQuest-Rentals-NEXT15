@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "../../../../../auth";
+import { requireAdminViewer } from "@/lib/api-auth";
+import { maskEmail, maskName } from "@/lib/privacy";
+import { isDemoReviewerEmail } from "@/lib/reviewer-demo";
 import pool from "@/lib/db";
 
 export type CustomersItem = {
@@ -14,6 +16,8 @@ export type CustomersItem = {
   banned: boolean;
   banReason: string | null;
   banExpires: string | null;
+  /** The shared reviewer login shown on the site. */
+  demo?: boolean;
 };
 
 type CustomersResponse = {
@@ -46,13 +50,9 @@ function decodeCursor(cursor: string | null): {
 }
 
 export async function GET(req: Request) {
-  const session = await auth.api.getSession({ headers: req.headers });
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  if (session.user?.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const guard = await requireAdminViewer();
+  if (guard.error) return guard.error;
+  const readOnly = guard.readOnly;
 
   const url = new URL(req.url);
   const q = (url.searchParams.get("q") || "").trim();
@@ -66,7 +66,13 @@ export async function GET(req: Request) {
   let p = 0;
 
   if (q) {
-    whereParts.push(`(u.name ILIKE $${++p} OR u.email ILIKE $${p})`);
+    // Reviewers can't search by email, so they can't check whether a
+    // particular person is a customer.
+    whereParts.push(
+      readOnly
+        ? `u.name ILIKE $${++p}`
+        : `(u.name ILIKE $${++p} OR u.email ILIKE $${p})`
+    );
     // Escape LIKE wildcards so the search is literal.
     params.push(`%${q.slice(0, 100).replace(/[\\%_]/g, (c) => `\\${c}`)}%`);
   }
@@ -118,8 +124,10 @@ export async function GET(req: Request) {
 
     const customers: CustomersItem[] = slice.map((r) => ({
       id: r.id,
-      name: r.name || "(no name)",
-      email: r.email ?? null,
+      name: readOnly
+        ? (maskName(r.name) ?? "(no name)")
+        : r.name || "(no name)",
+      email: readOnly ? maskEmail(r.email) : (r.email ?? null),
       createdAt: new Date(r.createdAt).toISOString(),
       bookingsCount: Number(r.bookings_count || 0),
       revenue: Number(r.revenue || 0),
@@ -130,6 +138,7 @@ export async function GET(req: Request) {
       banned: r.banned,
       banReason: r.banReason,
       banExpires: r.banExpires,
+      demo: isDemoReviewerEmail(r.email),
     }));
 
     const last = slice[slice.length - 1];

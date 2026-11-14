@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { Session } from "../auth";
 import { betterFetch } from "@better-fetch/fetch";
+import { canViewAdmin } from "@/lib/roles";
 
 const authRoutes = ["/signin", "/signup"];
 const passwordRoutes = ["/reset-password", "/forgot-password"];
@@ -24,8 +25,8 @@ export default async function authMiddleware(request: NextRequest) {
 
   const session = await getSession(request);
 
-  // Admins work inside /admin (plus their own profile).
-  if (session?.user.role === "admin") {
+  // Admins and reviewers work inside /admin (plus their own profile).
+  if (canViewAdmin(session?.user.role)) {
     if (isAdminRoute || matches(pathName, ["/account"])) {
       return NextResponse.next();
     }

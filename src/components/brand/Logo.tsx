@@ -1,22 +1,32 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-/** Brand mark: a solid square with a single road line. */
+/** Brand mark: a road loop drawn as a "Q", with a small leaf. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 24 24"
+      viewBox="0 0 36 36"
       aria-hidden="true"
-      className={cn("size-5 shrink-0", className)}
+      className={cn("size-9 shrink-0", className)}
     >
-      <rect width="24" height="24" rx="5" fill="currentColor" />
-      <path
-        d="M7 17 L12 7 L17 17"
+      <rect width="36" height="36" rx="11" className="fill-primary" />
+      <circle
+        cx="17"
+        cy="17"
+        r="8.5"
         fill="none"
-        stroke="var(--background)"
-        strokeWidth="2"
+        stroke="white"
+        strokeWidth="3.2"
+      />
+      <path
+        d="M21.5 21.5 L27.5 27.5"
+        stroke="white"
+        strokeWidth="3.2"
         strokeLinecap="round"
-        strokeLinejoin="round"
+      />
+      <path
+        d="M17 12.6c2.7 0 4.3 1.9 4.3 4.1-2.7 0-4.3-1.9-4.3-4.1Z"
+        className="fill-amber"
       />
     </svg>
   );
@@ -25,21 +35,25 @@ export function LogoMark({ className }: { className?: string }) {
 export function Logo({
   className,
   href = "/",
+  tone = "default",
 }: {
   className?: string;
   href?: string;
+  tone?: "default" | "light";
 }) {
   return (
     <Link
       href={href}
       aria-label="AutoQuest home"
-      className={cn(
-        "inline-flex items-center gap-2 text-foreground",
-        className
-      )}
+      className={cn("inline-flex items-center gap-2.5", className)}
     >
       <LogoMark />
-      <span className="text-[15px] font-semibold tracking-tight">
+      <span
+        className={cn(
+          "font-display text-[1.25rem] font-extrabold tracking-tight",
+          tone === "light" ? "text-white" : "text-foreground"
+        )}
+      >
         AutoQuest
       </span>
     </Link>

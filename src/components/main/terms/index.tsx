@@ -1,3 +1,4 @@
+import { CAR_PHOTOS } from "@/lib/car-photos";
 const SECTIONS: { id: string; title: string; items: string[] }[] = [
   {
     id: "general",
@@ -70,16 +71,63 @@ const SECTIONS: { id: string; title: string; items: string[] }[] = [
   },
 ];
 
+function PhotoCredits() {
+  const photos = Object.values(CAR_PHOTOS);
+  if (photos.length === 0) return null;
+  return (
+    <section
+      id="photo-credits"
+      className="scroll-mt-24 rounded-2xl border bg-card p-6 shadow-card md:p-8"
+    >
+      <h2 className="mb-2 font-display text-xl font-bold md:text-2xl">
+        Photo credits
+      </h2>
+      <p className="mb-4 text-sm text-muted-foreground">
+        Vehicle photos are from Wikimedia Commons and are used under the
+        licences below. Photos uploaded by our team replace them where
+        available.
+      </p>
+      <ul className="columns-1 gap-8 text-sm text-muted-foreground md:columns-2">
+        {photos.map((photo) => (
+          <li key={photo.file} className="mb-2 break-inside-avoid">
+            <a
+              href={photo.source}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-foreground hover:underline"
+            >
+              {photo.title}
+            </a>{" "}
+            by {photo.author},{" "}
+            {photo.licenseUrl ? (
+              <a
+                href={photo.licenseUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {photo.license}
+              </a>
+            ) : (
+              photo.license
+            )}
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default function TermsDetails() {
   return (
     <div className="grid gap-12 lg:grid-cols-[200px_1fr] lg:gap-16">
       <nav aria-label="Sections" className="hidden lg:block">
-        <ol className="sticky top-24 space-y-2 text-sm">
+        <ol className="sticky top-24 space-y-1 text-sm">
           {SECTIONS.map((s, i) => (
             <li key={s.id}>
               <a
                 href={`#${s.id}`}
-                className="text-muted-foreground transition-colors hover:text-foreground"
+                className="block rounded-lg px-3 py-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
               >
                 {i + 1}. {s.title}
               </a>
@@ -87,24 +135,24 @@ export default function TermsDetails() {
           ))}
         </ol>
       </nav>
-      <div className="max-w-2xl divide-y">
+      <div className="space-y-6">
         {SECTIONS.map((section, i) => (
           <section
             key={section.id}
             id={section.id}
-            className="scroll-mt-24 py-10 first:pt-0"
+            className="scroll-mt-24 rounded-2xl border bg-card p-6 shadow-card md:p-8"
           >
-            <h2 className="mb-5 text-lg font-medium">
-              <span className="text-muted-foreground">{i + 1}.</span>{" "}
-              {section.title}
+            <h2 className="mb-4 font-display text-xl font-bold md:text-2xl">
+              <span className="text-primary">{i + 1}.</span> {section.title}
             </h2>
-            <ul className="list-disc space-y-2.5 pl-5 text-muted-foreground marker:text-border">
+            <ul className="list-disc space-y-2.5 pl-5 text-muted-foreground marker:text-primary">
               {section.items.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
           </section>
         ))}
+        <PhotoCredits />
       </div>
     </div>
   );

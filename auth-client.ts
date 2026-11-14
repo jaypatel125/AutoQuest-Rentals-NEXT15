@@ -5,11 +5,12 @@ import {
   lastLoginMethodClient,
 } from "better-auth/client/plugins";
 import { auth } from "./auth";
+import { roles } from "@/lib/permissions";
 
 export const authClient = createAuthClient({
   baseURL: process.env.BETTER_AUTH_URL,
   plugins: [
-    adminClient(),
+    adminClient({ roles }),
     inferAdditionalFields<typeof auth>(),
     lastLoginMethodClient(),
   ],

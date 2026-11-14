@@ -1,21 +1,31 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
 
 export function ThemeToggle({ className }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();
+  // The theme is only known on the client, so the label is neutral until
+  // mounted to keep server and client markup identical.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const isDark = resolvedTheme === "dark";
+  const label = !mounted
+    ? "Toggle theme"
+    : isDark
+      ? "Switch to light mode"
+      : "Switch to dark mode";
 
   return (
     <button
       type="button"
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-      title={isDark ? "Light mode" : "Dark mode"}
+      aria-label={label}
+      title={label}
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={cn(
-        "relative inline-flex size-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground cursor-pointer",
+        "relative inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground cursor-pointer",
         className
       )}
     >

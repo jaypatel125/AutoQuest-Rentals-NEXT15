@@ -26,7 +26,7 @@ export function CompareBar() {
 
   return (
     <div className="no-print fixed inset-x-0 bottom-4 z-40 flex justify-center px-4 animate-fade-in">
-      <div className="flex max-w-full items-center gap-3 rounded-lg border bg-background p-2 pl-4 shadow-sm">
+      <div className="flex max-w-full items-center gap-3 rounded-2xl border bg-card/95 p-2 pl-4 shadow-float backdrop-blur-xl">
         <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
           {items.map((item) => (
             <div
@@ -61,7 +61,7 @@ export function CompareBar() {
         </button>
         <Link
           href="/compare"
-          className="inline-flex h-9 shrink-0 items-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:bg-primary/85"
+          className="inline-flex h-10 shrink-0 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 hover:bg-primary/90"
         >
           Compare ({items.length})
         </Link>

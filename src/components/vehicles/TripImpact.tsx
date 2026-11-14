@@ -31,9 +31,14 @@ export function TripImpact({
   const trees = Math.abs(diff) / KG_CO2_PER_TREE_YEAR;
 
   return (
-    <section className={cn("space-y-6", className)}>
+    <section
+      className={cn(
+        "space-y-6 rounded-2xl border bg-card p-6 shadow-card",
+        className
+      )}
+    >
       <div>
-        <h2 className="font-medium">Trip impact</h2>
+        <h2 className="font-display text-lg font-bold">Trip impact</h2>
         <p className="text-sm text-muted-foreground">
           Estimated tailpipe CO₂ for {days} day{days === 1 ? "" : "s"} of
           driving.
@@ -43,7 +48,9 @@ export function TripImpact({
       <div>
         <label className="mb-2 flex items-center justify-between text-sm">
           <span className="text-muted-foreground">Daily distance</span>
-          <span className="tabular-nums">{kmPerDay} km/day</span>
+          <span className="font-semibold text-primary tabular-nums">
+            {kmPerDay} km/day
+          </span>
         </label>
         <input
           type="range"
@@ -67,11 +74,10 @@ export function TripImpact({
         />
       </div>
 
-      <div className="border-t pt-4 text-sm text-muted-foreground">
+      <div className="rounded-xl bg-accent/60 p-3.5 text-sm text-accent-foreground">
         {diff >= 1 ? (
           <p>
-            You avoid about{" "}
-            <span className="text-eco">{Math.round(diff)} kg of CO₂</span>,
+            You avoid about <strong>{Math.round(diff)} kg of CO₂</strong>,
             roughly what{" "}
             {trees >= 1 ? `${trees.toFixed(1)} trees absorb` : "a tree absorbs"}{" "}
             in a year.
@@ -107,13 +113,15 @@ function Bar({
     <div>
       <div className="mb-1.5 flex justify-between text-sm">
         <span className="text-muted-foreground">{label}</span>
-        <span className="tabular-nums">{value.toFixed(1)} kg</span>
+        <span className="font-semibold tabular-nums">
+          {value.toFixed(1)} kg
+        </span>
       </div>
-      <div className="h-1 overflow-hidden rounded-full bg-muted">
+      <div className="h-2.5 overflow-hidden rounded-full bg-muted">
         <div
           className={cn(
             "h-full rounded-full transition-[width] duration-500",
-            tone === "primary" ? "bg-foreground" : "bg-muted-foreground/40"
+            tone === "primary" ? "bg-primary" : "bg-muted-foreground/35"
           )}
           style={{
             width: `${Math.max(value > 0 ? 2 : 0, (value / max) * 100)}%`,

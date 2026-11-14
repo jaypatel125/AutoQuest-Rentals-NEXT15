@@ -11,13 +11,28 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CustomersTable } from "@/components/admin/manage-users/customers-table";
 import { useUserRoleMutations } from "@/hooks/use-toggle-role";
+import { useAdminAccess } from "@/components/admin/AdminAccess";
+import { useToast } from "@/hooks/use-toast";
+import { ROLE_LABELS } from "@/lib/roles";
 import { IUser } from "../../../../auth-client";
 import { CustomersItem } from "@/app/api/admin/all-users/route";
 import Error from "@/components/utility/Error";
 
 export default function CustomersOverview({ user }: { user: IUser }) {
   const [q, setQ] = React.useState<string>("");
-  const { setUserRole } = useUserRoleMutations();
+  const { readOnly } = useAdminAccess();
+  const { toast } = useToast();
+  const { setUserRole } = useUserRoleMutations({
+    currentUserId: user.id,
+    onSuccess: ({ role }) =>
+      toast({ title: `Role changed to ${ROLE_LABELS[role]}` }),
+    onError: (err) =>
+      toast({
+        title: "Could not change role",
+        description: (err as Error).message,
+        variant: "destructive",
+      }),
+  });
   const {
     data,
     isLoading,
@@ -56,6 +71,7 @@ export default function CustomersOverview({ user }: { user: IUser }) {
           banned: c.banned,
           banReason: c.banReason,
           banExpires: c.banExpires,
+          demo: c.demo,
         }))
       ) ?? [],
     [data]
@@ -72,7 +88,9 @@ export default function CustomersOverview({ user }: { user: IUser }) {
           <Input
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search name, username, or email…"
+            placeholder={
+              readOnly ? "Search by name…" : "Search name, username, or email…"
+            }
             className="w-full max-w-sm"
           />
           <Button onClick={() => refetch()} variant="outline">
@@ -85,11 +103,8 @@ export default function CustomersOverview({ user }: { user: IUser }) {
           loading={isLoading || isFetchingNextPage}
           hasNextPage={!!hasNextPage}
           onLoadMore={() => fetchNextPage()}
-          onToggleAdmin={async (id, makeAdmin) => {
-            await setUserRole({
-              userId: id,
-              role: makeAdmin ? "admin" : "user",
-            });
+          onSetRole={async (id, role) => {
+            await setUserRole({ userId: id, role }).catch(() => undefined);
           }}
           currentUserId={user.id}
         />

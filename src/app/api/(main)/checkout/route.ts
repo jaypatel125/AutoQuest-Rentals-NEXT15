@@ -6,6 +6,7 @@ import { buildQuote, isElectric } from "@/lib/pricing";
 import { hasConflict, isInvalidInput, parseRentalDates } from "@/lib/bookings";
 import { absoluteImageUrl } from "@/lib/vehicle-image";
 import { formatDate } from "@/lib/utils";
+import { canViewAdmin } from "@/lib/roles";
 
 /**
  * Creates a Stripe Checkout session.
@@ -32,9 +33,9 @@ export async function POST(req: Request) {
         { status: 401 }
       );
     }
-    if (user.role === "admin") {
+    if (canViewAdmin(user.role)) {
       return NextResponse.json(
-        { error: "Admin accounts cannot make bookings" },
+        { error: "Admin and reviewer accounts cannot make bookings" },
         { status: 403 }
       );
     }
@@ -88,7 +89,7 @@ export async function POST(req: Request) {
     });
 
     const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
-    const image = absoluteImageUrl(car.image, appUrl);
+    const image = absoluteImageUrl(car.image, appUrl, car.brand, car.model);
     const days = `${quote.days} day${quote.days === 1 ? "" : "s"}`;
 
     const checkout = await stripe.checkout.sessions.create({

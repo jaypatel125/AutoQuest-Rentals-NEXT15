@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { Menu } from "lucide-react";
+import { CalendarCheck, Gift, Menu } from "lucide-react";
 import MaxWidthWrapper from "../../utility/MaxWidthWrapper";
 import { ISession, IUser } from "../../../../auth-client";
 import { Dropdown } from "./Dropdown";
@@ -19,6 +19,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { CUSTOMER_NAV, isActive } from "@/components/layout/nav-items";
+import { canViewAdmin } from "@/lib/roles";
 
 const Navbar = ({
   user,
@@ -31,21 +32,22 @@ const Navbar = ({
 
   if (isAuthRoutes(pathname)) return null;
 
-  const isAdmin = user?.role === "admin";
+  // Admins and reviewers both use the admin shell.
+  const isAdmin = canViewAdmin(user?.role);
   // Admins navigate with the sidebar in the admin shell.
   const links = isAdmin ? [] : CUSTOMER_NAV;
 
   return (
-    <header className="sticky top-0 inset-x-0 z-40 border-b bg-background/95 supports-[backdrop-filter]:bg-background/80 supports-[backdrop-filter]:backdrop-blur">
+    <header className="sticky top-0 inset-x-0 z-40 border-b border-border/70 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/70">
       <MaxWidthWrapper
         className={cn(
-          "flex h-16 items-center justify-between gap-4",
-          isAdmin && "max-w-7xl"
+          "flex h-[4.25rem] items-center justify-between gap-4",
+          isAdmin && "max-w-[88rem]"
         )}
       >
-        <div className="flex items-center gap-10">
+        <div className="flex items-center gap-8">
           <Logo href={isAdmin ? "/admin" : "/"} />
-          <nav aria-label="Main" className="hidden items-center gap-7 lg:flex">
+          <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
             {links.map((link) => {
               const active = isActive(pathname, link.href, link.exact);
               return (
@@ -54,8 +56,8 @@ const Navbar = ({
                   href={link.href}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "text-sm text-muted-foreground transition-colors hover:text-foreground",
-                    active && "text-foreground"
+                    "rounded-full px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
+                    active && "bg-secondary text-foreground"
                   )}
                 >
                   {link.label}
@@ -65,25 +67,31 @@ const Navbar = ({
           </nav>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {user && !isAdmin && (
             <Link
               href="/rewards"
-              className="mr-2 hidden text-sm text-muted-foreground tabular-nums transition-colors hover:text-foreground sm:inline"
+              className="hidden items-center gap-1.5 rounded-full bg-amber-soft px-3 py-1.5 text-sm font-semibold text-amber-900 transition-colors hover:bg-amber/30 sm:inline-flex dark:text-amber-100"
               title="Your reward points"
             >
-              {(user.reward_points ?? 0).toLocaleString()} pts
+              <Gift className="size-4" />
+              <span>{(user.reward_points ?? 0).toLocaleString()} pts</span>
             </Link>
           )}
           <ThemeToggle />
           {user ? (
             <Dropdown user={user} />
           ) : (
-            <div className="hidden items-center gap-1.5 sm:flex">
-              <Button asChild variant="ghost" size="sm">
+            <div className="hidden items-center gap-2 sm:flex">
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="rounded-full"
+              >
                 <Link href="/signin">Sign in</Link>
               </Button>
-              <Button asChild size="sm">
+              <Button asChild size="sm" className="rounded-full px-4">
                 <Link href="/signup">Create account</Link>
               </Button>
             </div>
@@ -95,22 +103,22 @@ const Navbar = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="lg:hidden"
+                  className="rounded-full lg:hidden"
                   aria-label="Open menu"
                 >
-                  <Menu className="size-5" strokeWidth={1.5} />
+                  <Menu className="size-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-[82%] max-w-sm gap-0 p-0">
-                <SheetHeader className="h-16 justify-center border-b px-6">
+                <SheetHeader className="border-b p-5">
                   <SheetTitle asChild>
                     <div>
                       <Logo href={isAdmin ? "/admin" : "/"} />
                     </div>
                   </SheetTitle>
                 </SheetHeader>
-                <nav aria-label="Mobile" className="flex flex-col px-6 py-4">
-                  {links.map(({ href, label, exact }) => {
+                <nav aria-label="Mobile" className="flex flex-col gap-1 p-3">
+                  {links.map(({ href, label, icon: Icon, exact }) => {
                     const active = isActive(pathname, href, exact);
                     return (
                       <Link
@@ -118,11 +126,11 @@ const Navbar = ({
                         href={href}
                         onClick={() => setOpen(false)}
                         className={cn(
-                          "border-b py-3.5 text-[15px] text-muted-foreground transition-colors hover:text-foreground",
-                          active && "text-foreground"
+                          "flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-medium transition-colors hover:bg-secondary",
+                          active && "bg-secondary"
                         )}
                       >
-                        {label}
+                        <Icon className="size-5 text-primary" /> {label}
                       </Link>
                     );
                   })}
@@ -130,17 +138,18 @@ const Navbar = ({
                     <Link
                       href="/bookings"
                       onClick={() => setOpen(false)}
-                      className="flex items-center border-b py-3.5 text-[15px] text-muted-foreground hover:text-foreground"
+                      className="flex items-center gap-3 rounded-xl px-3 py-3 text-[15px] font-medium hover:bg-secondary"
                     >
+                      <CalendarCheck className="size-5 text-primary" />
                       My bookings
-                      <span className="ml-auto text-sm tabular-nums">
+                      <span className="ml-auto rounded-full bg-amber-soft px-2 py-0.5 text-xs font-semibold text-amber-900 dark:text-amber-100">
                         {(user.reward_points ?? 0).toLocaleString()} pts
                       </span>
                     </Link>
                   )}
                 </nav>
                 {!user && (
-                  <div className="mt-auto grid gap-2 border-t p-6">
+                  <div className="mt-auto grid gap-2 border-t p-5">
                     <Button
                       asChild
                       variant="outline"

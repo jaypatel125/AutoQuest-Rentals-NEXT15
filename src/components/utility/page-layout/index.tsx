@@ -41,7 +41,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   const content = (
     <div
       className={cn(
-        "space-y-10 py-12 md:py-16",
+        "animate-fade-up space-y-8 py-10 md:py-12",
         !contained && "py-2 md:py-2",
         className
       )}
@@ -52,15 +52,19 @@ const PageLayout: React.FC<PageLayoutProps> = ({
             <button
               type="button"
               onClick={() => router.back()}
-              className="no-print mb-4 inline-flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="no-print mb-3 -ml-1 inline-flex cursor-pointer items-center gap-1.5 rounded-full px-2 py-1 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               <ArrowLeft className="size-4" strokeWidth={1.5} /> Back
             </button>
           )}
           {eyebrow && (
-            <div className="text-sm text-muted-foreground">{eyebrow}</div>
+            <div className="text-sm font-semibold tracking-wider text-primary uppercase">
+              {eyebrow}
+            </div>
           )}
-          <h1 className="text-3xl font-semibold md:text-4xl">{title}</h1>
+          <h1 className="font-display text-3xl font-bold md:text-4xl">
+            {title}
+          </h1>
           {description && (
             <p className="max-w-2xl text-muted-foreground">{description}</p>
           )}

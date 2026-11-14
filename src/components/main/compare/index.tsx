@@ -13,7 +13,8 @@ import type { CarListing } from "@/components/vehicles/VehicleCard";
 import { useCompareStore } from "@/context/compareStore";
 import { toDate, useSearchStore } from "@/context/searchStore";
 import { buildQuote } from "@/lib/pricing";
-import { DEFAULT_KM_PER_DAY, greenScore, tripEmissionsKg } from "@/lib/green";
+import { DEFAULT_KM_PER_DAY, tripEmissionsKg } from "@/lib/green";
+import { FuelBadge, GreenScoreBadge } from "@/components/vehicles/badges";
 import { bodyTypeLabel } from "@/lib/vehicles";
 import { formatPrice } from "@/lib/utils";
 
@@ -100,7 +101,7 @@ export default function ComparePage() {
       label: "Green Score",
       render: (c) => (
         <Best active={greenest === Number(c.carbon_emissions)} label="Greenest">
-          {greenScore(c.carbon_emissions).grade}
+          <GreenScoreBadge emissions={c.carbon_emissions} />
         </Best>
       ),
     },
@@ -113,7 +114,7 @@ export default function ComparePage() {
       render: (c) =>
         `${tripEmissionsKg(c.carbon_emissions, days).toFixed(1)} kg`,
     },
-    { label: "Fuel", render: (c) => c.fuel_type },
+    { label: "Fuel", render: (c) => <FuelBadge fuelType={c.fuel_type} /> },
     { label: "Body type", render: (c) => bodyTypeLabel(c.body_type) },
     { label: "Seats", render: (c) => c.passenger_capacity },
     { label: "Transmission", render: (c) => c.transmission },
@@ -138,16 +139,16 @@ export default function ComparePage() {
         </Button>
       }
     >
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto rounded-2xl border bg-card shadow-card">
         <table className="w-full min-w-[640px] table-fixed text-sm">
           <thead>
             <tr className="border-b align-top">
-              <th className="w-44 py-4 pr-4 text-left font-normal text-muted-foreground">
+              <th className="w-44 p-4 text-left font-medium text-muted-foreground">
                 {loading ? "Loading..." : `${cars.length} vehicles`}
               </th>
               {cars.map((c) => (
                 <th key={c.id} className="p-4 text-left font-normal">
-                  <div className="relative overflow-hidden rounded-md">
+                  <div className="relative overflow-hidden rounded-xl">
                     <VehicleImage
                       src={c.image}
                       brand={c.brand}
@@ -158,12 +159,12 @@ export default function ComparePage() {
                       type="button"
                       aria-label={`Remove ${c.brand} ${c.model}`}
                       onClick={() => remove(c.id)}
-                      className="absolute top-2 right-2 inline-flex size-7 cursor-pointer items-center justify-center rounded-full border bg-background text-muted-foreground hover:text-foreground"
+                      className="absolute top-2 right-2 inline-flex size-7 cursor-pointer items-center justify-center rounded-full bg-card/90 shadow-sm backdrop-blur hover:bg-card"
                     >
                       <X className="size-3.5" />
                     </button>
                   </div>
-                  <p className="mt-3 font-medium">
+                  <p className="mt-3 font-display text-base font-bold">
                     {c.brand} {c.model}
                   </p>
                 </th>
@@ -175,7 +176,7 @@ export default function ComparePage() {
               <tr key={row.label} className="border-b">
                 <th
                   scope="row"
-                  className="py-3.5 pr-4 text-left font-normal text-muted-foreground"
+                  className="p-4 text-left font-medium text-muted-foreground"
                 >
                   {row.label}
                 </th>
@@ -228,7 +229,11 @@ function Best({
   return (
     <span className="inline-flex flex-wrap items-center gap-2">
       {children}
-      {active && <span className="text-xs text-muted-foreground">{label}</span>}
+      {active && (
+        <span className="inline-flex items-center rounded-full bg-amber-soft px-2 py-0.5 text-[11px] font-bold text-amber-900 dark:text-amber-100">
+          {label}
+        </span>
+      )}
     </span>
   );
 }

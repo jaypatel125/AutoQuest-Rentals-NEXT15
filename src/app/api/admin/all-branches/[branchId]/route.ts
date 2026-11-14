@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
-import { requireAdmin } from "@/lib/api-auth";
+import { requireAdmin, requireAdminViewer } from "@/lib/api-auth";
 import { isInvalidInput } from "@/lib/bookings";
 
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ branchId: string }> }
 ) {
-  const guard = await requireAdmin();
+  const guard = await requireAdminViewer();
   if (guard.error) return guard.error;
   const { branchId } = await params;
 

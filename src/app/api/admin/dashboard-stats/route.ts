@@ -1,4 +1,5 @@
-import { getServerSideSession } from "@/hooks/SessionHandler";
+import { requireAdminViewer } from "@/lib/api-auth";
+import { maskEmail, maskName } from "@/lib/privacy";
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -8,13 +9,11 @@ function formatDate(d: Date) {
 }
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSideSession();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  if (session.user?.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const guard = await requireAdminViewer();
+  if (guard.error) return guard.error;
+  // Reviewers see customer rankings without names and emails.
+  const name = (v: string) => (guard.readOnly ? maskName(v) : v);
+  const email = (v: string) => (guard.readOnly ? maskEmail(v) : v);
 
   // Parse date range from query params, fallback to last 30 days
   const params = request.nextUrl.searchParams;
@@ -85,10 +84,10 @@ export async function GET(request: NextRequest) {
         br.city,
         COALESCE(SUM(b.total_price),0)::numeric(14,2) AS total_revenue,
         COUNT(b.id) AS total_bookings,
-        SUM(c.carbon_emissions * (EXTRACT(day FROM (b.end_date - b.start_date)) + 1)) AS total_carbon_emissions,
+        SUM(c.carbon_emissions * ((b.end_date - b.start_date) + 1)) AS total_carbon_emissions,
         CASE 
-          WHEN SUM(c.carbon_emissions * (EXTRACT(day FROM (b.end_date - b.start_date)) + 1)) > 0 
-          THEN ROUND((SUM(b.total_price) / SUM(c.carbon_emissions * (EXTRACT(day FROM (b.end_date - b.start_date)) + 1)))::numeric, 2)
+          WHEN SUM(c.carbon_emissions * ((b.end_date - b.start_date) + 1)) > 0 
+          THEN ROUND((SUM(b.total_price) / SUM(c.carbon_emissions * ((b.end_date - b.start_date) + 1)))::numeric, 2)
           ELSE 0 
         END AS revenue_per_carbon_unit
       FROM bookings b
@@ -173,7 +172,7 @@ export async function GET(request: NextRequest) {
     const carbonEmissionsQuery = `
       SELECT 
         DATE_TRUNC('month', b.start_date) AS month,
-        SUM(c.carbon_emissions * (EXTRACT(day FROM (b.end_date - b.start_date)) + 1)) AS total_carbon_emissions,
+        SUM(c.carbon_emissions * ((b.end_date - b.start_date) + 1)) AS total_carbon_emissions,
         COUNT(b.id) AS booking_count,
         AVG(c.carbon_emissions) AS avg_carbon_per_booking
       FROM bookings b
@@ -219,7 +218,7 @@ export async function GET(request: NextRequest) {
         c.body_type,
         COUNT(b.id) AS rental_count,
         AVG(c.carbon_emissions) AS avg_carbon_emissions,
-        SUM(c.carbon_emissions * (EXTRACT(day FROM (b.end_date - b.start_date)) + 1)) AS total_carbon_emitted
+        SUM(c.carbon_emissions * ((b.end_date - b.start_date) + 1)) AS total_carbon_emitted
       FROM bookings b
       JOIN cars c ON b.car_id = c.id
       WHERE b.status = 'Completed'
@@ -347,8 +346,8 @@ export async function GET(request: NextRequest) {
 
       topUsers: usersRes.rows.map((r) => ({
         id: r.id,
-        name: r.name,
-        email: r.email,
+        name: name(r.name),
+        email: email(r.email),
         reward_points: Number(r.reward_points ?? 0),
         total_rentals: Number(r.total_rentals ?? 0),
         total_spent: Number(r.total_spent ?? 0),
@@ -416,8 +415,8 @@ export async function GET(request: NextRequest) {
 
       rewardsAnalytics: rewardsAnalyticsRes.rows.map((r) => ({
         id: r.id,
-        name: r.name,
-        email: r.email,
+        name: name(r.name),
+        email: email(r.email),
         reward_points: Number(r.reward_points ?? 0),
         total_transactions: Number(r.total_transactions ?? 0),
         total_points_earned: Number(r.total_points_earned ?? 0),

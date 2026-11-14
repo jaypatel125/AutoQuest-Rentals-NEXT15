@@ -3,8 +3,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authClient } from "../../auth-client";
 import { adminCustomersKeys } from "@/app/(admin)/admin/manage-users/actions";
+import type { AppRole } from "@/lib/roles";
 
-export type UserRole = "admin" | "user";
+export type UserRole = AppRole;
 
 type SetRoleArgs = {
   userId: string;

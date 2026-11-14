@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check, Plus } from "lucide-react";
+import { Check, Cog, MapPin, Plus, Users } from "lucide-react";
 import { cn, formatPrice } from "@/lib/utils";
 import { Cars } from "@/lib/database/table-types";
 import { buildQuote } from "@/lib/pricing";
@@ -9,7 +9,7 @@ import { bodyTypeLabel } from "@/lib/vehicles";
 import { useCompareStore } from "@/context/compareStore";
 import { useToast } from "@/hooks/use-toast";
 import { VehicleImage } from "./VehicleImage";
-import { greenScore } from "@/lib/green";
+import { FuelBadge, GreenScoreBadge } from "./badges";
 
 export type CarListing = Cars & {
   branch_city?: string | null;
@@ -49,14 +49,18 @@ export function CompareToggle({
         }
       }}
       className={cn(
-        "inline-flex cursor-pointer items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+        "inline-flex cursor-pointer items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm ring-1 ring-inset backdrop-blur transition-colors",
         selected
-          ? "border-foreground bg-foreground text-background"
-          : "bg-background/90 text-muted-foreground hover:text-foreground",
+          ? "bg-primary text-primary-foreground ring-primary"
+          : "bg-card/90 text-foreground ring-border hover:bg-card",
         className
       )}
     >
-      {selected ? <Check className="size-3" /> : <Plus className="size-3" />}
+      {selected ? (
+        <Check className="size-3.5" />
+      ) : (
+        <Plus className="size-3.5" />
+      )}
       {selected ? "Comparing" : "Compare"}
     </button>
   );
@@ -84,54 +88,67 @@ export function VehicleCard({
           redeemPoints: false,
         })
       : null;
-  const score = greenScore(car.carbon_emissions);
-  const electric = car.fuel_type === "Electric";
 
   return (
-    <article className="group relative flex flex-col">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl border bg-card shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-card-hover">
       <Link
         href={`/select-vehicle/${car.id}`}
-        className="absolute inset-0 z-10 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-offset-4"
+        className="absolute inset-0 z-10 rounded-2xl focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/40"
         aria-label={`View ${car.brand} ${car.model}`}
       />
-      <div className="relative overflow-hidden rounded-lg">
+      <div className="relative overflow-hidden">
         <VehicleImage
           src={car.image}
           brand={car.brand}
           model={car.model}
           bodyType={car.body_type}
           priority={priority}
-          className="transition-opacity group-hover:opacity-90"
+          className="transition-transform duration-500 group-hover:scale-[1.04]"
         />
+        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+          <FuelBadge fuelType={car.fuel_type} />
+        </div>
         <div className="absolute top-3 right-3 z-20">
           <CompareToggle car={car} />
         </div>
+        <div className="absolute bottom-3 left-3 z-20">
+          <GreenScoreBadge emissions={car.carbon_emissions} />
+        </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-3 pt-4">
+      <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="min-w-0">
-          <h3 className="truncate font-medium">
+          <h3 className="truncate font-display text-lg font-bold">
             {car.brand} {car.model}
           </h3>
-          <p className="mt-0.5 truncate text-sm text-muted-foreground">
-            <span className={cn(electric && "text-eco")}>{car.fuel_type}</span>
-            {" · "}
+          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
             {bodyTypeLabel(car.body_type)}
-            {car.branch_city && <> · {car.branch_city}</>}
-          </p>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {car.passenger_capacity} seats · {car.transmission} · Green{" "}
-            {score.grade}
+            {car.branch_city && (
+              <>
+                <span aria-hidden>·</span>
+                <MapPin className="size-3.5" /> {car.branch_city}
+              </>
+            )}
           </p>
         </div>
 
-        <div className="mt-auto flex items-end justify-between gap-3">
+        <ul className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
+          <li className="inline-flex items-center gap-1.5">
+            <Users className="size-4" /> {car.passenger_capacity} seats
+          </li>
+          <li className="inline-flex items-center gap-1.5">
+            <Cog className="size-4" /> {car.transmission}
+          </li>
+        </ul>
+
+        <div className="mt-auto flex items-end justify-between gap-3 border-t pt-3">
           <div>
-            <p className="text-sm">
-              <span className="font-medium">
-                {formatPrice(Number(car.price_per_day))}
+            <p className="font-display text-xl font-bold tracking-tight">
+              {formatPrice(Number(car.price_per_day))}
+              <span className="font-sans text-sm font-medium text-muted-foreground">
+                {" "}
+                /day
               </span>
-              <span className="text-muted-foreground"> / day</span>
             </p>
             {quote && (
               <p className="text-xs text-muted-foreground">
@@ -147,7 +164,7 @@ export function VehicleCard({
                 e.preventDefault();
                 onRent(car);
               }}
-              className="relative z-20 inline-flex h-8 shrink-0 cursor-pointer items-center whitespace-nowrap rounded-md border px-3 text-[13px] font-medium transition-colors hover:border-foreground hover:bg-foreground hover:text-background"
+              className="relative z-20 inline-flex h-9 shrink-0 cursor-pointer items-center whitespace-nowrap rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 transition-colors hover:bg-primary/90"
             >
               Rent Now
             </button>
@@ -160,12 +177,13 @@ export function VehicleCard({
 
 export function VehicleCardSkeleton() {
   return (
-    <div>
-      <div className="aspect-[16/10] animate-pulse rounded-lg bg-muted" />
-      <div className="space-y-2 pt-4">
-        <div className="h-4 w-2/3 animate-pulse rounded bg-muted" />
-        <div className="h-3.5 w-1/2 animate-pulse rounded bg-muted" />
-        <div className="h-3.5 w-1/3 animate-pulse rounded bg-muted" />
+    <div className="overflow-hidden rounded-2xl border bg-card shadow-card">
+      <div className="aspect-[4/3] animate-pulse bg-muted" />
+      <div className="space-y-3 p-4">
+        <div className="h-5 w-2/3 animate-pulse rounded-lg bg-muted" />
+        <div className="h-4 w-1/3 animate-pulse rounded-lg bg-muted" />
+        <div className="h-4 w-1/2 animate-pulse rounded-lg bg-muted" />
+        <div className="h-9 w-full animate-pulse rounded-xl bg-muted" />
       </div>
     </div>
   );

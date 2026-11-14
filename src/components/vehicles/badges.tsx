@@ -1,5 +1,6 @@
+import { Fuel, Leaf, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { greenScore } from "@/lib/green";
+import { greenScore, type GreenGrade } from "@/lib/green";
 import {
   Tooltip,
   TooltipContent,
@@ -7,9 +8,16 @@ import {
 } from "@/components/ui/tooltip";
 
 const pill =
-  "inline-flex items-center gap-1.5 rounded-full border bg-background px-2 py-0.5 text-xs font-medium whitespace-nowrap";
+  "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap ring-1 ring-inset";
 
-const dot = "size-1.5 shrink-0 rounded-full bg-current";
+const GRADE_TONES: Record<GreenGrade, string> = {
+  "A+": "bg-eco-soft text-eco ring-eco/20",
+  A: "bg-eco-soft text-eco ring-eco/20",
+  B: "bg-accent text-accent-foreground ring-primary/15",
+  C: "bg-amber-soft text-amber-800 ring-amber/30 dark:text-amber-200",
+  D: "bg-orange-500/12 text-orange-700 ring-orange-500/25 dark:text-orange-300",
+  E: "bg-destructive/10 text-destructive ring-destructive/20",
+};
 
 /** A-to-E rating from tailpipe emissions (g/km). */
 export function GreenScoreBadge({
@@ -22,20 +30,14 @@ export function GreenScoreBadge({
   showLabel?: boolean;
 }) {
   const score = greenScore(emissions);
-  const clean = score.grade === "A+" || score.grade === "A";
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span
-          className={cn(
-            pill,
-            clean ? "text-eco" : "text-muted-foreground",
-            className
-          )}
-        >
+        <span className={cn(pill, GRADE_TONES[score.grade], className)}>
+          <Leaf className="size-3.5" aria-hidden />
           <span>Green {score.grade}</span>
           {showLabel && (
-            <span className="text-muted-foreground">· {score.label}</span>
+            <span className="font-medium opacity-80">· {score.label}</span>
           )}
         </span>
       </TooltipTrigger>
@@ -55,25 +57,26 @@ export function FuelBadge({
   className?: string;
 }) {
   const type = fuelType ?? "Petrol";
+  const style =
+    type === "Electric"
+      ? "bg-eco text-white ring-eco/30"
+      : type === "Hybrid"
+        ? "bg-accent text-accent-foreground ring-primary/15"
+        : "bg-card text-foreground/80 ring-border";
+  const Icon = type === "Electric" ? Zap : type === "Hybrid" ? Leaf : Fuel;
   return (
-    <span
-      className={cn(
-        pill,
-        type === "Electric" ? "text-eco" : "text-muted-foreground",
-        className
-      )}
-    >
-      {type === "Electric" && <span className={dot} aria-hidden />}
+    <span className={cn(pill, style, className)}>
+      <Icon className="size-3.5" aria-hidden />
       {type}
     </span>
   );
 }
 
 const STATUS: Record<string, string> = {
-  Confirmed: "text-foreground [&>span:first-child]:text-eco",
-  Pending: "text-foreground [&>span:first-child]:text-warning",
-  Completed: "text-muted-foreground",
-  Cancelled: "text-destructive",
+  Confirmed: "bg-eco-soft text-eco ring-eco/20",
+  Pending: "bg-amber-soft text-amber-800 ring-amber/30 dark:text-amber-200",
+  Completed: "bg-secondary text-foreground/70 ring-border",
+  Cancelled: "bg-destructive/10 text-destructive ring-destructive/20",
 };
 
 export function StatusBadge({
@@ -85,7 +88,7 @@ export function StatusBadge({
 }) {
   return (
     <span className={cn(pill, STATUS[status] ?? STATUS.Pending, className)}>
-      <span className={dot} aria-hidden />
+      <span className="size-1.5 rounded-full bg-current" aria-hidden />
       {status}
     </span>
   );
