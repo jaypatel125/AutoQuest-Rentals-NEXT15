@@ -1,4 +1,5 @@
-import { getServerSideSession } from "@/hooks/SessionHandler";
+import { requireAdminViewer } from "@/lib/api-auth";
+import { maskEmail, maskName } from "@/lib/privacy";
 import pool from "@/lib/db";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
@@ -8,13 +9,11 @@ function formatDate(d: Date) {
 }
 
 export async function GET(request: NextRequest) {
-  const session = await getServerSideSession();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  if (session.user?.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const guard = await requireAdminViewer();
+  if (guard.error) return guard.error;
+  // Reviewers see customer rankings without names and emails.
+  const name = (v: string) => (guard.readOnly ? maskName(v) : v);
+  const email = (v: string) => (guard.readOnly ? maskEmail(v) : v);
 
   // Parse date range from query params, fallback to last 30 days
   const params = request.nextUrl.searchParams;
@@ -347,8 +346,8 @@ export async function GET(request: NextRequest) {
 
       topUsers: usersRes.rows.map((r) => ({
         id: r.id,
-        name: r.name,
-        email: r.email,
+        name: name(r.name),
+        email: email(r.email),
         reward_points: Number(r.reward_points ?? 0),
         total_rentals: Number(r.total_rentals ?? 0),
         total_spent: Number(r.total_spent ?? 0),
@@ -416,8 +415,8 @@ export async function GET(request: NextRequest) {
 
       rewardsAnalytics: rewardsAnalyticsRes.rows.map((r) => ({
         id: r.id,
-        name: r.name,
-        email: r.email,
+        name: name(r.name),
+        email: email(r.email),
         reward_points: Number(r.reward_points ?? 0),
         total_transactions: Number(r.total_transactions ?? 0),
         total_points_earned: Number(r.total_points_earned ?? 0),

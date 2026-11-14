@@ -1,18 +1,11 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
-import { getServerSideSession } from "@/hooks/SessionHandler";
+import { requireAdminViewer } from "@/lib/api-auth";
 
 export async function GET() {
   try {
-    const session = await getServerSideSession();
-
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (session.user?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const guard = await requireAdminViewer();
+    if (guard.error) return guard.error;
     const query = `
       SELECT 
         c.id,
